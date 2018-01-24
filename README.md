@@ -2,14 +2,14 @@
 Projet de S4
 
 # DONE List
-- Histogramme
-- Struct tile **(voir TODO)**
+- struct histogram
+  - init_histogram(...)
+  - add_histogram(...)
+  - remove_histogram(...)
+- struct wall
+  - random_pop_wall(...)
 
 # TODO List
-## Mur
-- Implémentation: Histogramme
-- Piocher: `r = rand() % length`, choisir la r ième valeur
-
 ## Main
 - Implémentation: Histogramme + Liste de liste (groupes) + valeur (dernière tuile)
 - Histogramme: contient les tuiles non groupées
@@ -18,9 +18,6 @@ Projet de S4
   - el1, el2, el3, el4: tuiles (index) du groupe. `défault: -1`
   - Les listes sont statiques (toujours la même taille), les *non-tuiles* sont notées *-1*
 - Ajouter des champs si besoin
-
-## Struct Tile
-- Il ne semble pas y avoir d'intérêt à la garder (pas d'utilisation pour l'instant, *voir au-dessus*)
 
 ## Tout le reste
 - voilà, voilà
