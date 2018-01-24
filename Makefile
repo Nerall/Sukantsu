@@ -1,23 +1,25 @@
 # Makefile
 
-CC=gcc -fsanitize=address
-CPPFLAGS= -MMD
-CFLAGS= -Wall -Wextra -std=c99 -O0 -g
-LDFLAGS=
-LDLIBS=
+CC = gcc -fsanitize=address
+CPPFLAGS = -MMD
+CFLAGS = -Wall -Wextra -std=c99 -O0 -g
+LDFLAGS =
+LDLIBS =
 
-SRC= main.c tiles.c
-OBJ= ${SRC:.c=.o}
-DEP= ${SRC:.c=.d}
+EXE := sukantsu
+SRC := $(shell find src -name '*.c')
+OBJ := ${SRC:.c=.o}
+DEP := ${SRC:.c=.d}
 
-all: main
+all: ${EXE}
 
-main: ${OBJ}
+${EXE}: ${OBJ}
+	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} ${OBJ} -o $@ ${LDLIBS}
 
 clean:
 	${RM} ${OBJ}
 	${RM} ${DEP}
-	${RM} main
+	${RM} ${EXE}
 
 -include ${DEP}
 
