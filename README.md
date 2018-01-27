@@ -2,22 +2,35 @@
 Projet de S4
 
 # DONE List
+## Struct histogram
 - struct histogram
+  - histo_cells_t cells[HISTO_INDEX_MAX]
+- functions
   - init_histogram(...)
   - add_histogram(...)
   - remove_histogram(...)
+  
+## Struct wall
 - struct wall
+  - struct histogram histo
+  - int nb_tiles
+- functions
   - random_pop_wall(...)
+  
+## Struct group
+- struct group
+  - unsigned char hidden
+  - histo_index_t tiles[GROUP_NB_TILES]
+- functions
+  - init_group(...)
+  
+## Struct hand
+- struct hand
+  - struct histogram histo
+  - struct group groups[HAND_NB_GROUPS]
+  - unsigned char nb_groups
+  - histo_index_t last_tile
 
 # TODO List
-## Main
-- Implémentation: Histogramme + Liste de liste (groupes) + valeur (dernière tuile)
-- Histogramme: contient les tuiles non groupées
-- Liste de groupes: `[[info, el1, el2, el3, el4], ...]`
-  - info: 0 si caché, 1 si découvert
-  - el1, el2, el3, el4: tuiles (index) du groupe. `défault: -1`
-  - Les listes sont statiques (toujours la même taille), les *non-tuiles* sont notées *-1*
-- Ajouter des champs si besoin
-
 ## Tout le reste
 - voilà, voilà
