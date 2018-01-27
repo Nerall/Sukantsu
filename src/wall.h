@@ -10,6 +10,6 @@ struct wall {
 
 void init_wall(struct wall *wall);
 
-int random_pop_wall(struct wall *wall);
+histo_index_t random_pop_wall(struct wall *wall);
 
 #endif // _WALL_H_
