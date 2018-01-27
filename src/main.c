@@ -20,6 +20,13 @@ static void print_histo(struct histogram *histo) {
 int main() {
 	srand(time(NULL));
 
+	puts("Sizeof structures:");
+	printf("\thistogram : %lu\n", sizeof(struct histogram));
+	printf("\tgroup     : %lu\n", sizeof(struct group));
+	printf("\twall      : %lu\n", sizeof(struct wall));
+	printf("\thand      : %lu\n", sizeof(struct hand));
+	puts("OK");
+
 	puts("Init wall:");
 	struct wall wall;
 	init_wall(&wall);
@@ -43,7 +50,7 @@ int main() {
 		histo_index_t randi = random_pop_wall(&wall);
 		add_tile_hand(&hand, randi);
 	}
-	puts("\nOK");
+	puts("OK");
 
 	puts("Hand histogram:");
 	print_histo(&hand.histo);
