@@ -1,5 +1,5 @@
-#include "wall.h"
-#include "hand.h"
+#include "core/wall.h"
+#include "core/hand.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
