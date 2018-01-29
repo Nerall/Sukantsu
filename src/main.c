@@ -1,6 +1,6 @@
-#include "core/wall.h"
-#include "core/hand.h"
 #include "core/detect.h"
+#include "core/hand.h"
+#include "core/wall.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -15,6 +15,16 @@ static void print_histo(struct histogram *histo) {
 		}
 		i--;
 		printf("\n");
+	}
+}
+
+// DEBUG FUNCTION
+// Will print hand groups to stdout
+static void print_groups(struct group *groups) {
+	printf("\t-> (hidden, type, tile)\n");
+	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
+		printf("\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
+		       groups[i].tile);
 	}
 }
 
@@ -62,12 +72,12 @@ int main() {
 	puts("OK");
 
 	puts("Hand is valid:");
-	add_group_hand(&hand, 1, PAIR, 1);
+	add_group_hand(&hand, 1, SEQUENCE, 1);
 	add_group_hand(&hand, 1, PAIR, 2);
-	add_group_hand(&hand, 1, PAIR, 3);
-	add_group_hand(&hand, 1, PAIR, 4);
+	add_group_hand(&hand, 0, TRIPLE, 3);
+	add_group_hand(&hand, 1, QUAD, 7);
 	add_group_hand(&hand, 1, PAIR, 5);
-	printf("\tisvalid: %d\n",isvalid(&hand));
+	print_groups(hand.groups);
+	printf("\tisvalid: %d\n", isvalid(&hand));
 	puts("OK");
-
 }
