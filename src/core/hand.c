@@ -1,6 +1,5 @@
 #include "hand.h"
 #include <assert.h>
-#include <string.h>
 
 // Initialize an empty group
 // The pointer's data must be accessible
