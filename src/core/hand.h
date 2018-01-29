@@ -3,7 +3,7 @@
 
 #include "histogram.h"
 
-enum group_type { SEQUENCE, PAIR, TRIPLE, QUAD };
+enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
 
 #define HAND_NB_GROUPS 5
 #define GROUP_NB_TILES 4

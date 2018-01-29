@@ -74,10 +74,20 @@ int main() {
 	puts("Hand is valid:");
 	add_group_hand(&hand, 1, SEQUENCE, 1);
 	add_group_hand(&hand, 1, PAIR, 2);
-	add_group_hand(&hand, 0, TRIPLE, 3);
+	add_group_hand(&hand, 0, TRIPLET, 3);
 	add_group_hand(&hand, 1, QUAD, 7);
-	add_group_hand(&hand, 1, PAIR, 5);
+	add_group_hand(&hand, 1, TRIPLET, 5);
 	print_groups(hand.groups);
 	printf("\tisvalid: %d\n", isvalid(&hand));
+	puts("OK");
+
+	struct hand hand2;
+	init_hand(&hand2);
+	int TerminalsHonors[] = {0,8,9,17,18,26,27,28,29,30,31,32,33};
+	add_tile_hand(&hand2, 32);
+	for (int i = 0; i < 13; ++i)
+		add_tile_hand(&hand2, TerminalsHonors[i]);
+	print_histo(&hand2.histo);
+	printf("\tisvalid: %d\n", isvalid(&hand2));
 	puts("OK");
 }
