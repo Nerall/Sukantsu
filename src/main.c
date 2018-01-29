@@ -1,5 +1,6 @@
 #include "core/wall.h"
 #include "core/hand.h"
+#include "core/detect.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -46,7 +47,7 @@ int main() {
 	puts("OK");
 
 	puts("Pop random wall to hand:");
-	while (wall.nb_tiles) {
+	while (wall.nb_tiles > 14) {
 		histo_index_t randi = random_pop_wall(&wall);
 		add_tile_hand(&hand, randi);
 	}
@@ -55,4 +56,14 @@ int main() {
 	puts("Hand histogram:");
 	print_histo(&hand.histo);
 	puts("OK");
+	
+	puts("Hand is valid:");
+	add_group_hand(&hand, 1, 1, 1, 1, -1, -1);
+	add_group_hand(&hand, 1, 1, 2, 2, -1, -1);
+	add_group_hand(&hand, 1, 1, 3, 3, -1, -1);
+	add_group_hand(&hand, 1, 1, 4, 4, -1, -1);
+	add_group_hand(&hand, 1, 1, 5, 5, -1, -1);
+	printf("%d\n",isvalid(&hand));
+	puts("OK");
+
 }

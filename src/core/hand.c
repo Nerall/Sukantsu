@@ -32,7 +32,7 @@ void init_hand(struct hand *hand) {
 // If the group have less than 4 tiles, put -1 in place of the last ones
 // The first tile must not be -1
 // The pointer's data must be accessible
-void add_group(struct hand *hand, unsigned char hidden, histo_index_t tile1,
+void add_group_hand(struct hand *hand, unsigned char hidden, unsigned char type, histo_index_t tile1,
                histo_index_t tile2, histo_index_t tile3, histo_index_t tile4) {
 	// Pre-conditions
 	assert(hand);
@@ -41,6 +41,7 @@ void add_group(struct hand *hand, unsigned char hidden, histo_index_t tile1,
 	// Get the group and update the hand variables
 	struct group *group = &hand->groups[hand->nb_groups++];
 	group->hidden = hidden;
+	group->type = type;
 
 	// 1st tile
 	assert(tile1 != -1);

@@ -8,6 +8,7 @@
 
 struct group {
 	unsigned char hidden;
+	unsigned char type;
 	histo_index_t tiles[GROUP_NB_TILES];
 };
 
@@ -23,7 +24,7 @@ struct hand {
 
 void init_hand(struct hand *hand);
 
-void add_group_hand(struct hand *hand, unsigned char hidden,
+void add_group_hand(struct hand *hand, unsigned char hidden, unsigned char type,
                     histo_index_t tile1, histo_index_t tile2,
                     histo_index_t tile3, histo_index_t tile4);
 
