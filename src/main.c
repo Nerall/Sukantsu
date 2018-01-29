@@ -56,14 +56,14 @@ int main() {
 	puts("Hand histogram:");
 	print_histo(&hand.histo);
 	puts("OK");
-	
+
 	puts("Hand is valid:");
-	add_group_hand(&hand, 1, 1, 1, 1, -1, -1);
-	add_group_hand(&hand, 1, 1, 2, 2, -1, -1);
-	add_group_hand(&hand, 1, 1, 3, 3, -1, -1);
-	add_group_hand(&hand, 1, 1, 4, 4, -1, -1);
-	add_group_hand(&hand, 1, 1, 5, 5, -1, -1);
-	printf("%d\n",isvalid(&hand));
+	add_group_hand(&hand, 1, PAIR, 1);
+	add_group_hand(&hand, 1, PAIR, 2);
+	add_group_hand(&hand, 1, PAIR, 3);
+	add_group_hand(&hand, 1, PAIR, 4);
+	add_group_hand(&hand, 1, PAIR, 5);
+	printf("\tisvalid: %d\n",isvalid(&hand));
 	puts("OK");
 
 }

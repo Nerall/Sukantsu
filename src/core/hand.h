@@ -3,13 +3,15 @@
 
 #include "histogram.h"
 
+enum group_type { SEQUENCE, PAIR, TRIPLE, QUAD };
+
 #define HAND_NB_GROUPS 5
 #define GROUP_NB_TILES 4
 
 struct group {
 	unsigned char hidden;
-	unsigned char type;
-	histo_index_t tiles[GROUP_NB_TILES];
+	enum group_type type;
+	histo_index_t tile;
 };
 
 void init_group(struct group *group);
@@ -24,9 +26,8 @@ struct hand {
 
 void init_hand(struct hand *hand);
 
-void add_group_hand(struct hand *hand, unsigned char hidden, unsigned char type,
-                    histo_index_t tile1, histo_index_t tile2,
-                    histo_index_t tile3, histo_index_t tile4);
+void add_group_hand(struct hand *hand, unsigned char hidden,
+                    enum group_type type, histo_index_t tile);
 
 void add_tile_hand(struct hand *hand, histo_index_t tile);
 

@@ -4,4 +4,5 @@
 #include "hand.h"
 
 int isvalid(struct hand *hand);
-#endif
+
+#endif // _DETECT_H_
