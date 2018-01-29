@@ -46,11 +46,15 @@ int main() {
 	print_histo(&hand.histo);
 	puts("OK");
 
-	puts("Pop random wall to hand:");
+	puts("Pop random wall to hand (leave 14 tiles):");
 	while (wall.nb_tiles > 14) {
 		histo_index_t randi = random_pop_wall(&wall);
 		add_tile_hand(&hand, randi);
 	}
+	puts("OK");
+
+	puts("Wall histogram:");
+	print_histo(&wall.histo);
 	puts("OK");
 
 	puts("Hand histogram:");
