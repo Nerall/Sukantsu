@@ -71,19 +71,27 @@ int main() {
 	print_histo(&hand.histo);
 	puts("OK");
 
+	puts("Pop the rest of the wall:");
+	while (wall.nb_tiles) {
+		histo_index_t randi = random_pop_wall(&wall);
+		add_tile_hand(&hand, randi);
+	}
+	puts("OK");
+
 	puts("Hand is valid:");
-	add_group_hand(&hand, 1, SEQUENCE, 1);
-	add_group_hand(&hand, 1, PAIR, 2);
-	add_group_hand(&hand, 0, TRIPLET, 3);
-	add_group_hand(&hand, 1, QUAD, 7);
-	add_group_hand(&hand, 1, TRIPLET, 5);
+	add_group_hand(&hand, 1, SEQUENCE, 1); // 1 2 3
+	add_group_hand(&hand, 1, PAIR, 2);     // 2 2
+	add_group_hand(&hand, 0, TRIPLET, 3);  // 3 3 3
+	add_group_hand(&hand, 1, QUAD, 7);     // 7 7 7 7
+	add_group_hand(&hand, 1, TRIPLET, 5);  // 5 5 5
 	print_groups(hand.groups);
 	printf("\tisvalid: %d\n", isvalid(&hand));
 	puts("OK");
 
+	puts("Check valid:");
 	struct hand hand2;
 	init_hand(&hand2);
-	int TerminalsHonors[] = {0,8,9,17,18,26,27,28,29,30,31,32,33};
+	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
 	add_tile_hand(&hand2, 32);
 	for (int i = 0; i < 13; ++i)
 		add_tile_hand(&hand2, TerminalsHonors[i]);

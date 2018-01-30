@@ -31,12 +31,32 @@ void init_hand(struct hand *hand) {
 // The pointer's data must be accessible
 void add_group_hand(struct hand *hand, unsigned char hidden,
                     enum group_type type, histo_index_t tile) {
-	// TODO: Add more asserts
-
 	// Pre-conditions
 	assert(hand);
 	assert(hand->nb_groups < 5);
-	assert(tile >= 0 && tile < HISTO_INDEX_MAX);
+
+	remove_tile_hand(hand, tile);
+	switch (type) {
+		case PAIR:
+			remove_tile_hand(hand, tile);
+			break;
+
+		case SEQUENCE:
+			remove_tile_hand(hand, tile + 1);
+			remove_tile_hand(hand, tile + 2);
+			break;
+
+		case TRIPLET:
+			remove_tile_hand(hand, tile);
+			remove_tile_hand(hand, tile);
+			break;
+
+		case QUAD:
+			remove_tile_hand(hand, tile);
+			remove_tile_hand(hand, tile);
+			remove_tile_hand(hand, tile);
+			break;
+	}
 
 	// Get the group and update the hand variables
 	struct group *group = &hand->groups[hand->nb_groups++];
