@@ -79,11 +79,11 @@ int main() {
 	puts("OK");
 
 	puts("Hand is valid:");
-	add_group_hand(&hand, 1, SEQUENCE, 1); // 1 2 3
-	add_group_hand(&hand, 1, PAIR, 2);     // 2 2
-	add_group_hand(&hand, 0, TRIPLET, 3);  // 3 3 3
-	add_group_hand(&hand, 1, QUAD, 7);     // 7 7 7 7
-	add_group_hand(&hand, 1, TRIPLET, 5);  // 5 5 5
+	add_group_hand(&hand, 1, SEQUENCE, 1); // 2 3 4
+	add_group_hand(&hand, 1, PAIR, 2);     // 3 3
+	add_group_hand(&hand, 0, TRIPLET, 3);  // 4 4 4
+	add_group_hand(&hand, 1, QUAD, 7);     // 8 8 8 8
+	add_group_hand(&hand, 1, TRIPLET, 5);  // 6 6 6
 	print_groups(hand.groups);
 	printf("\tisvalid: %d\n", isvalid(&hand));
 	puts("OK");
