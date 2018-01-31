@@ -1,8 +1,6 @@
 #include "hand.h"
 #include "../debug.h"
 
-#define NO_TILE_INDEX 255
-
 // Initialize an empty group
 // The pointer's data must be accessible
 void init_group(struct group *group) {

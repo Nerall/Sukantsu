@@ -32,6 +32,7 @@ int main() {
 
 	puts("Sizeof structures:");
 	printf("\thistogram : %lu\n", sizeof(struct histogram));
+	printf("\thistobit  : %lu\n", sizeof(struct histobit));
 	printf("\tgroup     : %lu\n", sizeof(struct group));
 	printf("\thand      : %lu\n", sizeof(struct hand));
 	puts("OK");
@@ -95,5 +96,36 @@ int main() {
 		add_tile_hand(&hand2, TerminalsHonors[i]);
 	print_histo(&hand2.histo);
 	printf("\tisvalid: %d\n", isvalid(&hand2));
+	puts("OK");
+
+	puts("Test histobit");
+	struct histobit histobit;
+	init_histobit(&histobit, 0);
+	printf("\t");
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+		printf("%u ", get_histobit(&histobit, i));
+	}
+	printf("\n");
+
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+		set_histobit(&histobit, i);
+	}
+
+	printf("\t");
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+		printf("%u ", get_histobit(&histobit, i));
+	}
+	printf("\n");
+
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+		clear_histobit(&histobit, i);
+	}
+
+	printf("\t");
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+		printf("%u ", get_histobit(&histobit, i));
+	}
+	printf("\n");
+
 	puts("OK");
 }

@@ -2,6 +2,47 @@
 #include "../debug.h"
 #include <stdlib.h>
 
+// Initialize the histobit at the given bool value
+// The pointer's data must be accessible
+void init_histobit(struct histobit *histo, unsigned char bool_value) {
+	ASSERT_BACKTRACE(histo);
+
+	if (bool_value) {
+		bool_value = 255;
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		histo->cells[i] = bool_value;
+	}
+}
+
+// Set the given index to 1
+// The pointer's data must be accessible
+void set_histobit(struct histobit *histo, histo_index_t index) {
+	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(is_valid_tile(index));
+
+	histo->cells[index / 8] |= (1 << (index % 8));
+}
+
+// Clear the given index (set to 0)
+// The pointer's data must be accessible
+void clear_histobit(struct histobit *histo, histo_index_t index) {
+	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(is_valid_tile(index));
+
+	histo->cells[index / 8] &= ~(1 << (index % 8));
+}
+
+// Get the given index value (0 or 1)
+// The pointer's data must be accessible
+int get_histobit(struct histobit *histo, histo_index_t index) {
+	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(is_valid_tile(index));
+
+	return (histo->cells[index / 8] & (1 << (index % 8))) != 0;
+}
+
 // Initialize the histogram with copies of each index
 // The pointer's data must be accessible
 void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index,
