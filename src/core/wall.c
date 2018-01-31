@@ -9,7 +9,7 @@
 void init_wall(struct wall *wall) {
 	assert(wall);
 
-	init_histogram(&wall->histo, NB_COPY_TILES);
+	init_histogram(&wall->histo, NB_COPY_TILES, NB_COPY_TILES);
 	wall->nb_tiles = NB_COPY_TILES * HISTO_INDEX_MAX;
 }
 

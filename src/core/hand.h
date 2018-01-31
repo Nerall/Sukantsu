@@ -4,24 +4,33 @@
 #include "histogram.h"
 
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
+enum riichi_state { RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 #define HAND_NB_GROUPS 5
 #define GROUP_NB_TILES 4
 
 struct group {
-	unsigned char hidden;
+	unsigned char hidden; //boolean, is the group hidden
 	enum group_type type;
-	histo_index_t tile;
+	histo_index_t tile; //first tile in group
+
 };
 
 void init_group(struct group *group);
 
 struct hand {
-	struct histogram histo;
-	struct group groups[HAND_NB_GROUPS];
+	struct histogram histo; //tiles in hand
+	struct histogram chiitiles; //tiles waiting to create a sequence
+	struct histogram pontiles; //tiles waiting to create a triplet
+	struct histogram kantiles; //tiles waiting to create a quad
+	struct histogram wintiles; //tiles waiting to win
+	struct histogram discarded_tiles; //each tiles discarded
+	struct group groups[HAND_NB_GROUPS]; //each revealed group
+	histo_index_t last_tile; //current tile drawn
+	unsigned char nb_groups; //boolean, number of groups revealed
+	unsigned char tenpai; //boolean, is waiting for winning
+	unsigned char closed; //boolean, are only hidden groups
 
-	unsigned char nb_groups;
-	histo_index_t last_tile;
 };
 
 void init_hand(struct hand *hand);

@@ -7,9 +7,11 @@ typedef char histo_index_t;
 
 struct histogram {
 	histo_cell_t cells[HISTO_INDEX_MAX];
+	histo_cell_t max_size;
+	unsigned char nb_tiles;
 };
 
-void init_histogram(struct histogram *histo, histo_cell_t value);
+void init_histogram(struct histogram *histo, histo_cell_t nb_tiles, histo_cell_t max_size);
 
 void add_histogram(struct histogram *histo, histo_index_t index);
 
