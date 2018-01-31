@@ -94,10 +94,13 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 	ASSERT_BACKTRACE(0 && "random_pop_wall: histogram - out of bounds");
 }
 
+// Do a deep-copy of histo to histocopy
+// The pointers needs to be allocated
 void copy_histogram(struct histogram *histo, struct histogram *histocopy) {
-	assert(histo);
-	assert(histocopy);
-	for (int i = 0; i < 34; ++i) {
+	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(histocopy);
+
+	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
 		histocopy->cells[i] = histo->cells[i];
 	}
 	histocopy->max_size = histo->max_size;

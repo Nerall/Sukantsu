@@ -89,27 +89,29 @@ void remove_tile_hand(struct hand *hand, histo_index_t tile) {
 	remove_histogram(&hand->histo, tile);
 }
 
+// Do a deep-copy of hand to handcopy
+// The pointers needs to be allocated
 void copy_hand(struct hand *hand, struct hand *handcopy) {
-	assert(hand);
-	assert(handcopy);
-	struct histogram *histo;
-	struct histogram *chiitiles;
-	struct histogram *pontiles;
-	struct histogram *kantiles;
-	struct histogram *wintiles;
-	struct histogram *discarded_tiles;
+	ASSERT_BACKTRACE(hand);
+	ASSERT_BACKTRACE(handcopy);
+
+	struct histogram *histo, *chiitiles, *pontiles, *kantiles;
+	struct histogram *wintiles, *discarded_tiles;
+
 	init_histogram(&histo, 0, 4);
 	init_histogram(&chiitiles, 0, 1);
 	init_histogram(&pontiles, 0, 1);
 	init_histogram(&kantiles, 0, 1);
 	init_histogram(&wintiles, 0, 1);
 	init_histogram(&discarded_tiles, 0, 4);
+
 	copy_histogram(&hand->histo, histo);
 	copy_histogram(&hand->chiitiles, chiitiles);
 	copy_histogram(&hand->pontiles, pontiles);
 	copy_histogram(&hand->kantiles, kantiles);
 	copy_histogram(&hand->wintiles, wintiles);
 	copy_histogram(&hand->discarded_tiles, discarded_tiles);
+
 	handcopy->histo = *histo;
 	handcopy->chiitiles = *chiitiles;
 	handcopy->pontiles = *pontiles;

@@ -38,16 +38,16 @@ int isvalid(struct hand *hand) {
 	return isclassical(hand) || ischiitoi(hand) || iskokushi(hand);
 }
 
-void makegroup_(struct hand *hand, int index, struct histogram *alonetiles, unsigned char pair) {
+void makegroup_(struct hand *hand, int index, struct histogram *alonetiles,
+                unsigned char pair) {
 	if (index == 34 && hand->nb_groups >= 5) {
 		for (int j = 0; j < hand->nb_groups; ++j) {
 			printf("%d %d\n", hand->groups[j].type, hand->groups[j].tile);
 		}
-	}
-	else {
+	} else {
 		if (hand->histo.cells[index] >= 3) {
 			struct hand *handcopy;
-//			init_hand(&handcopy);
+			//			init_hand(&handcopy);
 			copy_hand(hand, handcopy);
 			handcopy->histo.cells[index] -= 3;
 			add_group_hand(handcopy, 1, TRIPLET, index);
@@ -67,5 +67,5 @@ void makegroup(struct hand *hand) {
 
 	struct histogram *alonetiles;
 	init_histogram(alonetiles, 0, 4);
-  makegroup_(handcopy, 0, alonetiles, 0);
+	makegroup_(handcopy, 0, alonetiles, 0);
 }
