@@ -21,6 +21,8 @@ void add_histogram(struct histogram *histo, histo_index_t index);
 
 void remove_histogram(struct histogram *histo, histo_index_t index);
 
+void copy_histogram(struct histogram *histo, struct histogram *histocopy);
+
 histo_index_t random_pop_histogram(struct histogram *histo);
 
 #endif // _HISTOGRAM_H_
