@@ -44,7 +44,8 @@ void makegroup_(struct hand *hand, int index, struct histogram *alonetiles,
 		for (int j = 0; j < hand->nb_groups; ++j) {
 			printf("%d %d\n", hand->groups[j].type, hand->groups[j].tile);
 		}
-	} else {
+	}
+	else {
 		if (hand->histo.cells[index] >= 3) {
 			struct hand handcopy;
 			copy_hand(hand, &handcopy);
@@ -52,6 +53,27 @@ void makegroup_(struct hand *hand, int index, struct histogram *alonetiles,
 			add_group_hand(&handcopy, 1, TRIPLET, index);
 			makegroup_(&handcopy, index, alonetiles, pair);
 		}
+		if (hand->histo.cells[index] >= 2 && !pair) {
+			struct hand handcopy;
+			copy_hand(hand, &handcopy);
+			handcopy.histo.cells[index] -= 2;
+			add_group_hand(&handcopy, 1, PAIR, index);
+			makegroup_(&handcopy, index, alonetiles, 1);
+		}
+		if (index % 9 < 7 && index < 25 && hand->histo.cells[index] >= 1 &&
+				hand->histo.cells[index+1] >= 1 && hand->histo.cells[index+2] >= 1) {
+			struct hand handcopy;
+			copy_hand(hand, &handcopy);
+			handcopy.histo.cells[index] -= 1;
+			handcopy.histo.cells[index+1] -= 1;
+			handcopy.histo.cells[index+2] -= 1;
+			add_group_hand(&handcopy, 1, SEQUENCE, index);
+			makegroup_(&handcopy, index, alonetiles, pair);
+		}
+		alonetiles->cells[index] += hand->histo.cells[index];
+		hand->histo.cells[index] = 0;
+		makegroup_(hand, index + 1, alonetiles, pair);
+
 	}
 	hand = hand;
 	index = index;
