@@ -20,11 +20,11 @@ void init_group(struct group *group);
 
 struct hand {
 	struct histogram histo;              // tiles in hand
-	struct histogram chiitiles;          // tiles waiting to create a sequence
-	struct histogram pontiles;           // tiles waiting to create a triplet
-	struct histogram kantiles;           // tiles waiting to create a quad
-	struct histogram wintiles;           // tiles waiting to win
 	struct histogram discarded_tiles;    // each tiles discarded
+	struct histobit chiitiles;           // tiles waiting to create a sequence
+	struct histobit pontiles;            // tiles waiting to create a triplet
+	struct histobit kantiles;            // tiles waiting to create a quad
+	struct histobit wintiles;            // tiles waiting to win
 	struct group groups[HAND_NB_GROUPS]; // each revealed group
 	histo_index_t last_tile;             // current tile drawn
 	unsigned char nb_groups : 1;         // boolean, number of groups revealed

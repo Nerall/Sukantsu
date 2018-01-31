@@ -21,9 +21,11 @@ void clear_histobit(struct histobit *histo, histo_index_t index);
 
 int get_histobit(struct histobit *histo, histo_index_t index);
 
+void copy_histobit(struct histobit *histo, struct histobit *histocopy);
+
+
 struct histogram {
 	histo_cell_t cells[HISTO_INDEX_MAX];
-	//histo_cell_t max_size;
 	unsigned char nb_tiles;
 };
 

@@ -46,12 +46,11 @@ void makegroup_(struct hand *hand, int index, struct histogram *alonetiles,
 		}
 	} else {
 		if (hand->histo.cells[index] >= 3) {
-			struct hand *handcopy;
-			//			init_hand(&handcopy);
-			copy_hand(hand, handcopy);
-			handcopy->histo.cells[index] -= 3;
-			add_group_hand(handcopy, 1, TRIPLET, index);
-			makegroup_(handcopy, index, alonetiles, pair);
+			struct hand handcopy;
+			copy_hand(hand, &handcopy);
+			handcopy.histo.cells[index] -= 3;
+			add_group_hand(&handcopy, 1, TRIPLET, index);
+			makegroup_(&handcopy, index, alonetiles, pair);
 		}
 	}
 	hand = hand;
@@ -61,11 +60,10 @@ void makegroup_(struct hand *hand, int index, struct histogram *alonetiles,
 }
 
 void makegroup(struct hand *hand) {
-	struct hand *handcopy;
-	init_hand(&handcopy);
-	copy_hand(hand, handcopy);
+	struct hand handcopy;
+	copy_hand(hand, &handcopy);
 
-	struct histogram *alonetiles;
-	init_histogram(alonetiles, 0, 4);
-	makegroup_(handcopy, 0, alonetiles, 0);
+	struct histogram alonetiles;
+	init_histogram(&alonetiles, 0);
+	makegroup_(&handcopy, 0, &alonetiles, 0);
 }

@@ -17,10 +17,11 @@ void init_hand(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	init_histogram(&hand->histo, 0);
-	init_histogram(&hand->chiitiles, 0);
-	init_histogram(&hand->pontiles, 0);
-	init_histogram(&hand->kantiles, 0);
-	init_histogram(&hand->wintiles, 0);
+	init_histogram(&hand->discarded_tiles, 0);
+	init_histobit(&hand->chiitiles, 0);
+	init_histobit(&hand->pontiles, 0);
+	init_histobit(&hand->kantiles, 0);
+	init_histobit(&hand->wintiles, 0);
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
@@ -95,29 +96,20 @@ void copy_hand(struct hand *hand, struct hand *handcopy) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(handcopy);
 
-	struct histogram *histo, *chiitiles, *pontiles, *kantiles;
-	struct histogram *wintiles, *discarded_tiles;
+	init_histogram(&handcopy->histo, 0);
+	init_histogram(&handcopy->discarded_tiles, 0);
+	init_histobit(&handcopy->chiitiles, 0);
+	init_histobit(&handcopy->pontiles, 0);
+	init_histobit(&handcopy->kantiles, 0);
+	init_histobit(&handcopy->wintiles, 0);
 
-	init_histogram(&histo, 0, 4);
-	init_histogram(&chiitiles, 0, 1);
-	init_histogram(&pontiles, 0, 1);
-	init_histogram(&kantiles, 0, 1);
-	init_histogram(&wintiles, 0, 1);
-	init_histogram(&discarded_tiles, 0, 4);
+	copy_histogram(&hand->histo, &handcopy->histo);
+	copy_histogram(&hand->discarded_tiles, &handcopy->discarded_tiles);
+	copy_histobit(&hand->chiitiles, &handcopy->chiitiles);
+	copy_histobit(&hand->pontiles, &handcopy->pontiles);
+	copy_histobit(&hand->kantiles, &handcopy->kantiles);
+	copy_histobit(&hand->wintiles, &handcopy->wintiles);
 
-	copy_histogram(&hand->histo, histo);
-	copy_histogram(&hand->chiitiles, chiitiles);
-	copy_histogram(&hand->pontiles, pontiles);
-	copy_histogram(&hand->kantiles, kantiles);
-	copy_histogram(&hand->wintiles, wintiles);
-	copy_histogram(&hand->discarded_tiles, discarded_tiles);
-
-	handcopy->histo = *histo;
-	handcopy->chiitiles = *chiitiles;
-	handcopy->pontiles = *pontiles;
-	handcopy->kantiles = *kantiles;
-	handcopy->wintiles = *wintiles;
-	handcopy->discarded_tiles = *discarded_tiles;
 	handcopy->last_tile = hand->last_tile;
 	handcopy->nb_groups = hand->nb_groups;
 	handcopy->tenpai = hand->tenpai;

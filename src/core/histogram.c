@@ -43,6 +43,17 @@ int get_histobit(struct histobit *histo, histo_index_t index) {
 	return (histo->cells[index / 8] & (1 << (index % 8))) != 0;
 }
 
+// Do a deep-copy of histo to histocopy
+// The pointers needs to be allocated
+void copy_histobit(struct histobit *histo, struct histobit *histocopy) {
+	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(histocopy);
+
+	for (int i = 0; i < 5; ++i) {
+		histocopy->cells[i] = histo->cells[i];
+	}
+}
+
 // Initialize the histogram with copies of each index
 // The pointer's data must be accessible
 void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
@@ -102,6 +113,5 @@ void copy_histogram(struct histogram *histo, struct histogram *histocopy) {
 	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
 		histocopy->cells[i] = histo->cells[i];
 	}
-	histocopy->max_size = histo->max_size;
 	histocopy->nb_tiles = histo->nb_tiles;
 }

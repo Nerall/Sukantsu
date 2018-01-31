@@ -39,7 +39,7 @@ int main() {
 
 	puts("Init wall:");
 	struct histogram wall;
-	init_histogram(&wall, 4, 4);
+	init_histogram(&wall, 4);
 	puts("OK");
 
 	puts("Wall histogram:");
