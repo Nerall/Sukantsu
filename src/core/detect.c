@@ -42,7 +42,8 @@ int isvalid(struct hand *hand) {
 	return isclassical(hand) || ischiitoi(hand) || iskokushi(hand);
 }
 
-void makegroup_(struct hand *hand, histo_index_t index, struct histogram *alonetiles, unsigned char pair) {
+void makegroup_(struct hand *hand, histo_index_t index,
+                struct histogram *alonetiles, unsigned char pair) {
 	hand = hand;
 	index = index;
 	alonetiles = alonetiles;
@@ -50,7 +51,7 @@ void makegroup_(struct hand *hand, histo_index_t index, struct histogram *alonet
 }
 
 void makegroup(struct hand *hand) {
-				struct histogram alonetiles;
-				init_histogram(&alonetiles, 0, 4);
-        makegroup_(hand, 0, &alonetiles, 0);
+	struct histogram alonetiles;
+	init_histogram(&alonetiles, 0);
+	makegroup_(hand, 0, &alonetiles, 0);
 }

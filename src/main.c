@@ -1,6 +1,5 @@
 #include "core/detect.h"
 #include "core/hand.h"
-#include "core/wall.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -34,17 +33,16 @@ int main() {
 	puts("Sizeof structures:");
 	printf("\thistogram : %lu\n", sizeof(struct histogram));
 	printf("\tgroup     : %lu\n", sizeof(struct group));
-	printf("\twall      : %lu\n", sizeof(struct wall));
 	printf("\thand      : %lu\n", sizeof(struct hand));
 	puts("OK");
 
 	puts("Init wall:");
-	struct wall wall;
-	init_wall(&wall);
+	struct histogram wall;
+	init_histogram(&wall, 4);
 	puts("OK");
 
 	puts("Wall histogram:");
-	print_histo(&wall.histo);
+	print_histo(&wall);
 	puts("OK");
 
 	puts("Init hand:");
@@ -58,13 +56,13 @@ int main() {
 
 	puts("Pop random wall to hand (leave 14 tiles):");
 	while (wall.nb_tiles > 14) {
-		histo_index_t randi = random_pop_wall(&wall);
+		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
 	}
 	puts("OK");
 
 	puts("Wall histogram:");
-	print_histo(&wall.histo);
+	print_histo(&wall);
 	puts("OK");
 
 	puts("Hand histogram:");
@@ -73,7 +71,7 @@ int main() {
 
 	puts("Pop the rest of the wall:");
 	while (wall.nb_tiles) {
-		histo_index_t randi = random_pop_wall(&wall);
+		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
 	}
 	puts("OK");
