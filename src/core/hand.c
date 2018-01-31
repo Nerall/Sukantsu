@@ -1,20 +1,22 @@
 #include "hand.h"
-#include <assert.h>
+#include "../debug.h"
+
+#define NO_TILE_INDEX 255
 
 // Initialize an empty group
 // The pointer's data must be accessible
 void init_group(struct group *group) {
-	assert(group);
+	ASSERT_BACKTRACE(group);
 
 	group->hidden = 1;
 	group->type = 0;
-	group->tile = -1;
+	group->tile = NO_TILE_INDEX;
 }
 
 // Initialize an empty hand
 // The pointer's data must be accessible
 void init_hand(struct hand *hand) {
-	assert(hand);
+	ASSERT_BACKTRACE(hand);
 
 	init_histogram(&hand->histo, 0);
 	init_histogram(&hand->chiitiles, 0);
@@ -24,11 +26,10 @@ void init_hand(struct hand *hand) {
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
-	hand->last_tile = -1;
+	hand->last_tile = NO_TILE_INDEX;
 	hand->nb_groups = 0;
 	hand->tenpai = 0;
 	hand->closed = 1;
-
 }
 
 // Add a group to the hand
@@ -39,8 +40,8 @@ void init_hand(struct hand *hand) {
 void add_group_hand(struct hand *hand, unsigned char hidden,
                     enum group_type type, histo_index_t tile) {
 	// Pre-conditions
-	assert(hand);
-	assert(hand->nb_groups < 5);
+	ASSERT_BACKTRACE(hand);
+	ASSERT_BACKTRACE(hand->nb_groups < 5);
 
 	remove_tile_hand(hand, tile);
 	switch (type) {
@@ -76,7 +77,7 @@ void add_group_hand(struct hand *hand, unsigned char hidden,
 // Will also update hand->last_tile
 // The pointer's data must be accessible
 void add_tile_hand(struct hand *hand, histo_index_t tile) {
-	assert(hand);
+	ASSERT_BACKTRACE(hand);
 
 	add_histogram(&hand->histo, tile);
 	hand->last_tile = tile;
@@ -85,7 +86,7 @@ void add_tile_hand(struct hand *hand, histo_index_t tile) {
 // Remove a tile from the hand histogram
 // The pointer's data must be accessible
 void remove_tile_hand(struct hand *hand, histo_index_t tile) {
-	assert(hand);
+	ASSERT_BACKTRACE(hand);
 
 	remove_histogram(&hand->histo, tile);
 }
