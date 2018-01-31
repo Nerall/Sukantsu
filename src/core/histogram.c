@@ -93,3 +93,13 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 
 	ASSERT_BACKTRACE(0 && "random_pop_wall: histogram - out of bounds");
 }
+
+void copy_histogram(struct histogram *histo, struct histogram *histocopy) {
+	assert(histo);
+	assert(histocopy);
+	for (int i = 0; i < 34; ++i) {
+		histocopy->cells[i] = histo->cells[i];
+	}
+	histocopy->max_size = histo->max_size;
+	histocopy->nb_tiles = histo->nb_tiles;
+}

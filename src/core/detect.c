@@ -1,8 +1,4 @@
 #include "detect.h"
-#include "hand.h"
-#include "histogram.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 int isclassical(struct hand *hand) {
 	if (hand->groups[4].type == 0)
@@ -42,8 +38,22 @@ int isvalid(struct hand *hand) {
 	return isclassical(hand) || ischiitoi(hand) || iskokushi(hand);
 }
 
-void makegroup_(struct hand *hand, histo_index_t index,
-                struct histogram *alonetiles, unsigned char pair) {
+void makegroup_(struct hand *hand, int index, struct histogram *alonetiles, unsigned char pair) {
+	if (index == 34 && hand->nb_groups >= 5) {
+		for (int j = 0; j < hand->nb_groups; ++j) {
+			printf("%d %d\n", hand->groups[j].type, hand->groups[j].tile);
+		}
+	}
+	else {
+		if (hand->histo.cells[index] >= 3) {
+			struct hand *handcopy;
+//			init_hand(&handcopy);
+			copy_hand(hand, handcopy);
+			handcopy->histo.cells[index] -= 3;
+			add_group_hand(handcopy, 1, TRIPLET, index);
+			makegroup_(handcopy, index, alonetiles, pair);
+		}
+	}
 	hand = hand;
 	index = index;
 	alonetiles = alonetiles;
@@ -51,7 +61,11 @@ void makegroup_(struct hand *hand, histo_index_t index,
 }
 
 void makegroup(struct hand *hand) {
-	struct histogram alonetiles;
-	init_histogram(&alonetiles, 0, 4);
-	makegroup_(hand, 0, &alonetiles, 0);
+	struct hand *handcopy;
+	init_hand(&handcopy);
+	copy_hand(hand, handcopy);
+
+	struct histogram *alonetiles;
+	init_histogram(alonetiles, 0, 4);
+  makegroup_(handcopy, 0, alonetiles, 0);
 }
