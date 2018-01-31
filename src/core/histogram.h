@@ -1,3 +1,4 @@
+
 #ifndef _HISTOGRAM_H_
 #define _HISTOGRAM_H_
 
@@ -10,19 +11,18 @@ typedef unsigned char histo_index_t;
 
 struct histogram {
 	histo_cell_t cells[HISTO_INDEX_MAX];
-	histo_cell_t max_size;
+	//histo_cell_t max_size;
 	unsigned char nb_tiles;
 };
 
-void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index,
-                    histo_cell_t max_size);
+void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index);
 
 void add_histogram(struct histogram *histo, histo_index_t index);
 
 void remove_histogram(struct histogram *histo, histo_index_t index);
 
-void copy_histogram(struct histogram *histo, struct histogram *histocopy);
-
 histo_index_t random_pop_histogram(struct histogram *histo);
+
+void copy_histogram(struct histogram *histo, struct histogram *histocopy);
 
 #endif // _HISTOGRAM_H_
