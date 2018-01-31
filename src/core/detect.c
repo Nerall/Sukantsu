@@ -52,6 +52,6 @@ void makegroup_(struct hand *hand, histo_index_t index,
 
 void makegroup(struct hand *hand) {
 	struct histogram alonetiles;
-	init_histogram(&alonetiles, 0);
+	init_histogram(&alonetiles, 0, 4);
 	makegroup_(hand, 0, &alonetiles, 0);
 }
