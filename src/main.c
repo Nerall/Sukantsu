@@ -1,5 +1,6 @@
 #include "core/detect.h"
 #include "core/hand.h"
+#include "core/detect.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -128,5 +129,9 @@ int main() {
 	}
 	printf("\n");
 
+	puts("OK");
+
+	puts("Group detection:");
+	makegroup(&hand);
 	puts("OK");
 }
