@@ -58,10 +58,11 @@ void copy_histobit(struct histobit *histo, struct histobit *histocopy) {
 // The pointer's data must be accessible
 void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
 	ASSERT_BACKTRACE(histo);
+	ASSERT_BACKTRACE(nb_tiles_index <= 4);
+
 	for (int i = 0; i < HISTO_INDEX_MAX; histo->cells[i++] = nb_tiles_index)
 		;
 	histo->nb_tiles = nb_tiles_index * HISTO_INDEX_MAX;
-	//histo->max_size = max_size;
 }
 
 // Add a copy of the index in the histogram
@@ -69,8 +70,10 @@ void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
 void add_histogram(struct histogram *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(histo->cells[index] < 4);
 
 	histo->cells[index]++;
+	histo->nb_tiles++;
 }
 
 // Remove a copy of the index in the histogram
@@ -82,6 +85,7 @@ void remove_histogram(struct histogram *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo->cells[index] > 0);
 
 	histo->cells[index]--;
+	histo->nb_tiles--;
 }
 
 // Pop a random index in the histogram
@@ -96,7 +100,6 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 		r -= histo->cells[i];
 		if (r <= 0) {
 			remove_histogram(histo, i);
-			histo->nb_tiles--;
 			return i;
 		}
 	}

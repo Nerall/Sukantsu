@@ -38,7 +38,6 @@ void init_hand(struct hand *hand) {
 // The pointer's data must be accessible
 void add_group_hand(struct hand *hand, unsigned char hidden,
                     enum group_type type, histo_index_t tile) {
-	// Pre-conditions
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(hand->nb_groups < 5);
 

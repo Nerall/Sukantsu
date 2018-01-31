@@ -74,6 +74,10 @@ int main() {
 	}
 	puts("OK");
 
+	puts("Hand histogram:");
+	print_histo(&hand.histo);
+	puts("OK");
+
 	puts("Hand is valid:");
 	add_group_hand(&hand, 1, SEQUENCE, 1); // 2 3 4
 	add_group_hand(&hand, 1, PAIR, 2);     // 3 3
