@@ -20,7 +20,7 @@ void init_histobit(struct histobit *histo, unsigned char bool_value) {
 // The pointer's data must be accessible
 void set_histobit(struct histobit *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
-	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(is_valid_index(index));
 
 	histo->cells[index / 8] |= (1 << (index % 8));
 }
@@ -29,7 +29,7 @@ void set_histobit(struct histobit *histo, histo_index_t index) {
 // The pointer's data must be accessible
 void clear_histobit(struct histobit *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
-	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(is_valid_index(index));
 
 	histo->cells[index / 8] &= ~(1 << (index % 8));
 }
@@ -38,7 +38,7 @@ void clear_histobit(struct histobit *histo, histo_index_t index) {
 // The pointer's data must be accessible
 int get_histobit(struct histobit *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
-	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(is_valid_index(index));
 
 	return (histo->cells[index / 8] & (1 << (index % 8))) != 0;
 }
@@ -69,7 +69,7 @@ void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
 // The pointer's data must be accessible
 void add_histogram(struct histogram *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
-	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(is_valid_index(index));
 	ASSERT_BACKTRACE(histo->cells[index] < 4);
 
 	histo->cells[index]++;
@@ -81,7 +81,7 @@ void add_histogram(struct histogram *histo, histo_index_t index) {
 // The pointer's data must be accessible
 void remove_histogram(struct histogram *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
-	ASSERT_BACKTRACE(is_valid_tile(index));
+	ASSERT_BACKTRACE(is_valid_index(index));
 	ASSERT_BACKTRACE(histo->cells[index] > 0);
 
 	histo->cells[index]--;

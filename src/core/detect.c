@@ -47,35 +47,28 @@ int isvalid(struct hand *hand) {
 	return isclassical(hand) || ischiitoi(hand) || iskokushi(hand);
 }
 
-static void put_to_alonetiles(struct hand *hand, struct histogram *alonetiles,
-                              histo_index_t index) {
-	while (hand->histo.cells[index]) {
-		remove_tile_hand(hand, index);
-		add_histogram(alonetiles, index);
-	}
-}
-
 // Recursive function of makegroup
 void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
                    unsigned char pair) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(alonetiles);
 
-	if (index >= 34) {
-		if (hand->nb_groups >= 5) {
-			for (int j = 0; j < hand->nb_groups; ++j) {
-				printf("%d %d\n", hand->groups[j].type, hand->groups[j].tile);
-			}
+	if (hand->nb_groups >= 5) {
+		printf("Group:\n");
+		for (int j = 0; j < hand->nb_groups; ++j) {
+			printf("\t%d %d\n", hand->groups[j].type, hand->groups[j].tile);
 		}
 		return;
 	}
+
+	if (index >= 34)
+		return;
 
 	// Check triplet group
 	if (hand->histo.cells[index] >= 3) {
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, TRIPLET, index);
-		put_to_alonetiles(hand, alonetiles, index);
 		makegroup_rec(&handcopy, index + 1, alonetiles, pair);
 	}
 
@@ -84,7 +77,6 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, PAIR, index);
-		put_to_alonetiles(hand, alonetiles, index);
 		makegroup_rec(&handcopy, index + 1, alonetiles, 1);
 	}
 
@@ -95,18 +87,24 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, SEQUENCE, index);
-		put_to_alonetiles(hand, alonetiles, index);
 		makegroup_rec(&handcopy, index + 1, alonetiles, pair);
 	}
 
 	// Check no group
-	put_to_alonetiles(hand, alonetiles, index);
+	while (hand->histo.cells[index]) {
+		remove_tile_hand(hand, index);
+		add_histogram(alonetiles, index);
+	}
 	makegroup_rec(hand, index + 1, alonetiles, pair);
 }
 
 // Print to stdout all possible grouplists from given hand
 void makegroup(struct hand *hand) {
+	struct hand handcopy;
+	copy_hand(hand, &handcopy);
+
 	struct histogram alonetiles;
 	init_histogram(&alonetiles, 0);
-	makegroup_rec(hand, 0, &alonetiles, 0);
+
+	makegroup_rec(&handcopy, 0, &alonetiles, 0);
 }

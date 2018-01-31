@@ -3,7 +3,7 @@
 
 #define HISTO_INDEX_MAX 34
 // Suppose that index is unsigned
-#define is_valid_tile(index) ((index) < HISTO_INDEX_MAX)
+#define is_valid_index(index) ((index) < HISTO_INDEX_MAX)
 
 typedef char histo_cell_t;
 typedef unsigned char histo_index_t;

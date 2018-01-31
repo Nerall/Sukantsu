@@ -132,6 +132,13 @@ int main() {
 	puts("OK");
 
 	puts("Group detection:");
+	init_histogram(&wall, 4);
+	init_hand(&hand);
+	for (int i = 0; i < 14; ++i) {
+		add_tile_hand(&hand, random_pop_histogram(&wall));
+	}
+	printf("\tHand histo:\n");
+	print_histo(&hand.histo);
 	makegroup(&hand);
 	puts("OK");
 }

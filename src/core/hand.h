@@ -27,7 +27,7 @@ struct hand {
 	struct histobit wintiles;            // tiles waiting to win
 	struct group groups[HAND_NB_GROUPS]; // each revealed group
 	histo_index_t last_tile;             // current tile drawn
-	unsigned char nb_groups : 1;         // boolean, number of groups revealed
+	unsigned char nb_groups : 3;         // number of groups revealed (<= 5)
 	unsigned char tenpai : 1;            // boolean, is waiting for winning
 	unsigned char closed : 1;            // boolean, are only hidden groups
 };

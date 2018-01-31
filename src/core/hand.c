@@ -1,5 +1,6 @@
 #include "hand.h"
 #include "../debug.h"
+#include <string.h>
 
 // Initialize an empty group
 // The pointer's data must be accessible
@@ -108,6 +109,9 @@ void copy_hand(struct hand *hand, struct hand *handcopy) {
 	copy_histobit(&hand->pontiles, &handcopy->pontiles);
 	copy_histobit(&hand->kantiles, &handcopy->kantiles);
 	copy_histobit(&hand->wintiles, &handcopy->wintiles);
+
+	memcpy(handcopy->groups, hand->groups,
+	       HAND_NB_GROUPS * sizeof(struct group));
 
 	handcopy->last_tile = hand->last_tile;
 	handcopy->nb_groups = hand->nb_groups;
