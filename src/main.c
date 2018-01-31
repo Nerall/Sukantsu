@@ -7,14 +7,11 @@
 // DEBUG FUNCTION
 // Will print an histogram to stdout
 static void print_histo(struct histogram *histo) {
+	printf("\t");
 	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
-		printf("\t");
-		for (int j = 0; j < 15 && i < HISTO_INDEX_MAX; ++i, ++j) {
-			printf("%d ", histo->cells[i]);
-		}
-		i--;
-		printf("\n");
+		printf("%d ", histo->cells[i]);
 	}
+	printf("\n");
 }
 
 // DEBUG FUNCTION
@@ -29,15 +26,15 @@ static void print_groups(struct group *groups) {
 
 int main() {
 	srand(time(NULL));
+	setbuf(stdout, NULL); // To flush automatically stdout
 
 	puts("Sizeof structures:");
 	printf("\thistogram : %lu\n", sizeof(struct histogram));
 	printf("\thistobit  : %lu\n", sizeof(struct histobit));
 	printf("\tgroup     : %lu\n", sizeof(struct group));
 	printf("\thand      : %lu\n", sizeof(struct hand));
-	puts("OK");
 
-	puts("Init wall:");
+	printf("Init wall: ");
 	struct histogram wall;
 	init_histogram(&wall, 4);
 	puts("OK");
@@ -46,7 +43,7 @@ int main() {
 	print_histo(&wall);
 	puts("OK");
 
-	puts("Init hand:");
+	printf("Init hand: ");
 	struct hand hand;
 	init_hand(&hand);
 	puts("OK");
@@ -55,7 +52,7 @@ int main() {
 	print_histo(&hand.histo);
 	puts("OK");
 
-	puts("Pop random wall to hand (leave 14 tiles):");
+	printf("Pop random wall to hand (leave 14 tiles): ");
 	while (wall.nb_tiles > 14) {
 		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
@@ -70,7 +67,7 @@ int main() {
 	print_histo(&hand.histo);
 	puts("OK");
 
-	puts("Pop the rest of the wall:");
+	printf("Pop the rest of the wall: ");
 	while (wall.nb_tiles) {
 		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
