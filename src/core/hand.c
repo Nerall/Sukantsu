@@ -16,11 +16,11 @@ void init_group(struct group *group) {
 void init_hand(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
-	init_histogram(&hand->histo, 0, 4);
-	init_histogram(&hand->chiitiles, 0, 1);
-	init_histogram(&hand->pontiles, 0, 1);
-	init_histogram(&hand->kantiles, 0, 1);
-	init_histogram(&hand->wintiles, 0, 1);
+	init_histogram(&hand->histo, 0);
+	init_histogram(&hand->chiitiles, 0);
+	init_histogram(&hand->pontiles, 0);
+	init_histogram(&hand->kantiles, 0);
+	init_histogram(&hand->wintiles, 0);
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
