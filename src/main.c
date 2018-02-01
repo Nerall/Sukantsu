@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 // DEBUG FUNCTION
 // Will print an histogram to stdout
 static void print_histo(struct histogram *histo) {
-	printf("- 0 1 2 3 4 5 6 7 8\n");
+	printf("--0 1 2 3 4 5 6 7 8 - Indexes\n");
 	for (int i = 0; i < HISTO_INDEX_MAX;) {
 	  printf("  ");
 	  for (int j = 0; j < 9 && i < HISTO_INDEX_MAX; ++i, ++j) {
@@ -26,6 +27,16 @@ static void print_groups(struct group *groups) {
 		printf("\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
 		       groups[i].tile);
 	}
+}
+
+void clear_stream(FILE *in)
+{
+	int ch;     
+	clearerr(in);	    
+	do
+        	ch = getc(in);
+	while (ch != '\n' && ch != EOF);
+	clearerr(in);
 }
 
 int main() {
@@ -50,14 +61,21 @@ int main() {
 	}
         while (wall.nb_tiles > 14) {
 	  histo_index_t randi = random_pop_histogram(&wall);
-	  printf("%u\n", randi);
+	  printf("Tile drawn: %u\n", randi);
+	  printf("Draws remaining: %u\n", (wall.nb_tiles - 14) / 4);
 	  add_tile_hand(&hand, randi);
 	  print_histo(&hand.histo);
+	  //if (isvalid(&hand))
+	  //puts("YOU WON \\o/"); Doesn't work yet
 	  makegroup(&hand);
-	  histo_index_t index;
-	  scanf("%hhu", &index);
+	  unsigned int index = 34;
+	  while (index >= 34 || (index < 34 && hand.histo.cells[index] == 0)) {
+	          while (scanf("%d", &index) != 1) {
+               	        clear_stream(stdin);
+			fflush(stdout);
+		  }
+	  }
 	  remove_tile_hand(&hand, index);
-
 	  random_pop_histogram(&wall);
 	  random_pop_histogram(&wall);
 	  random_pop_histogram(&wall);
