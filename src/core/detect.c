@@ -5,7 +5,7 @@
 int isclassical(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
-	if (hand->groups[4].type == 0)
+	if (hand->nb_groups < 5)
 		return 0;
 
 	int pair = 0;
