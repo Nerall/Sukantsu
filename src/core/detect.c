@@ -69,7 +69,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, TRIPLET, index);
-		makegroup_rec(&handcopy, index + 1, alonetiles, pair);
+		makegroup_rec(&handcopy, index, alonetiles, pair);
 	}
 
 	// Check pair group
@@ -77,7 +77,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, PAIR, index);
-		makegroup_rec(&handcopy, index + 1, alonetiles, 1);
+		makegroup_rec(&handcopy, index, alonetiles, 1);
 	}
 
 	// Check sequence group
@@ -86,9 +86,8 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 	    hand->histo.cells[index + 2] >= 1) {
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
-		printf("%u\n", index);
 		add_group_hand(&handcopy, 1, SEQUENCE, index);
-		makegroup_rec(&handcopy, index + 1, alonetiles, pair);
+		makegroup_rec(&handcopy, index, alonetiles, pair);
 	}
 
 	// Check no group

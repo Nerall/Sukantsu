@@ -144,7 +144,7 @@ int main() {
 
 	struct hand hand3;
 	init_hand(&hand3);
-	int tiles[] = {0, 0, 0, 1, 1, 1, 2, 2, 2, 4, 5, 6, 8, 8};
+	int tiles[] = {0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3};
 	for (int i = 0; i < 14; ++i) {
 		add_tile_hand(&hand3, tiles[i]);
 	}
