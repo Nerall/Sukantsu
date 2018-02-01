@@ -86,6 +86,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 	    hand->histo.cells[index + 2] >= 1) {
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
+		printf("%u\n", index);
 		add_group_hand(&handcopy, 1, SEQUENCE, index);
 		makegroup_rec(&handcopy, index + 1, alonetiles, pair);
 	}
@@ -93,7 +94,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 	// Check no group
 	while (hand->histo.cells[index]) {
 		remove_tile_hand(hand, index);
-		add_histogram(alonetiles, index);
+		//add_histogram(alonetiles, index);
 	}
 	makegroup_rec(hand, index + 1, alonetiles, pair);
 }
