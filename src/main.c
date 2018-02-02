@@ -49,10 +49,9 @@ int main() {
 	printf("\tgroup     : %lu\n", sizeof(struct group));
 	printf("\thand      : %lu\n", sizeof(struct hand));
 	
-	struct hand hand;
-	init_hand(&hand);
 	struct histogram wall;
 	init_histogram(&wall, 4);
+	struct hand hand;
 	init_hand(&hand);
 	for (int i = 0; i < 13; ++i) {
 		add_tile_hand(&hand, random_pop_histogram(&wall));
