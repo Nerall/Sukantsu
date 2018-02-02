@@ -4,17 +4,21 @@
 #include "hand.h"
 #include "histogram.h"
 
-struct groupslist {
-  struct grouplist *next;
-  struct group *groups[];
+#define GROUPLIST_CAPACITY 32
+
+struct grouplist {
+	struct group groups[GROUPLIST_CAPACITY][5];
+	unsigned char nb_groups;
 };
 
-int isclassical(struct hand *hand);
-int ischiitoi(struct hand *hand);
-int iskokushi(struct hand *hand);
+void init_grouplist(struct grouplist *grouplist);
+
+void add_copy_grouplist(struct grouplist *grouplist, struct group *group);
+
 int isvalid(struct hand *hand);
-void makegroup_(struct hand *hand, int index, struct histogram *alonetiles);
-void makegroup(struct hand *hand, struct groupslist *groupslist);
+
+void makegroups(struct hand *hand, struct grouplist *grouplist);
+
 struct histogram groups_to_histo(struct hand *hand);
 
 #endif // _DETECT_H_

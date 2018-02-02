@@ -20,15 +20,13 @@ static void print_histo(struct histogram *histo) {
 
 // DEBUG FUNCTION
 // Will print hand groups to stdout
-/*
 static void print_groups(struct group *groups) {
-    printf("\t-> (hidden, type, tile)\n");
-    for (int i = 0; i < HAND_NB_GROUPS; ++i) {
-        printf("\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
-               groups[i].tile);
-    }
+	printf("Group\n");
+	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
+		printf("\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
+		       groups[i].tile);
+	}
 }
-*/
 
 void clear_stream(FILE *in) {
 	int ch;
@@ -48,27 +46,44 @@ int main() {
 	printf("\thistobit  : %lu\n", sizeof(struct histobit));
 	printf("\tgroup     : %lu\n", sizeof(struct group));
 	printf("\thand      : %lu\n", sizeof(struct hand));
-	
+
+	// Initialization
 	struct histogram wall;
 	init_histogram(&wall, 4);
 	struct hand hand;
 	init_hand(&hand);
-	struct groupslist groupslist;
+
+	// Give 13 tiles to each player
 	for (int i = 0; i < 13; ++i) {
 		add_tile_hand(&hand, random_pop_histogram(&wall));
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 	}
+
+	// Main loop
+	struct grouplist grouplist;
 	while (wall.nb_tiles > 14) {
+		// Give one tile to player
 		histo_index_t randi = random_pop_histogram(&wall);
 		printf("Tile drawn: %u\n", randi);
 		printf("Draws remaining: %u\n", (wall.nb_tiles - 14) / 4);
 		add_tile_hand(&hand, randi);
 		print_histo(&hand.histo);
-		if (isvalid(&hand))
+
+		// Check valid hand
+		if (isvalid(&hand)) {
 			puts("YOU WON \\o/");
-		makegroup(&hand, &groupslist);
+			break;
+		}
+
+		// Check grouplists
+		makegroups(&hand, &grouplist);
+		for (int i = 0; i < grouplist.nb_groups; ++i) {
+			print_groups(grouplist.groups[i]);
+		}
+
+		// Ask for tile discard
 		unsigned int index = NO_TILE_INDEX;
 		while (!is_valid_index(index) || hand.histo.cells[index] == 0) {
 			while (scanf("%u", &index) != 1) {
@@ -77,8 +92,12 @@ int main() {
 			}
 		}
 		remove_tile_hand(&hand, index);
+
+		// Give one tile to each other player
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 	}
+
+	printf("End of the game.\n");
 }
