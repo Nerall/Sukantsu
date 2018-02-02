@@ -48,10 +48,10 @@ int isvalid(struct hand *hand) {
 }
 
 // Recursive function of makegroup
-void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
+void makegroup_rec(struct hand *hand, int index, struct groupslist *groupslist,
                    unsigned char pair) {
 	ASSERT_BACKTRACE(hand);
-	ASSERT_BACKTRACE(alonetiles);
+	ASSERT_BACKTRACE(groupslist);
 
 	if (hand->nb_groups >= 5) {
 		printf("Group:\n");
@@ -69,7 +69,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, TRIPLET, index);
-		makegroup_rec(&handcopy, index, alonetiles, pair);
+		makegroup_rec(&handcopy, index, groupslist, pair);
 	}
 
 	// Check pair group
@@ -77,7 +77,7 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, PAIR, index);
-		makegroup_rec(&handcopy, index, alonetiles, 1);
+		makegroup_rec(&handcopy, index, groupslist, 1);
 	}
 
 	// Check sequence group
@@ -87,26 +87,21 @@ void makegroup_rec(struct hand *hand, int index, struct histogram *alonetiles,
 		struct hand handcopy;
 		copy_hand(hand, &handcopy);
 		add_group_hand(&handcopy, 1, SEQUENCE, index);
-		makegroup_rec(&handcopy, index, alonetiles, pair);
+		makegroup_rec(&handcopy, index, groupslist, pair);
 	}
 
 	// Check no group
 	while (hand->histo.cells[index]) {
 		remove_tile_hand(hand, index);
-		//add_histogram(alonetiles, index);
 	}
-	makegroup_rec(hand, index + 1, alonetiles, pair);
+	makegroup_rec(hand, index + 1, groupslist, pair);
 }
 
 // Print to stdout all possible grouplists from given hand
-void makegroup(struct hand *hand) {
+void makegroup(struct hand *hand, struct groupslist *groupslist) {
 	struct hand handcopy;
 	copy_hand(hand, &handcopy);
-
-	struct histogram alonetiles;
-	init_histogram(&alonetiles, 0);
-
-	makegroup_rec(&handcopy, 0, &alonetiles, 0);
+	makegroup_rec(&handcopy, 0, groupslist, 0);
 }
 
 struct histogram groups_to_histo(struct hand *hand) {

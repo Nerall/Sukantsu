@@ -53,6 +53,7 @@ int main() {
 	init_histogram(&wall, 4);
 	struct hand hand;
 	init_hand(&hand);
+	struct groupslist groupslist;
 	for (int i = 0; i < 13; ++i) {
 		add_tile_hand(&hand, random_pop_histogram(&wall));
 		random_pop_histogram(&wall);
@@ -67,7 +68,7 @@ int main() {
 		print_histo(&hand.histo);
 		if (isvalid(&hand))
 			puts("YOU WON \\o/");
-		makegroup(&hand);
+		makegroup(&hand, &groupslist);
 		unsigned int index = 34;
 		while (index >= 34 || (index < 34 && hand.histo.cells[index] == 0)) {
 			while (scanf("%d", &index) != 1) {
