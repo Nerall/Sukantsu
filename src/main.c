@@ -48,10 +48,11 @@ int main() {
 	printf("\thistobit  : %lu\n", sizeof(struct histobit));
 	printf("\tgroup     : %lu\n", sizeof(struct group));
 	printf("\thand      : %lu\n", sizeof(struct hand));
-
+	
+	struct hand hand;
+	init_hand(&hand);
 	struct histogram wall;
 	init_histogram(&wall, 4);
-	struct hand hand;
 	init_hand(&hand);
 	for (int i = 0; i < 13; ++i) {
 		add_tile_hand(&hand, random_pop_histogram(&wall));
@@ -65,8 +66,8 @@ int main() {
 		printf("Draws remaining: %u\n", (wall.nb_tiles - 14) / 4);
 		add_tile_hand(&hand, randi);
 		print_histo(&hand.histo);
-		// if (isvalid(&hand))
-		// puts("YOU WON \\o/"); Doesn't work yet
+		if (isvalid(&hand))
+			puts("YOU WON \\o/");
 		makegroup(&hand);
 		unsigned int index = 34;
 		while (index >= 34 || (index < 34 && hand.histo.cells[index] == 0)) {

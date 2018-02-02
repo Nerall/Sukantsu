@@ -128,11 +128,13 @@ struct histogram groups_to_histo(struct hand *hand) {
 	                        add_histogram(&histocopy, tile);
 				add_histogram(&histocopy, tile);
 				add_histogram(&histocopy, tile);
+				break;
 			case QUAD:
 				add_histogram(&histocopy, tile);
 				add_histogram(&histocopy, tile);
 				add_histogram(&histocopy, tile);
 				add_histogram(&histocopy, tile);
+				break;
 		}
 	}
 	return histocopy;
