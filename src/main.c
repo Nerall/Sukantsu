@@ -69,9 +69,9 @@ int main() {
 		if (isvalid(&hand))
 			puts("YOU WON \\o/");
 		makegroup(&hand, &groupslist);
-		unsigned int index = 34;
-		while (index >= 34 || (index < 34 && hand.histo.cells[index] == 0)) {
-			while (scanf("%d", &index) != 1) {
+		unsigned int index = NO_TILE_INDEX;
+		while (!is_valid_index(index) || hand.histo.cells[index] == 0) {
+			while (scanf("%u", &index) != 1) {
 				clear_stream(stdin);
 				fflush(stdout);
 			}
