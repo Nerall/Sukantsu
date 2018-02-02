@@ -22,7 +22,7 @@ int isclassical(struct hand *hand) {
 int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
-	for (int i = 0; i < 14; ++i) {
+	for (int i = 0; i < 34; ++i) {
 		if (hand->histo.cells[i] != 0 && hand->histo.cells[i] != 2)
 			return 0;
 	}
@@ -31,7 +31,6 @@ int ischiitoi(struct hand *hand) {
 
 int iskokushi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
-
 	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
 	unsigned char pair = 0;
 	for (int i = 0; i < 13; ++i)
@@ -44,6 +43,7 @@ int iskokushi(struct hand *hand) {
 
 // Check if a hand is valid
 int isvalid(struct hand *hand) {
+
 	return isclassical(hand) || ischiitoi(hand) || iskokushi(hand);
 }
 
@@ -107,4 +107,33 @@ void makegroup(struct hand *hand) {
 	init_histogram(&alonetiles, 0);
 
 	makegroup_rec(&handcopy, 0, &alonetiles, 0);
+}
+
+struct histogram groups_to_histo(struct hand *hand) {
+	struct histogram histocopy;
+	copy_histogram(&hand->histo, &histocopy);
+	for (int i = 0; i < 5; ++i) {
+		histo_index_t tile = hand->groups[i].tile;
+		switch (hand->groups[i].type) {
+			case PAIR:
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+				break;
+			case SEQUENCE:
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile + 1);
+				add_histogram(&histocopy, tile + 2);
+				break;
+			case TRIPLET:
+	                        add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+			case QUAD:
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+				add_histogram(&histocopy, tile);
+		}
+	}
+	return histocopy;
 }
