@@ -10,29 +10,29 @@
 // DEBUG FUNCTION
 // Will print an histogram to stdout
 static void print_histo(struct histogram *histo) {
-  wprintf(L" 0 1 2 3 4 5 6 7 8 - Indexes\n");
-	wprintf(L" 🀙 🀚 🀛 🀜 🀝 🀞 🀟 🀠 🀡 - Dots\n");
+  wprintf(L"Dots (p)\n");
+	wprintf(L"  🀙  🀚  🀛  🀜  🀝  🀞  🀟  🀠  🀡\n");
 	for (int i = 0; i < 9; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" - Values\n");
+		wprintf(L"  %d", histo->cells[i]);
+	wprintf(L"\n\n");
 
-	wprintf(L" 9 10 11 12 13 14 15 16 17 - Indexes\n");
-	wprintf(L" 🀐 🀑 🀒 🀓 🀔 🀕 🀖 🀗 🀘 - Bamboos\n");
+	wprintf(L"Bamboos (s)\n");
+	wprintf(L"  🀐  🀑  🀒  🀓  🀔  🀕  🀖  🀗  🀘\n");
 	for (int i = 9; i < 18; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" - Values\n");
+		wprintf(L"  %d", histo->cells[i]);
+	wprintf(L"\n\n");
 
-	wprintf(L" 18 19 20 21 22 23 24 25 26 - Indexes\n");
-	wprintf(L" 🀇 🀈 🀉 🀊 🀋 🀌 🀍 🀎 🀏 - Cracks\n");
+	wprintf(L"Cracks (m)\n");
+	wprintf(L"  🀇  🀈  🀉  🀊  🀋  🀌  🀍  🀎  🀏\n");
 	for (int i = 18; i < 27; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" - Values\n");
+		wprintf(L"  %d", histo->cells[i]);
+	wprintf(L"\n\n");
 
-	wprintf(L" 27 28 29 30 31 32 33 - Indexes\n");
-	wprintf(L" 🀀 🀁 🀂 🀃 🀄 🀅 🀆 - Honor tiles\n");
+	wprintf(L"Honor tiles (z)\n");
+	wprintf(L"  🀀  🀁  🀂  🀃  🀄  🀅  🀆\n");
 	for (int i = 27; i < 34; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" - Values\n");
+		wprintf(L"  %d", histo->cells[i]);
+	wprintf(L"\n\n");
 }
 // DEBUG FUNCTION
 // Will print hand groups to stdout
