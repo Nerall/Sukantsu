@@ -61,17 +61,18 @@ int main() {
 	init_histogram(&wall, 4);
 	struct hand hand;
 	init_hand(&hand);
-
+  struct grouplist grouplist;
+  histo_cell_t starthand[] = { 3, 4, 4, 5, 6, 6, 7, 8, 8, 8, 10, 11, 12, 22 };
 	// Give 13 tiles to each player
 	for (int i = 0; i < 13; ++i) {
-		add_tile_hand(&hand, random_pop_histogram(&wall));
+    add_tile_hand(&hand, starthand[i]);
+		//add_tile_hand(&hand, random_pop_histogram(&wall));
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 		random_pop_histogram(&wall);
 	}
 
 	// Main loop
-	struct grouplist grouplist;
 	while (wall.nb_tiles > 14) {
 		// Give one tile to player
 		histo_index_t randi = random_pop_histogram(&wall);
@@ -79,18 +80,29 @@ int main() {
 		printf("Draws remaining: %u\n\n", (wall.nb_tiles - 14) / 4);
 		add_tile_hand(&hand, randi);
 		print_histo(&hand.histo);
+    
+    // Check hand tenpai
+    tenpailist(&hand, &grouplist);
+    if (hand.tenpai) {
+      printf("You win if you draw:\n");
+      for (int h = 0; h < 34; ++h) {
+        if (hand.wintiles.cells[h] >= 1) {
+          printf("%u\n", h);
+        }
+      }
+    }
 
 		// Check valid hand
-		if (isvalid(&hand)) {
+		if (isvalid(&hand, &grouplist)) {
 			printf("YOU WON \\o/");
-			break;
+			for (int i = 0; i < grouplist.nb_groups; ++i) {
+        print_groups(grouplist.groups[i]);
+      }
+      return 1;
 		}
 
 		// Check grouplists
-		makegroups(&hand, &grouplist);
-		for (int i = 0; i < grouplist.nb_groups; ++i) {
-			print_groups(grouplist.groups[i]);
-		}
+		//makegroups(&hand, &grouplist);
 
 		// Ask for tile discard
 		unsigned int index = NO_TILE_INDEX;
@@ -109,4 +121,5 @@ int main() {
 	}
 
 	printf("End of the game.\n");
+  return 0;
 }
