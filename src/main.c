@@ -10,36 +10,28 @@
 // DEBUG FUNCTION
 // Will print an histogram to stdout
 static void print_histo(struct histogram *histo) {
-  wprintf(L"Dots (p)\n");
-	wprintf(L"  🀙  🀚  🀛  🀜  🀝  🀞  🀟  🀠  🀡\n");
+  printf("--- 0 1 2 3 4 5 6 7 8 - Indexes\n");
+  printf(" |  Dots (p)\n 0 ");
 	for (int i = 0; i < 9; ++i)
-		wprintf(L"  %d", histo->cells[i]);
-	wprintf(L"\n\n");
-
-	wprintf(L"Bamboos (s)\n");
-	wprintf(L"  🀐  🀑  🀒  🀓  🀔  🀕  🀖  🀗  🀘\n");
+		printf(" %d", histo->cells[i]);
+  printf("\n |  Bamboos (s)\n 9 ");
 	for (int i = 9; i < 18; ++i)
-		wprintf(L"  %d", histo->cells[i]);
-	wprintf(L"\n\n");
-
-	wprintf(L"Cracks (m)\n");
-	wprintf(L"  🀇  🀈  🀉  🀊  🀋  🀌  🀍  🀎  🀏\n");
+		printf(" %d", histo->cells[i]);
+	printf("\n |  Cracks (m)\n 18");
 	for (int i = 18; i < 27; ++i)
-		wprintf(L"  %d", histo->cells[i]);
-	wprintf(L"\n\n");
-
-	wprintf(L"Honor tiles (z)\n");
-	wprintf(L"  🀀  🀁  🀂  🀃  🀄  🀅  🀆\n");
+		printf(" %d", histo->cells[i]);
+	printf("\n |  Honor tiles (z)\n 27");
 	for (int i = 27; i < 34; ++i)
-		wprintf(L"  %d", histo->cells[i]);
-	wprintf(L"\n\n");
+		printf(" %d", histo->cells[i]);
+	printf("\n");
 }
+
 // DEBUG FUNCTION
 // Will print hand groups to stdout
 static void print_groups(struct group *groups) {
-	wprintf(L"Group\n");
+	printf("Group\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
-		wprintf(L"\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
+		printf("\t(%d, %d, %d)\n", groups[i].hidden, groups[i].type,
 		       groups[i].tile);
 	}
 }
@@ -58,11 +50,11 @@ int main() {
 	srand(time(NULL));
 	setbuf(stdout, NULL); // To flush automatically stdout
 
-	wprintf(L"Sizeof structures:");
-	wprintf(L"\thistogram : %lu\n", sizeof(struct histogram));
-	wprintf(L"\thistobit  : %lu\n", sizeof(struct histobit));
-	wprintf(L"\tgroup     : %lu\n", sizeof(struct group));
-	wprintf(L"\thand      : %lu\n", sizeof(struct hand));
+  printf("Sizeof structures:");
+	printf("\thistogram : %lu\n", sizeof(struct histogram));
+	printf("\thistobit  : %lu\n", sizeof(struct histobit));
+	printf("\tgroup     : %lu\n", sizeof(struct group));
+	printf("\thand      : %lu\n", sizeof(struct hand));
 
 	// Initialization
 	struct histogram wall;
@@ -83,14 +75,14 @@ int main() {
 	while (wall.nb_tiles > 14) {
 		// Give one tile to player
 		histo_index_t randi = random_pop_histogram(&wall);
-		wprintf(L"Tile drawn: %u\n", randi);
-		wprintf(L"Draws remaining: %u\n", (wall.nb_tiles - 14) / 4);
+		printf("\nTile drawn: %u\n", randi);
+		printf("Draws remaining: %u\n\n", (wall.nb_tiles - 14) / 4);
 		add_tile_hand(&hand, randi);
 		print_histo(&hand.histo);
 
 		// Check valid hand
 		if (isvalid(&hand)) {
-			wprintf(L"YOU WON \\o/");
+			printf("YOU WON \\o/");
 			break;
 		}
 
@@ -116,5 +108,5 @@ int main() {
 		random_pop_histogram(&wall);
 	}
 
-	wprintf(L"End of the game.\n");
+	printf("End of the game.\n");
 }
