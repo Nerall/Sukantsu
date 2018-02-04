@@ -27,6 +27,6 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist);
 
 void tilestodiscard(struct hand *hand, struct grouplist *grouplist);
 
-struct histogram groups_to_histo(struct hand *hand);
+void groups_to_histo(struct hand *hand, struct histogram *histocopy);
 
 #endif // _DETECT_H_

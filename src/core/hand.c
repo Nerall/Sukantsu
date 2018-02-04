@@ -104,7 +104,7 @@ void copy_hand(struct hand *hand, struct hand *handcopy) {
 	init_histobit(&handcopy->kantiles, 0);
 	init_histobit(&handcopy->wintiles, 0);
 	init_histobit(&handcopy->riichitiles, 0);
-	
+
 	copy_histogram(&hand->histo, &handcopy->histo);
 	copy_histogram(&hand->discarded_tiles, &handcopy->discarded_tiles);
 	copy_histobit(&hand->chiitiles, &handcopy->chiitiles);
