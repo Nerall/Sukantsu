@@ -23,6 +23,7 @@ void init_hand(struct hand *hand) {
 	init_histobit(&hand->pontiles, 0);
 	init_histobit(&hand->kantiles, 0);
 	init_histobit(&hand->wintiles, 0);
+	init_histobit(&hand->riichitiles, 0);
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
@@ -102,13 +103,15 @@ void copy_hand(struct hand *hand, struct hand *handcopy) {
 	init_histobit(&handcopy->pontiles, 0);
 	init_histobit(&handcopy->kantiles, 0);
 	init_histobit(&handcopy->wintiles, 0);
-
+	init_histobit(&handcopy->riichitiles, 0);
+	
 	copy_histogram(&hand->histo, &handcopy->histo);
 	copy_histogram(&hand->discarded_tiles, &handcopy->discarded_tiles);
 	copy_histobit(&hand->chiitiles, &handcopy->chiitiles);
 	copy_histobit(&hand->pontiles, &handcopy->pontiles);
 	copy_histobit(&hand->kantiles, &handcopy->kantiles);
 	copy_histobit(&hand->wintiles, &handcopy->wintiles);
+	copy_histobit(&hand->riichitiles, &handcopy->riichitiles);
 
 	memcpy(handcopy->groups, hand->groups,
 	       HAND_NB_GROUPS * sizeof(struct group));

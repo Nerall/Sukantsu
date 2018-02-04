@@ -15,11 +15,17 @@ void init_grouplist(struct grouplist *grouplist);
 
 void add_copy_grouplist(struct grouplist *grouplist, struct group *group);
 
+int ischiitoi(struct hand *hand);
+
+int iskokushi(struct hand *hand);
+
 int isvalid(struct hand *hand, struct grouplist *grouplist);
 
 void makegroups(struct hand *hand, struct grouplist *grouplist);
 
 void tenpailist(struct hand *hand, struct grouplist *grouplist);
+
+void tilestodiscard(struct hand *hand, struct grouplist *grouplist);
 
 struct histogram groups_to_histo(struct hand *hand);
 

@@ -37,7 +37,7 @@ static int isclassical(struct hand *hand) {
 	return 1;
 }
 */
-static int ischiitoi(struct hand *hand) {
+int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	for (int i = 0; i < 34; ++i) {
@@ -47,7 +47,7 @@ static int ischiitoi(struct hand *hand) {
 	return 1;
 }
 
-static int iskokushi(struct hand *hand) {
+int iskokushi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
@@ -63,7 +63,6 @@ static int iskokushi(struct hand *hand) {
 // Check if a hand is valid; cleans grouplist by calling makegroups
 int isvalid(struct hand *hand, struct grouplist *grouplist) {
   makegroups(hand, grouplist);
-  printf("%u\n", grouplist->nb_groups);
 	return grouplist->nb_groups || ischiitoi(hand) || iskokushi(hand);
 }
 
@@ -74,9 +73,6 @@ static void makegroups_rec(struct hand *hand, int index,
 
 	if (hand->nb_groups >= 5) {
 		add_copy_grouplist(grouplist, hand->groups);
-		for (int g = 0; g < 5; ++g) {
-      printf("\t(%d, %d, %d)\n", hand->groups[g].hidden, hand->groups[g].type, hand->groups[g].tile);
-    }
     //printf("Group found!\n");
 		return;
 	}
@@ -128,21 +124,33 @@ void makegroups(struct hand *hand, struct grouplist *grouplist) {
 void tenpailist(struct hand *hand, struct grouplist *grouplist) {
   struct histogram histofull = groups_to_histo(hand);
   init_histobit(&hand->wintiles, 0);
-  for (int i = 0; i < 34; ++i) {
-    struct hand handcopy;
-    copy_hand(hand, &handcopy);
-    if (histofull.cells[i] != 4) {
-      add_tile_hand(&handcopy, i);
-      for (int w = 0; w < 34; ++w) {
-        printf("%u", hand->wintiles.cells[w]);
+  hand->tenpai = 0;
+  for (int j = 0; j < 34; ++j) {
+    	struct hand handcopy;
+    	copy_hand(hand, &handcopy);
+    	if (histofull.cells[j] != 4) {
+      		add_tile_hand(&handcopy, j);
+      		if (isvalid(&handcopy, grouplist)) {
+        		hand->tenpai = 1;
+        		set_histobit(&hand->wintiles, j);
+		}
+	}
       }
-      printf("%u\n", handcopy.nb_groups);
-      if (isvalid(&handcopy, grouplist)) {
-        hand->tenpai = 1;
-        hand->wintiles.cells[i] = 255;
-      }
-    } 
-  }
+}
+
+void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
+	init_histobit(&hand->riichitiles, 0);
+	for (int i = 0; i < 34; ++i) {
+		if (hand->histo.cells[i]) {
+			remove_tile_hand(hand, i);
+			tenpailist(hand, grouplist);
+			if (hand->tenpai)
+				set_histobit(&hand->riichitiles, i);
+			add_tile_hand(hand, i);
+	//To reset flags
+	tenpailist(hand, grouplist);
+		}
+	}
 }
 
 struct histogram groups_to_histo(struct hand *hand) {
