@@ -58,14 +58,13 @@ static void print_victory(struct hand *hand, struct grouplist *grouplist) {
   copy_hand(hand, &handcopy);
   struct histogram histo = groups_to_histo(&handcopy);
   print_histo(&histo);
-  for (int i = 0; i < grouplist->nb_groups; ++i) {
-    if (iskokushi(hand))
-      printf("WOW, Thirteen orphans!!");
-    else {
-      if (ischiitoi(hand))
-        printf("WOW, Seven pairs!");
+  if (iskokushi(hand))
+    printf("WOW, Thirteen orphans!!\n\n");
+  else {
+    if (ischiitoi(hand))
+      printf("WOW, Seven pairs!\n\n");
+    for (int i = 0; i < grouplist->nb_groups; ++i)
       print_groups(grouplist->groups[i]);
-    }
   }
 }
 
@@ -74,9 +73,9 @@ struct histogram *wall, unsigned char player) {
   if (wall->nb_tiles > 14) {
     histo_index_t discard = random_pop_histogram(wall);
     char *players[] = { "Est", "South", "West", "North" };
-    printf("%s's discard: %u\n", players[player], discard);
+    printf("%s's discard: %u\n\n", players[player], discard);
     if (get_histobit(&hand->wintiles, discard)) {
-      puts("RON!");
+      puts("RON!\n");
       add_tile_hand(hand, discard);
       makegroups(hand, grouplist);
       print_victory(hand, grouplist);
@@ -112,7 +111,8 @@ int main() {
   struct hand hand;
   init_hand(&hand);
   struct grouplist grouplist;
-  //histo_cell_t starthand[] = { 3, 4, 4, 5, 6, 6, 7, 8, 8, 8, 10, 11, 12, 22 };
+  // Next line is for tests
+  //histo_cell_t starthand[] = { 0, 0, 9, 9, 18, 18, 27, 27, 29, 29, 31, 32, 33 };
 
   // Give 13 tiles to each player
   for (int i = 0; i < 13; ++i) {
@@ -132,11 +132,11 @@ int main() {
     add_tile_hand(&hand, randi);
     hand.last_tile = randi;
     printf("\n-------------------------------\n\n");
-    printf("Tile drawn: %u\n", randi);
-    printf("Draws remaining: %u\n\n", (wall.nb_tiles - 14) / 4);
+    printf("Remaining tiles: %u\n", (wall.nb_tiles - 14));
+    printf("Tile drawn: %u\n\n", randi);
 
     if(get_histobit(&hand.wintiles, randi)) {
-      puts("TSUMO!");
+      puts("TSUMO!\n");
       makegroups(&hand, &grouplist);
       print_victory(&hand, &grouplist);
       return 1;
