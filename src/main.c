@@ -2,6 +2,7 @@
 #include "core/hand.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 static void print_histo(struct histogram *histo) {
@@ -87,15 +88,7 @@ void clear_stream(FILE *in) {
 	clearerr(in);
 }
 
-int main() {
-	srand(time(NULL));
-
-	printf("Sizeof structures:\n");
-	printf("\thistogram : %lu\n", sizeof(struct histogram));
-	printf("\thistobit  : %lu\n", sizeof(struct histobit));
-	printf("\tgroup     : %lu\n", sizeof(struct group));
-	printf("\thand      : %lu\n", sizeof(struct hand));
-
+int play() {
 	// Initialization
 	struct histogram wall;
 	init_histogram(&wall, 4);
@@ -148,13 +141,42 @@ int main() {
 		}
 
 		// Ask for tile discard
-		unsigned int index = NO_TILE_INDEX;
-		while (!is_valid_index(index) || hand.histo.cells[index] == 0) {
+		unsigned int index;
+		char input[8];
+		int word_length;
+		do {
+			// WORK IN PROGRESS
+			if (0) {
+				for (int i = 0; i < 7; ++i) {
+					input[i] = getchar();
+					if (input[i] == ' ' || input[i] == '\n') {
+						word_length = i;
+						break;
+					}
+				}
+				input[word_length + 1] = 0;
+
+				if (!strcmp(input, "riichi")) {
+					// Riichi
+
+					// Get second word
+					// And do stuff
+				} else if (!strcmp(input, "tsumo")) {
+					// Tsumo
+
+					// Do stuff
+				} else {
+					// Discard
+
+					// Do stuff
+				}
+			}
+
 			while (scanf("%u", &index) != 1) {
 				clear_stream(stdin);
 				fflush(stdout);
 			}
-		}
+		} while (!is_valid_index(index) || hand.histo.cells[index] == 0);
 		remove_tile_hand(&hand, index);
 		printf("\n");
 
@@ -177,6 +199,25 @@ int main() {
 		if (opponent_discard(&hand, &grouplist, &wall, 3))
 			return 1;
 	}
-	printf("\nEnd of the game.\n");
+	printf("End of the game.\n");
 	return 0;
+}
+
+int main() {
+	srand(time(NULL));
+
+	printf("Sizeof structures:\n");
+	printf("\thistogram : %lu\n", sizeof(struct histogram));
+	printf("\thistobit  : %lu\n", sizeof(struct histobit));
+	printf("\tgroup     : %lu\n", sizeof(struct group));
+	printf("\thand      : %lu\n", sizeof(struct hand));
+
+	char c;
+	do {
+		play();
+		printf("Do you want to continue (y/n)\n");
+		do {
+			c = getchar();
+		} while (c != 'y' && c != 'n');
+	} while (c != 'n');
 }
