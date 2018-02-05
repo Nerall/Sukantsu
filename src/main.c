@@ -6,27 +6,42 @@
 #include <time.h>
 
 static void print_histo(struct histogram *histo) {
-	printf("--- 0 1 2 3 4 5 6 7 8 - Indexes\n");
-	printf(" |  Dots (p)\n 0 ");
+	printf("----------------------------------\n");
+
+	printf("| Index      |");
+	for (int i = 1; i < 10; ++i)
+		printf(" %d", i);
+	printf(" |\n");
+
+	printf("----------------------------------\n");
+
+	printf("| Dot    (p) |");
 	for (int i = 0; i < 9; ++i)
 		printf(" %d", histo->cells[i]);
-	printf("\n |  Bamboos (s)\n 9 ");
+	printf(" |\n");
+
+	printf("| Bamboo (s) |");
 	for (int i = 9; i < 18; ++i)
 		printf(" %d", histo->cells[i]);
-	printf("\n |  Cracks (m)\n 18");
+	printf(" |\n");
+
+	printf("| Cracks (m) |");
 	for (int i = 18; i < 27; ++i)
 		printf(" %d", histo->cells[i]);
-	printf("\n |  Honor tiles (z)\n 27");
+	printf(" |\n");
+
+	printf("| Honor  (z) |");
 	for (int i = 27; i < 34; ++i)
 		printf(" %d", histo->cells[i]);
-	printf("\n\n");
+	printf("     |\n");
+
+	printf("----------------------------------\n");
 }
 
 static void print_groups(struct group *groups) {
 	printf("Groups:\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
-		enum group_type type = groups[i].type;
-		switch (type) {
+		switch (groups[i].type) {
 			case PAIR:
 				printf("Pair (%d, %d)\n", groups[i].tile, groups[i].tile);
 				break;
@@ -41,6 +56,10 @@ static void print_groups(struct group *groups) {
 			case QUAD:
 				printf("Quad (%d, %d, %d, %d)\n", groups[i].tile,
 				       groups[i].tile, groups[i].tile, groups[i].tile);
+				break;
+			default:
+				fprintf(stderr, "print_groups: enum type not recongized: %d\n",
+				        groups[i].type);
 				break;
 		}
 	}
@@ -79,13 +98,93 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 	return 0;
 }
 
+/*
 void clear_stream(FILE *in) {
-	int ch;
-	clearerr(in);
-	do {
-		ch = getc(in);
-	} while (ch != '\n' && ch != EOF);
-	clearerr(in);
+    int ch;
+    clearerr(in);
+    do {
+        ch = getc(in);
+    } while (ch != '\n' && ch != EOF);
+    clearerr(in);
+}
+*/
+
+// Get the next input
+// action:
+// - 'r': riichi
+// - 't': tsumo
+// - 'd': discard
+// returned int:
+// - corresponding tile index
+static histo_index_t get_input(struct histogram *histo, char *action) {
+	while (1) {
+		histo_index_t index;
+		char family, number;
+
+		printf("> ");
+		fflush(stdout);
+
+		char c = getchar();
+		if (c == 't') {
+			// Tsumo action
+			*action = 't';
+			while (getchar() != '\n')
+				;
+			return NO_TILE_INDEX;
+		}
+
+		if (c == 'r' || c == 'd') {
+			// Riichi or Discard (explicit)
+
+			// In this line, family is only use to pass unnecessary chars
+			while ((family = getchar()) != ' ' && family != '\n')
+				;
+
+			*action = c;
+			while ((family = getchar()) == ' ' || family == '\n')
+				;
+		} else {
+			// Discard (implicit)
+			*action = 'd';
+			family = c;
+		}
+
+		while ((number = getchar()) == ' ' || number == '\n')
+			;
+
+		while (getchar() != '\n')
+			;
+
+		// Tile selection
+		if (family >= '1' && family <= '9') {
+			char tmp = family;
+			family = number;
+			number = tmp;
+		}
+
+		// Familty to index
+		if (family == 'p')
+			index = 0;
+		else if (family == 's')
+			index = 9;
+		else if (family == 'm')
+			index = 18;
+		else if (family == 'z')
+			index = 27;
+		else
+			continue;
+
+		// Convert number
+		if (number < '1' || number > '9')
+			continue;
+
+		index += number - '1';
+
+		if (!is_valid_index(index) || !histo->cells[index])
+			continue;
+
+		return index;
+	}
 }
 
 int play() {
@@ -141,43 +240,23 @@ int play() {
 		}
 
 		// Ask for tile discard
-		unsigned int index;
-		char input[8];
-		int word_length;
-		do {
-			// WORK IN PROGRESS
-			if (0) {
-				for (int i = 0; i < 7; ++i) {
-					input[i] = getchar();
-					if (input[i] == ' ' || input[i] == '\n') {
-						word_length = i;
-						break;
-					}
-				}
-				input[word_length + 1] = 0;
+		char action;
+		histo_index_t index = get_input(&hand.histo, &action);
 
-				if (!strcmp(input, "riichi")) {
-					// Riichi
+		if (action == 'd') {
+			// Discard
+			remove_tile_hand(&hand, index);
+		} else if (action == 'r') {
+			// Riichi
+			printf("action -> riichi\n");
+		} else if (action == 't') {
+			// Tsumo
+			printf("action -> tsumo\n");
+		} else {
+			// Something went wrong...
+			fprintf(stderr, "Well, someone did not do his job\n");
+		}
 
-					// Get second word
-					// And do stuff
-				} else if (!strcmp(input, "tsumo")) {
-					// Tsumo
-
-					// Do stuff
-				} else {
-					// Discard
-
-					// Do stuff
-				}
-			}
-
-			while (scanf("%u", &index) != 1) {
-				clear_stream(stdin);
-				fflush(stdout);
-			}
-		} while (!is_valid_index(index) || hand.histo.cells[index] == 0);
-		remove_tile_hand(&hand, index);
 		printf("\n");
 
 		// Show winning tiles
