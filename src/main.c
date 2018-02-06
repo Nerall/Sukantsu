@@ -298,5 +298,6 @@ int main() {
 		do {
 			c = getchar();
 		} while (c != 'y' && c != 'n');
+		while (getchar() != '\n');
 	} while (c != 'n');
 }
