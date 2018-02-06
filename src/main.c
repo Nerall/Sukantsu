@@ -6,9 +6,13 @@
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
 	if (wall->nb_tiles > 14) {
-		histo_index_t discard = random_pop_histogram(wall);
 		char *players[] = {"Est", "South", "West", "North"};
-		printf("%s's discard: %u\n\n", players[player], discard);
+
+		histo_index_t discard = random_pop_histogram(wall);
+		char f, n;
+		index_to_char(discard, &f, &n);
+		printf("%s's discard: %c%c\n\n", players[player], n, f);
+
 		if (get_histobit(&hand->wintiles, discard)) {
 			puts("RON!\n");
 			add_tile_hand(hand, discard);
@@ -47,10 +51,13 @@ int play() {
 		// Give one tile to player
 		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
-		hand.last_tile = randi;
+
+		char family, number;
+		index_to_char(randi, &family, &number);
+
 		printf("\n-------------------------------\n\n");
 		printf("Remaining tiles: %u\n", (wall.nb_tiles - 14));
-		printf("Tile drawn: %u\n\n", randi);
+		printf("Tile drawn: %c%c\n\n", number, family);
 
 		if (get_histobit(&hand.wintiles, randi)) {
 			puts("TSUMO!\n");
@@ -66,8 +73,11 @@ int play() {
 		if (hand.tenpai) {
 			printf("You are tenpai if you discard:\n");
 			for (int r = 0; r < 34; ++r) {
-				if (get_histobit(&hand.riichitiles, r))
-					printf("%u\n", r);
+				if (get_histobit(&hand.riichitiles, r)) {
+					char f, n;
+					index_to_char(r, &f, &n);
+					printf("%c%c\n", n, f);
+				}
 			}
 			printf("\n");
 		}
@@ -113,8 +123,11 @@ int play() {
 		if (hand.tenpai) {
 			printf("You win if you get:\n");
 			for (int w = 0; w < 34; ++w) {
-				if (get_histobit(&hand.wintiles, w))
-					printf("%u\n", w);
+				if (get_histobit(&hand.wintiles, w)) {
+					char f, n;
+					index_to_char(w, &f, &n);
+					printf("%c%c\n", n, f);
+				}
 			}
 			printf("\n");
 		}
@@ -143,11 +156,14 @@ int main() {
 	char c;
 	do {
 		play();
-		printf("Do you want to continue (y/n)\n");
+		printf("Do you want to continue (y/n)\n> ");
+		fflush(stdout);
 		do {
 			c = getchar();
-		} while (c != 'y' && c != 'n');
+			if (c >= 'a')
+				c += 'A' - 'a';
+		} while (c != 'Y' && c != 'N');
 		while (getchar() != '\n')
 			;
-	} while (c != 'n');
+	} while (c != 'N');
 }

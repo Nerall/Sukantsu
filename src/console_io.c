@@ -2,6 +2,10 @@
 #include "debug.h"
 #include <stdio.h>
 
+static inline int lower_case(char c) {
+	return (c < 'A' || c >= 'a' ? c : c - 'A' + 'a');
+}
+
 // Convert a tile index to a family and a number characters
 histo_index_t char_to_index(char family, char number) {
 	ASSERT_BACKTRACE(number >= '1' && number <= '9');
@@ -91,18 +95,18 @@ void print_groups(struct group *groups) {
 		index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
-				printf("Pair (%c%c, %c%c)\n", f, n, f, n);
+				printf("Pair (%c%c, %c%c)\n", n, f, n, f);
 				break;
 			case SEQUENCE:
-				printf("Sequence (%c%c, %c%c, %c%c)\n", f, n, f, n + 1, f,
-				       n + 2);
+				printf("Sequence (%c%c, %c%c, %c%c)\n", n, f, n + 1, f, n + 2,
+				       f);
 				break;
 			case TRIPLET:
-				printf("Triplet (%c%c, %c%c, %c%c)\n", f, n, f, n, f, n);
+				printf("Triplet (%c%c, %c%c, %c%c)\n", n, f, n, f, n, f);
 				break;
 			case QUAD:
-				printf("Quad (%c%c, %c%c, %c%c, %c%c)\n", f, n, f, n, f, n, f,
-				       n);
+				printf("Quad (%c%c, %c%c, %c%c, %c%c)\n", n, f, n, f, n, f, n,
+				       f);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",
@@ -142,7 +146,9 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 
 		char c;
 		while ((c = getchar()) == ' ' || c == '\n')
-				;
+			;
+
+		c = lower_case(c);
 		if (c == 't') {
 			// Tsumo action
 			*action = ACTION_TSUMO;
@@ -157,7 +163,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			while ((c = getchar()) == ' ' || c == '\n')
 				;
 
-			if (c == 'a') {
+			if (lower_case(c) == 'a') {
 				// Pass
 				*action = ACTION_PASS;
 			} else {
@@ -187,6 +193,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			while ((c = getchar()) == ' ' || c == '\n')
 				;
 
+			c = lower_case(c);
 			if (c == 'i') {
 				// Riichi
 				*action = ACTION_RIICHI;
@@ -223,12 +230,13 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			char tmp = family;
 			family = number;
 			number = tmp;
+		} else if (number < '1' || number > '9') {
+			continue;
 		}
 
-		if (family != 'p' && family != 's' && family != 'm' && family != 'z')
-			continue;
+		family = lower_case(family);
 
-		if (number < '1' || number > '9')
+		if (family != 'p' && family != 's' && family != 'm' && family != 'z')
 			continue;
 
 		histo_index_t index = char_to_index(family, number);
