@@ -109,14 +109,18 @@ void clear_stream(FILE *in) {
 }
 */
 
+enum action {
+	ACTION_RIICHI,
+	ACTION_RON,
+	ACTION_TSUMO,
+	ACTION_DISCARD,
+	ACTION_PASS,
+	ACTION_PON
+};
+
 // Get the next input
-// action:
-// - 'r': riichi
-// - 't': tsumo
-// - 'd': discard
-// returned int:
-// - corresponding tile index
-static histo_index_t get_input(struct histogram *histo, char *action) {
+// Overwrite action and return the corresponding tile index
+static histo_index_t get_input(struct histogram *histo, enum action *action) {
 	while (1) {
 		histo_index_t index;
 		char family, number;
@@ -127,25 +131,69 @@ static histo_index_t get_input(struct histogram *histo, char *action) {
 		char c = getchar();
 		if (c == 't') {
 			// Tsumo action
-			*action = 't';
+			*action = ACTION_TSUMO;
 			while (getchar() != '\n')
 				;
 			return NO_TILE_INDEX;
 		}
 
-		if (c == 'r' || c == 'd') {
-			// Riichi or Discard (explicit)
+		if (c == 'p') {
+			// Pass or Pon
+
+			while ((c = getchar()) == ' ' || c == '\n')
+				;
+
+			if (c == 'a') {
+				// Pass
+				*action = ACTION_PASS;
+			} else {
+				// Pon
+				*action = ACTION_PON;
+			}
+
+			while (getchar() != '\n')
+				;
+			return NO_TILE_INDEX;
+		}
+
+		if (c == 'd') {
+			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
 			while ((family = getchar()) != ' ' && family != '\n')
 				;
 
-			*action = c;
+			*action = ACTION_DISCARD;
+			while ((family = getchar()) == ' ' || family == '\n')
+				;
+		} else if (c == 'r') {
+			// Riichi or Ron
+
+			while ((c = getchar()) == ' ' || c == '\n')
+				;
+
+			if (c == 'i') {
+				// Riichi
+				*action = ACTION_RIICHI;
+			} else if (c == 'o') {
+				// Ron
+				*action = ACTION_RON;
+			} else {
+				// Error
+				while (getchar() != '\n')
+					;
+				continue;
+			}
+
+			// In this line, family is only use to pass unnecessary chars
+			while ((family = getchar()) != ' ' && family != '\n')
+				;
+
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		} else {
 			// Discard (implicit)
-			*action = 'd';
+			*action = ACTION_DISCARD;
 			family = c;
 		}
 
@@ -240,21 +288,37 @@ int play() {
 		}
 
 		// Ask for tile discard
-		char action;
+		enum action action;
 		histo_index_t index = get_input(&hand.histo, &action);
 
-		if (action == 'd') {
-			// Discard
-			remove_tile_hand(&hand, index);
-		} else if (action == 'r') {
-			// Riichi
-			printf("action -> riichi\n");
-		} else if (action == 't') {
-			// Tsumo
-			printf("action -> tsumo\n");
-		} else {
-			// Something went wrong...
-			fprintf(stderr, "Well, someone did not do his job\n");
+		switch (action) {
+			case ACTION_DISCARD:
+				remove_tile_hand(&hand, index);
+				break;
+
+			case ACTION_RIICHI:
+				printf("action -> riichi\n");
+				break;
+
+			case ACTION_RON:
+				printf("action -> ron\n");
+				break;
+
+			case ACTION_TSUMO:
+				printf("action -> tsumo\n");
+				break;
+
+			case ACTION_PASS:
+				printf("action -> pass\n");
+				break;
+
+			case ACTION_PON:
+				printf("action -> pon\n");
+				break;
+
+			default:
+				fprintf(stderr, "Well, someone did not do his job\n");
+				break;
 		}
 
 		printf("\n");
@@ -298,6 +362,7 @@ int main() {
 		do {
 			c = getchar();
 		} while (c != 'y' && c != 'n');
-		while (getchar() != '\n');
+		while (getchar() != '\n')
+			;
 	} while (c != 'n');
 }
