@@ -1,41 +1,31 @@
 # Sukantsu
 Projet de S4
 
-# DONE List
-## Struct histogram
-- struct histogram
-  - histo_cells_t cells[HISTO_INDEX_MAX]
-- functions
-  - init_histogram(...)
-  - add_histogram(...)
-  - remove_histogram(...)
-  
-## Struct wall
-- struct wall
-  - struct histogram histo
-  - int nb_tiles
-- functions
-  - random_pop_wall(...)
-  
-## Struct group
-- struct group
-  - unsigned char hidden
-  - histo_index_t tiles[GROUP_NB_TILES]
-- functions
-  - init_group(...)
-  
-## Struct hand
-- struct hand
-  - struct histogram histo
-  - struct group groups[HAND_NB_GROUPS]
-  - unsigned char nb_groups
-  - histo_index_t last_tile
-- functions
-  - init_hand(...)
-  - add_group_hand(...)
-  - add_tile_hand(...)
-  - remove_tile_hand(...)
+# Building the project
+## Needed programs
+- GCC
+- Make
 
-# TODO List
-## Tout le reste
-- voilà, voilà
+## How to build the program
+- Go to the root of the project (where the makefile is)
+- Use the command `make`
+- Launch the program `sukantsu`
+
+## Remove build files & executable
+- Go to the root of the project (where the makefile is)
+- Use the command `make clean`
+
+# Program usage
+- *F* correspond to the tile family
+- *N* correspond to the tile number (in the family)
+- *_* correspond to a separator (space or newline)
+
+
+## Action commands
+- *FN*, *NF*, *F_N*, *N_F*: discard a tile
+  - This pattern will be marked as **T**
+- pass
+- pon
+- riichi*_T*
+- ron
+- tsumo
