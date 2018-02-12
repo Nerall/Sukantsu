@@ -4,7 +4,7 @@ Projet de S4
 # Building the project
 ## Needed programs
 - GCC
-- Make
+- GNU Make
 
 ## How to build the program
 - Go to the root of the project (where the makefile is)
@@ -23,8 +23,9 @@ Projet de S4
 
 
 ## Action commands
-- *discard* **FN**, **NF**, **F\_N**, **N\_F**: discard a tile
+- **FN**, **NF**, **F\_N**, **N\_F**: discard a tile
   - This pattern will be marked as **T**
+- **d**iscard**\_T**
 - **pa**ss
 - **po**n
 - **ri**ichi**\_T**
