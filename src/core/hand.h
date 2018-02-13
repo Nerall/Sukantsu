@@ -4,7 +4,7 @@
 #include "histogram.h"
 
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
-enum riichi_state { RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
+enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 #define HAND_NB_GROUPS 5
 #define GROUP_NB_TILES 4
@@ -32,6 +32,7 @@ struct hand {
 	unsigned char nb_groups : 3;         // number of groups revealed (<= 5)
 	unsigned char tenpai : 1;            // boolean, is waiting for winning
 	unsigned char closed : 1;            // boolean, are only hidden groups
+	enum riichi_state riichi;
 };
 
 void init_hand(struct hand *hand);

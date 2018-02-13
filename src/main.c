@@ -6,7 +6,7 @@
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
 	if (wall->nb_tiles > 14) {
-		char *players[] = {"Est", "South", "West", "North"};
+		char *players[] = {"East", "South", "West", "North"};
 
 		histo_index_t discard = random_pop_histogram(wall);
 		char f, n;
@@ -59,13 +59,13 @@ int play() {
 		printf("Remaining tiles: %u\n", (wall.nb_tiles - 14));
 		printf("Tile drawn: %c%c\n\n", number, family);
 
-		if (get_histobit(&hand.wintiles, randi)) {
+/*		if (get_histobit(&hand.wintiles, randi)) {
 			puts("TSUMO!\n");
 			makegroups(&hand, &grouplist);
 			print_victory(&hand, &grouplist);
 			return 1;
 		}
-
+*/
 		print_histo(&hand.histo);
 
 		// Show best discards
@@ -83,27 +83,55 @@ int play() {
 		}
 
 		// Ask for tile discard
-		enum action action;
-		histo_index_t index = get_input(&hand.histo, &action);
+		unsigned char boolean = 1;
+    while (boolean) {
+    
+      enum action action;
+		  histo_index_t index = get_input(&hand.histo, &action);
+		  switch (action) {
+			  case ACTION_DISCARD:
+			  	remove_tile_hand(&hand, index);
+          hand.discarded_tiles.cells[index] += 1;
+          if (index != hand.last_tile) {
+            tilestocall(&hand, &grouplist);
+            tenpailist(&hand, &grouplist);
+          }
+				  break;
 
-		switch (action) {
-			case ACTION_DISCARD:
-				remove_tile_hand(&hand, index);
-				break;
+			  case ACTION_RIICHI:
+				  printf("action -> riichi\n");
+          if (hand.riichi != NORIICHI && hand.closed &&
+          get_histobit(&hand.riichitiles,index)) {
+            boolean = 0;
+            remove_tile_hand(&hand, index);
+            hand.discarded_tiles.cells[index] += 1;
+            tenpailist(&hand, &grouplist);
 
-			case ACTION_RIICHI:
-				printf("action -> riichi\n");
-				break;
+            hand.riichi = IPPATSU; // Will be set at RIICHI next turn
+          
+            //Init values that will be no more used later
+            init_histobit(&hand.riichitiles, 0);
+            init_histobit(&hand.chiitiles, 0);
+            init_histobit(&hand.pontiles, 0);
+            init_histobit(&hand.kantiles, 0);
+          }
+				  break;
 
-			case ACTION_RON:
+			/*case ACTION_RON:
 				printf("action -> ron\n");
 				break;
+      */
+			  case ACTION_TSUMO:
+          printf("action -> tsumo\n");
+          if (get_histobit(&hand.wintiles, index)) {
+            puts("TSUMO!\n");
+			      makegroups(&hand, &grouplist);
+			      print_victory(&hand, &grouplist);
+			      return 1;
+          }
+				  break;
 
-			case ACTION_TSUMO:
-				printf("action -> tsumo\n");
-				break;
-
-			case ACTION_PASS:
+			/*case ACTION_PASS:
 				printf("action -> pass\n");
 				break;
       
@@ -114,18 +142,18 @@ int play() {
 			case ACTION_PON:
 				printf("action -> pon\n");
 				break;
-      
-      case ACTION_KAN:
-        printf("action -> kan\n");
-        break;
+      */
+        case ACTION_KAN:
+          printf("action -> kan\n");
+          break;
 
-			default:
-				fprintf(stderr, "Well, someone did not do his job\n");
-				break;
-		}
-
-		printf("\n");
-
+			  default:
+				  fprintf(stderr, "Well, someone did not do his job\n");
+				  break;
+		  }
+    }
+		
+    printf("\n");
 		// Show winning tiles
 		tenpailist(&hand, &grouplist);
 		if (hand.tenpai) {

@@ -31,6 +31,7 @@ void init_hand(struct hand *hand) {
 	hand->nb_groups = 0;
 	hand->tenpai = 0;
 	hand->closed = 1;
+  hand->riichi = -1;
 }
 
 // Add a group to the hand
