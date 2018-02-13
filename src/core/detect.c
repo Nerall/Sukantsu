@@ -152,6 +152,46 @@ void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 	tenpailist(hand, grouplist);
 }
 
+void tilestocall(struct hand *hand, struct grouplist *grouplist) {
+  ASSERT_BACKTRACE(hand);
+
+  init_histobit(&hand->chiitiles, 0);
+  init_histobit(&hand->pontiles, 0);
+  init_histobit(&hand->kantiles, 0);
+  if (grouplist->nb_groups < 4) {
+    for (int i = 0; i < 34; ++i) {
+      if (hand->histo.cells[i] >= 2) {
+        set_histobit(&hand->pontiles, i);
+        if (hand->histo.cells[i] >= 3)
+          set_histobit(&hand->kantiles, i);
+      }
+      if (i < 27 && i % 9 < 7) {
+        if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
+          set_histobit(&hand->chiitiles, i);
+        if (hand->histo.cells[i]) {
+          if (hand->histo.cells[i + 2])
+            set_histobit(&hand->chiitiles, i + 1);
+          if (hand->histo.cells[i + 1])
+            set_histobit(&hand->chiitiles, i + 2);
+        }
+        /*if (hand->histo.cells[i] && hand->histo.cells[i + 2])
+          set_histobit(&hand->chiitiles, i + 1);
+        if (hand->histo.cells[i] && hand->histo.cells[i + 1])
+          set_histobit(&hand->chiitiles, i + 2);
+        if (i % 9 > 1)
+          if (hand->histo.cells[i - 1] && hand->histo.cells[i - 2])
+            set_histobit(&hand->chiitiles, i);
+        if (i % 9 < 7)
+          if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
+            set_histobit(&hand->chiitiles, i);
+        if (i % 9 > 0 && i % 9 < 8)
+          if (hand->histo.cells[i - 1] && hand->histo.cells[i + 1])
+            set_histobit(&hand->chiitiles, i);*/
+      }
+    }
+  }
+}
+
 // Copy all tile of hand (histo + groups) to histocopy
 void groups_to_histo(struct hand *hand, struct histogram *histocopy) {
 	ASSERT_BACKTRACE(hand);

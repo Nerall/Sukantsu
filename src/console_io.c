@@ -52,36 +52,36 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 void print_histo(struct histogram *histo) {
 	ASSERT_BACKTRACE(histo);
 
-	printf("----------------------------------\n");
+	printf("-----------------------------------\n");
 
-	printf("| Index      |");
+	printf("| Index       |");
 	for (int i = 1; i < 10; ++i)
 		printf(" %d", i);
 	printf(" |\n");
 
-	printf("----------------------------------\n");
+	printf("-----------------------------------\n");
 
-	printf("| Dot    (p) |");
+	printf("| Coin    (p) |");
 	for (int i = 0; i < 9; ++i)
 		printf(" %d", histo->cells[i]);
 	printf(" |\n");
 
-	printf("| Bamboo (s) |");
+	printf("| Bamboo  (s) |");
 	for (int i = 9; i < 18; ++i)
 		printf(" %d", histo->cells[i]);
 	printf(" |\n");
 
-	printf("| Cracks (m) |");
+	printf("| Numeral (m) |");
 	for (int i = 18; i < 27; ++i)
 		printf(" %d", histo->cells[i]);
 	printf(" |\n");
 
-	printf("| Honor  (z) |");
+	printf("| Honor   (z) |");
 	for (int i = 27; i < 34; ++i)
 		printf(" %d", histo->cells[i]);
 	printf("     |\n");
 
-	printf("----------------------------------\n");
+	printf("-----------------------------------\n");
 }
 
 // Print all possible groups
@@ -156,8 +156,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 				;
 			return NO_TILE_INDEX;
 		}
-
-		if (c == 'p') {
+    
+    if (c == 'p') {
 			// Pass or Pon
 
 			while ((c = getchar()) == ' ' || c == '\n')

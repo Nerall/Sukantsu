@@ -106,10 +106,18 @@ int play() {
 			case ACTION_PASS:
 				printf("action -> pass\n");
 				break;
+      
+      case ACTION_CHII:
+        printf("action -> chii\n");
+        break;
 
 			case ACTION_PON:
 				printf("action -> pon\n");
 				break;
+      
+      case ACTION_KAN:
+        printf("action -> kan\n");
+        break;
 
 			default:
 				fprintf(stderr, "Well, someone did not do his job\n");

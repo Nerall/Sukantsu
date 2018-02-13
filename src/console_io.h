@@ -11,7 +11,9 @@ enum action {
 	ACTION_TSUMO,
 	ACTION_DISCARD,
 	ACTION_PASS,
-	ACTION_PON
+  ACTION_CHII,
+	ACTION_PON,
+  ACTION_KAN
 };
 
 histo_index_t char_to_index(char family, char number);
