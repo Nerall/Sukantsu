@@ -156,8 +156,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 				;
 			return NO_TILE_INDEX;
 		}
-    
-    if (c == 'p') {
+
+		if (c == 'p') {
 			// Pass or Pon
 
 			while ((c = getchar()) == ' ' || c == '\n')

@@ -1,6 +1,7 @@
 #include "histogram.h"
 #include "../debug.h"
 #include <stdlib.h>
+#include <string.h>
 
 // Initialize the histobit at the given bool value
 // The pointer's data must be accessible
@@ -49,9 +50,7 @@ void copy_histobit(struct histobit *histo, struct histobit *histocopy) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(histocopy);
 
-	for (int i = 0; i < 5; ++i) {
-		histocopy->cells[i] = histo->cells[i];
-	}
+	memcpy(histocopy, histo, sizeof(struct histobit));
 }
 
 // Initialize the histogram with copies of each index
@@ -113,8 +112,5 @@ void copy_histogram(struct histogram *histo, struct histogram *histocopy) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(histocopy);
 
-	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
-		histocopy->cells[i] = histo->cells[i];
-	}
-	histocopy->nb_tiles = histo->nb_tiles;
+	memcpy(histocopy, histo, sizeof(struct histogram));
 }

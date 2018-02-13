@@ -24,14 +24,16 @@ void init_hand(struct hand *hand) {
 	init_histobit(&hand->kantiles, 0);
 	init_histobit(&hand->wintiles, 0);
 	init_histobit(&hand->riichitiles, 0);
+
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
+
 	hand->last_tile = NO_TILE_INDEX;
 	hand->nb_groups = 0;
 	hand->tenpai = 0;
 	hand->closed = 1;
-  hand->riichi = -1;
+	hand->riichi = -1;
 }
 
 // Add a group to the hand
@@ -98,27 +100,5 @@ void copy_hand(struct hand *hand, struct hand *handcopy) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(handcopy);
 
-	init_histogram(&handcopy->histo, 0);
-	init_histogram(&handcopy->discarded_tiles, 0);
-	init_histobit(&handcopy->chiitiles, 0);
-	init_histobit(&handcopy->pontiles, 0);
-	init_histobit(&handcopy->kantiles, 0);
-	init_histobit(&handcopy->wintiles, 0);
-	init_histobit(&handcopy->riichitiles, 0);
-
-	copy_histogram(&hand->histo, &handcopy->histo);
-	copy_histogram(&hand->discarded_tiles, &handcopy->discarded_tiles);
-	copy_histobit(&hand->chiitiles, &handcopy->chiitiles);
-	copy_histobit(&hand->pontiles, &handcopy->pontiles);
-	copy_histobit(&hand->kantiles, &handcopy->kantiles);
-	copy_histobit(&hand->wintiles, &handcopy->wintiles);
-	copy_histobit(&hand->riichitiles, &handcopy->riichitiles);
-
-	memcpy(handcopy->groups, hand->groups,
-	       HAND_NB_GROUPS * sizeof(struct group));
-
-	handcopy->last_tile = hand->last_tile;
-	handcopy->nb_groups = hand->nb_groups;
-	handcopy->tenpai = hand->tenpai;
-	handcopy->closed = hand->closed;
+	memcpy(handcopy, hand, sizeof(struct hand));
 }
