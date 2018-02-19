@@ -144,40 +144,22 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 		printf("> ");
 		fflush(stdout);
 
-		char c;
+		char c, family, number;
 		while ((c = getchar()) == ' ' || c == '\n')
 			;
 
 		c = lower_case(c);
 		if (c == 't') {
 			// Tsumo action
+
+			while ((family = getchar()) != ' ' && family != '\n')
+				;
+
 			*action = ACTION_TSUMO;
-			while (getchar() != '\n')
+			// Get family
+			while ((family = getchar()) == ' ' || family == '\n')
 				;
-			return NO_TILE_INDEX;
-		}
-
-		if (c == 'p') {
-			// Pass or Pon
-
-			while ((c = getchar()) == ' ' || c == '\n')
-				;
-
-			if (lower_case(c) == 'a') {
-				// Pass
-				*action = ACTION_PASS;
-			} else {
-				// Pon
-				*action = ACTION_PON;
-			}
-
-			while (getchar() != '\n')
-				;
-			return NO_TILE_INDEX;
-		}
-
-		char family, number;
-		if (c == 'd') {
+		} else if (c == 'd') {
 			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
@@ -185,32 +167,17 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 				;
 
 			*action = ACTION_DISCARD;
+			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		} else if (c == 'r') {
 			// Riichi or Ron
 
-			while ((c = getchar()) == ' ' || c == '\n')
+			while ((c = getchar()) != ' ' && c != '\n')
 				;
 
-			c = lower_case(c);
-			if (c == 'i') {
-				// Riichi
-				*action = ACTION_RIICHI;
-			} else if (c == 'o') {
-				// Ron
-				*action = ACTION_RON;
-			} else {
-				// Error
-				while (getchar() != '\n')
-					;
-				continue;
-			}
-
-			// In this line, family is only use to pass unnecessary chars
-			while ((family = getchar()) != ' ' && family != '\n')
-				;
-
+			*action = ACTION_RIICHI;
+			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		} else {
@@ -219,6 +186,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			family = c;
 		}
 
+		// Get number
 		while ((number = getchar()) == ' ' || number == '\n')
 			;
 
