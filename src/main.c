@@ -32,8 +32,10 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		enum action action;
 		histo_index_t index = get_input(&hand->histo, &action);
 
+		char f, n;
+		index_to_char(index, &f, &n);
 		if (action == ACTION_DISCARD) {
-			printf("action -> discard\n");
+			printf("action -> discard (%c%c)\n", n, f);
 			remove_tile_hand(hand, index);
 			hand->discarded_tiles.cells[index] += 1;
 			if (index != hand->last_tile) {
@@ -44,7 +46,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_RIICHI) {
-			printf("action -> riichi\n");
+			printf("action -> riichi (%c%c)\n", n, f);
 			if (hand->riichi == NORIICHI || !hand->closed ||
 			    !get_histobit(&hand->riichitiles, index)) {
 				continue;
@@ -66,7 +68,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_TSUMO) {
-			printf("action -> tsumo\n");
+			printf("action -> tsumo (%c%c)\n", n, f);
 			if (!get_histobit(&hand->wintiles, index))
 				continue;
 
@@ -77,7 +79,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_KAN) {
-			printf("action -> kan\n");
+			printf("action -> kan (%c%c)\n", n, f);
 			return 0;
 		}
 
