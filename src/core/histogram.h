@@ -2,6 +2,8 @@
 #define _HISTOGRAM_H_
 
 #define HISTO_INDEX_MAX 34
+#define NO_TILE_INDEX 63
+
 // Suppose that index is unsigned
 #define is_valid_index(index) ((index) < HISTO_INDEX_MAX)
 

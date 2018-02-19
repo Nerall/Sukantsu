@@ -8,7 +8,6 @@ enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 #define HAND_NB_GROUPS 5
 #define GROUP_NB_TILES 4
-#define NO_TILE_INDEX 127
 
 struct group {
 	unsigned char hidden : 1; // boolean, is the group hidden

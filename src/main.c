@@ -33,7 +33,8 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		histo_index_t index = get_input(&hand->histo, &action);
 
 		char f, n;
-		index_to_char(index, &f, &n);
+		if (index != NO_TILE_INDEX)
+			index_to_char(index, &f, &n);
 		if (action == ACTION_DISCARD) {
 			printf("action -> discard (%c%c)\n", n, f);
 			remove_tile_hand(hand, index);

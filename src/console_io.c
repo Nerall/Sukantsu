@@ -149,7 +149,15 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			;
 
 		c = lower_case(c);
-		if (c == 't') {
+		if (c == 'k') {
+			// Kan action
+
+			while (getchar() != '\n')
+				;
+
+			*action = ACTION_KAN;
+			return NO_TILE_INDEX;
+		} else if (c == 't') {
 			// Tsumo action
 
 			while ((family = getchar()) != ' ' && family != '\n')
