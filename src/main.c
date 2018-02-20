@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <wchar.h>
 
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
@@ -11,7 +12,7 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 		histo_index_t discard = random_pop_histogram(wall);
 		char f, n;
 		index_to_char(discard, &f, &n);
-		printf("%s's discard: %c%c\n\n", players[player], n, f);
+		wprintf(L"%s's discard: %c%c\n\n", players[player], n, f);
 
 		if (get_histobit(&hand->wintiles, discard)) {
 			puts("RON!\n");
@@ -36,7 +37,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		if (index != NO_TILE_INDEX)
 			index_to_char(index, &f, &n);
 		if (action == ACTION_DISCARD) {
-			printf("action -> discard (%c%c)\n", n, f);
+			wprintf(L"action -> discard (%c%c)\n", n, f);
 			remove_tile_hand(hand, index);
 			hand->discarded_tiles.cells[index] += 1;
 			if (index != hand->last_tile) {
@@ -47,7 +48,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_RIICHI) {
-			printf("action -> riichi (%c%c)\n", n, f);
+			wprintf(L"action -> riichi (%c%c)\n", n, f);
 			if (hand->riichi == NORIICHI || !hand->closed ||
 			    !get_histobit(&hand->riichitiles, index)) {
 				continue;
@@ -69,18 +70,18 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_TSUMO) {
-			printf("action -> tsumo (%c%c)\n", n, f);
+			wprintf(L"action -> tsumo (%c%c)\n", n, f);
 			if (!get_histobit(&hand->wintiles, index))
 				continue;
 
-			printf("TSUMO!\n");
+			wprintf(L"TSUMO!\n");
 			makegroups(hand, grouplist);
 			print_victory(hand, grouplist);
 			return 1;
 		}
 
 		if (action == ACTION_KAN) {
-			printf("action -> kan\n");
+			wprintf(L"action -> kan\n");
 			return 0;
 		}
 
@@ -120,9 +121,9 @@ int play() {
 		char family, number;
 		index_to_char(randi, &family, &number);
 
-		printf("\n-------------------------------\n\n");
-		printf("Remaining tiles: %u\n", (wall.nb_tiles - 14));
-		printf("Tile drawn: %c%c\n\n", number, family);
+		wprintf(L"\n-------------------------------\n\n");
+		wprintf(L"Remaining tiles: %u\n", (wall.nb_tiles - 14));
+		wprintf(L"Tile drawn: %c%c\n\n", number, family);
 
 		/*
 		if (get_histobit(&hand.wintiles, randi)) {
@@ -137,15 +138,15 @@ int play() {
 		// Show best discards
 		tilestodiscard(&hand, &grouplist);
 		if (hand.tenpai) {
-			printf("You are tenpai if you discard:\n");
+			wprintf(L"You are tenpai if you discard:\n");
 			for (int r = 0; r < 34; ++r) {
 				if (get_histobit(&hand.riichitiles, r)) {
 					char f, n;
 					index_to_char(r, &f, &n);
-					printf("%c%c\n", n, f);
+					wprintf(L"%c%c\n", n, f);
 				}
 			}
-			printf("\n");
+			wprintf(L"\n");
 		}
 
 		if (player_turn(&hand, &grouplist)) {
@@ -153,19 +154,19 @@ int play() {
 			return 1;
 		}
 
-		printf("\n");
+		wprintf(L"\n");
 		// Show winning tiles
 		tenpailist(&hand, &grouplist);
 		if (hand.tenpai) {
-			printf("You win if you get:\n");
+			wprintf(L"You win if you get:\n");
 			for (int w = 0; w < 34; ++w) {
 				if (get_histobit(&hand.wintiles, w)) {
 					char f, n;
 					index_to_char(w, &f, &n);
-					printf("%c%c\n", n, f);
+					wprintf(L"%c%c\n", n, f);
 				}
 			}
-			printf("\n");
+			wprintf(L"\n");
 		}
 
 		// Give one tile to each other player
@@ -176,23 +177,23 @@ int play() {
 		if (opponent_discard(&hand, &grouplist, &wall, 3))
 			return 1;
 	}
-	printf("End of the game.\n");
+	wprintf(L"End of the game.\n");
 	return 0;
 }
 
 int main() {
 	srand(time(NULL));
 
-	printf("Sizeof structures:\n");
-	printf("\thistogram : %lu\n", sizeof(struct histogram));
-	printf("\thistobit  : %lu\n", sizeof(struct histobit));
-	printf("\tgroup     : %lu\n", sizeof(struct group));
-	printf("\thand      : %lu\n", sizeof(struct hand));
+	wprintf(L"Sizeof structures:\n");
+	wprintf(L"\thistogram : %lu\n", sizeof(struct histogram));
+	wprintf(L"\thistobit  : %lu\n", sizeof(struct histobit));
+	wprintf(L"\tgroup     : %lu\n", sizeof(struct group));
+	wprintf(L"\thand      : %lu\n", sizeof(struct hand));
 
 	char c;
 	do {
 		play();
-		printf("Do you want to continue (y/n)\n> ");
+		wprintf(L"Do you want to continue (y/n)\n> ");
 		fflush(stdout);
 		do {
 			c = getchar();

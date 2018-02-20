@@ -1,7 +1,7 @@
 #include "console_io.h"
 #include "debug.h"
-#include <wchar.h>
 #include <stdio.h>
+#include <wchar.h>
 
 static inline int lower_case(char c) {
 	return (c < 'A' || c >= 'a' ? c : c - 'A' + 'a');
@@ -55,43 +55,43 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 void print_histo(struct histogram *histo) {
 	ASSERT_BACKTRACE(histo);
 
-	printf("-----------------------------------\n");
+	wprintf(L"-----------------------------------\n");
 
-	printf("| Index       |");
+	wprintf(L"| Index       |");
 	for (int i = 1; i < 10; ++i)
-		printf(" %d", i);
-	printf(" |\n");
+		wprintf(L" %d", i);
+	wprintf(L" |\n");
 
-	printf("-----------------------------------\n");
+	wprintf(L"-----------------------------------\n");
 
-	printf("| Coin    (p) |");
+	wprintf(L"| Coin    (p) |");
 	for (int i = 0; i < 9; ++i)
-		printf(" %d", histo->cells[i]);
-	printf(" |\n");
+		wprintf(L" %d", histo->cells[i]);
+	wprintf(L" |\n");
 
-	printf("| Bamboo  (s) |");
+	wprintf(L"| Bamboo  (s) |");
 	for (int i = 9; i < 18; ++i)
-		printf(" %d", histo->cells[i]);
-	printf(" |\n");
+		wprintf(L" %d", histo->cells[i]);
+	wprintf(L" |\n");
 
-	printf("| Numeral (m) |");
+	wprintf(L"| Numeral (m) |");
 	for (int i = 18; i < 27; ++i)
-		printf(" %d", histo->cells[i]);
-	printf(" |\n");
+		wprintf(L" %d", histo->cells[i]);
+	wprintf(L" |\n");
 
-	printf("| Honor   (z) |");
+	wprintf(L"| Honor   (z) |");
 	for (int i = 27; i < 34; ++i)
-		printf(" %d", histo->cells[i]);
-	printf("     |\n");
+		wprintf(L" %d", histo->cells[i]);
+	wprintf(L"     |\n");
 
-	printf("-----------------------------------\n\n");
+	wprintf(L"-----------------------------------\n\n");
 
-  for (int i = 0; i < 34; ++i) {
-    for (int j = histo->cells[i]; j > 0; --j){
-      wprintf(L"%lu ", tilelist[i]);
-    }
-  }
-  printf("\n\n");
+	for (int i = 0; i < 34; ++i) {
+		for (int j = histo->cells[i]; j > 0; --j) {
+			wprintf(L"%c ", tilelist[i]);
+		}
+	}
+	wprintf(L"\n\n");
 }
 
 // Print all possible groups
@@ -100,23 +100,23 @@ void print_groups(struct group *groups) {
 
 	char f, n;
 
-	printf("Groups:\n");
+	wprintf(L"Groups:\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
-				printf("Pair (%c%c, %c%c)\n", n, f, n, f);
+				wprintf(L"Pair (%c%c, %c%c)\n", n, f, n, f);
 				break;
 			case SEQUENCE:
-				printf("Sequence (%c%c, %c%c, %c%c)\n", n, f, n + 1, f, n + 2,
-				       f);
+				wprintf(L"Sequence (%c%c, %c%c, %c%c)\n", n, f, n + 1, f, n + 2,
+				        f);
 				break;
 			case TRIPLET:
-				printf("Triplet (%c%c, %c%c, %c%c)\n", n, f, n, f, n, f);
+				wprintf(L"Triplet (%c%c, %c%c, %c%c)\n", n, f, n, f, n, f);
 				break;
 			case QUAD:
-				printf("Quad (%c%c, %c%c, %c%c, %c%c)\n", n, f, n, f, n, f, n,
-				       f);
+				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)\n", n, f, n, f, n, f, n,
+				        f);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",
@@ -124,7 +124,7 @@ void print_groups(struct group *groups) {
 				break;
 		}
 	}
-	printf("\n");
+	wprintf(L"\n");
 }
 
 void print_victory(struct hand *hand, struct grouplist *grouplist) {
@@ -135,10 +135,10 @@ void print_victory(struct hand *hand, struct grouplist *grouplist) {
 
 	print_histo(&histo);
 	if (iskokushi(hand))
-		printf("WOW, Thirteen orphans!!\n\n");
+		wprintf(L"WOW, Thirteen orphans!!\n\n");
 	else {
 		if (ischiitoi(hand))
-			printf("WOW, Seven pairs!\n\n");
+			wprintf(L"WOW, Seven pairs!\n\n");
 		for (int i = 0; i < grouplist->nb_groups; ++i)
 			print_groups(grouplist->groups[i]);
 	}
@@ -151,7 +151,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 	ASSERT_BACKTRACE(action);
 
 	while (1) {
-		printf("> ");
+		wprintf(L"> ");
 		fflush(stdout);
 
 		char c, family, number;
