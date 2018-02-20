@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <wchar.h>
+#include <locale.h>
 
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
@@ -182,6 +183,7 @@ int play() {
 }
 
 int main() {
+	setlocale(LC_ALL, "");
 	srand(time(NULL));
 
 	wprintf(L"Sizeof structures:\n");

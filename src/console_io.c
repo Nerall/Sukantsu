@@ -88,7 +88,7 @@ void print_histo(struct histogram *histo) {
 
 	for (int i = 0; i < 34; ++i) {
 		for (int j = histo->cells[i]; j > 0; --j) {
-			wprintf(L"%c ", tilelist[i]);
+			wprintf(L"%lc ", tilelist[i]);
 		}
 	}
 	wprintf(L"\n\n");
