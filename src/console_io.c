@@ -1,10 +1,13 @@
 #include "console_io.h"
 #include "debug.h"
+#include <wchar.h>
 #include <stdio.h>
 
 static inline int lower_case(char c) {
 	return (c < 'A' || c >= 'a' ? c : c - 'A' + 'a');
 }
+
+static wchar_t tilelist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀄🀅🀆";
 
 // Convert a tile index to a family and a number characters
 histo_index_t char_to_index(char family, char number) {
@@ -81,7 +84,14 @@ void print_histo(struct histogram *histo) {
 		printf(" %d", histo->cells[i]);
 	printf("     |\n");
 
-	printf("-----------------------------------\n");
+	printf("-----------------------------------\n\n");
+
+  for (int i = 0; i < 34; ++i) {
+    for (int j = histo->cells[i]; j > 0; --j){
+      wprintf(L"%lu ", tilelist[i]);
+    }
+  }
+  printf("\n\n");
 }
 
 // Print all possible groups

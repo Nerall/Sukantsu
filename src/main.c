@@ -80,7 +80,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_KAN) {
-			printf("action -> kan (%c%c)\n", n, f);
+			printf("action -> kan\n");
 			return 0;
 		}
 
