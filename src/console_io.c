@@ -1,13 +1,10 @@
 #include "console_io.h"
 #include "debug.h"
 #include <stdio.h>
-#include <wchar.h>
 
 static inline int lower_case(char c) {
 	return (c < 'A' || c >= 'a' ? c : c - 'A' + 'a');
 }
-
-static wchar_t tilelist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀄🀅🀆";
 
 // Convert a tile index to a family and a number characters
 histo_index_t char_to_index(char family, char number) {
@@ -55,6 +52,13 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 void print_histo(struct histogram *histo) {
 	ASSERT_BACKTRACE(histo);
 
+	for (int i = 0; i < 34; ++i) {
+		for (int j = histo->cells[i]; j > 0; --j) {
+			wprintf(L"%lc ", tileslist[i]);
+		}
+	}
+	
+  wprintf(L"\n\n");
 	wprintf(L"-----------------------------------\n");
 
 	wprintf(L"| Index       |");
@@ -85,13 +89,6 @@ void print_histo(struct histogram *histo) {
 	wprintf(L"     |\n");
 
 	wprintf(L"-----------------------------------\n\n");
-
-	for (int i = 0; i < 34; ++i) {
-		for (int j = histo->cells[i]; j > 0; --j) {
-			wprintf(L"%lc ", tilelist[i]);
-		}
-	}
-	wprintf(L"\n\n");
 }
 
 // Print all possible groups
@@ -105,18 +102,25 @@ void print_groups(struct group *groups) {
 		index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
-				wprintf(L"Pair (%c%c, %c%c)\n", n, f, n, f);
+				wprintf(L"Pair (%c%c, %c%c)  %lc %lc\n", n, f, n, f,
+                tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case SEQUENCE:
-				wprintf(L"Sequence (%c%c, %c%c, %c%c)\n", n, f, n + 1, f, n + 2,
-				        f);
+				wprintf(L"Sequence (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n + 1,
+                f, n + 2, f, tileslist[groups[i].tile],
+                tileslist[groups[i + 1].tile],
+                tileslist[groups[i + 2].tile]);
 				break;
 			case TRIPLET:
-				wprintf(L"Triplet (%c%c, %c%c, %c%c)\n", n, f, n, f, n, f);
+				wprintf(L"Triplet (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n, f,
+                n, f, tileslist[groups[i].tile],
+                tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case QUAD:
-				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)\n", n, f, n, f, n, f, n,
-				        f);
+				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)  %lc %lc %lc %lc\n", n, f,
+                n, f, n, f, n, f, tileslist[groups[i].tile],
+                tileslist[groups[i].tile], tileslist[groups[i].tile],
+                tileslist[groups[i].tile]);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",
@@ -161,23 +165,26 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 		c = lower_case(c);
 		if (c == 'k') {
 			// Kan action
-
-			while (getchar() != '\n')
+	    
+      while ((family = getchar()) != ' ' && family != '\n')
 				;
 
 			*action = ACTION_KAN;
-			return NO_TILE_INDEX;
-		} else if (c == 't') {
+      
+      // Get family
+      while ((family = getchar()) == ' ' || family == '\n')
+				;
+		}
+    else if (c == 't') {
 			// Tsumo action
 
-			while ((family = getchar()) != ' ' && family != '\n')
+			while (getchar() !='\n')
 				;
 
 			*action = ACTION_TSUMO;
-			// Get family
-			while ((family = getchar()) == ' ' || family == '\n')
-				;
-		} else if (c == 'd') {
+      return NO_TILE_INDEX;
+		}
+    else if (c == 'd') {
 			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
@@ -188,7 +195,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		} else if (c == 'r') {
+		}
+    else if (c == 'r') {
 			// Riichi or Ron
 
 			while ((c = getchar()) != ' ' && c != '\n')
@@ -198,7 +206,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		} else {
+		}
+    else {
 			// Discard (implicit)
 			*action = ACTION_DISCARD;
 			family = c;

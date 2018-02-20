@@ -26,5 +26,5 @@ Projet de S4
   - This pattern will be marked as **T**
 - **d**iscard **T**
 - **r**iichi **T**
-- **t**sumo **T**
-- **k**an
+- **t**sumo
+- **k**an **T**

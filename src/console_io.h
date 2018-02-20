@@ -4,6 +4,9 @@
 #include "core/detect.h"
 #include "core/hand.h"
 #include "core/histogram.h"
+#include <wchar.h>
+
+static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀄🀅🀆";
 
 enum action {
 	ACTION_RIICHI,

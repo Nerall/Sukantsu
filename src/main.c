@@ -13,7 +13,8 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 		histo_index_t discard = random_pop_histogram(wall);
 		char f, n;
 		index_to_char(discard, &f, &n);
-		wprintf(L"%s's discard: %c%c\n\n", players[player], n, f);
+		wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f, 
+            tileslist[discard]);
 
 		if (get_histobit(&hand->wintiles, discard)) {
 			puts("RON!\n");
@@ -71,18 +72,21 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 		}
 
 		if (action == ACTION_TSUMO) {
-			wprintf(L"action -> tsumo (%c%c)\n", n, f);
-			if (!get_histobit(&hand->wintiles, index))
+			wprintf(L"action -> tsumo\n"); //(%c%c)\n", n, f);
+			//if (!get_histobit(&hand->wintiles, index))
 				continue;
 
 			wprintf(L"TSUMO!\n");
 			makegroups(hand, grouplist);
+
 			print_victory(hand, grouplist);
+      continue;
 			return 1;
 		}
 
 		if (action == ACTION_KAN) {
 			wprintf(L"action -> kan\n");
+      continue;
 			return 0;
 		}
 
@@ -123,18 +127,10 @@ int play() {
 		index_to_char(randi, &family, &number);
 
 		wprintf(L"\n-------------------------------\n\n");
-		wprintf(L"Remaining tiles: %u\n", (wall.nb_tiles - 14));
-		wprintf(L"Tile drawn: %c%c\n\n", number, family);
-
-		/*
-		if (get_histobit(&hand.wintiles, randi)) {
-		    puts("TSUMO!\n");
-		    makegroups(&hand, &grouplist);
-		    print_victory(&hand, &grouplist);
-		    return 1;
-		}
-		*/
-		print_histo(&hand.histo);
+		wprintf(L"Remaining tiles: %u\n\n", (wall.nb_tiles - 14));
+    
+    print_histo(&hand.histo);
+    wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
 
 		// Show best discards
 		tilestodiscard(&hand, &grouplist);
@@ -144,7 +140,7 @@ int play() {
 				if (get_histobit(&hand.riichitiles, r)) {
 					char f, n;
 					index_to_char(r, &f, &n);
-					wprintf(L"%c%c\n", n, f);
+					wprintf(L"%c%c %lc\n", n, f, tileslist[r]);
 				}
 			}
 			wprintf(L"\n");
@@ -164,7 +160,7 @@ int play() {
 				if (get_histobit(&hand.wintiles, w)) {
 					char f, n;
 					index_to_char(w, &f, &n);
-					wprintf(L"%c%c\n", n, f);
+					wprintf(L"%c%c %lc\n", n, f, tileslist[w]);
 				}
 			}
 			wprintf(L"\n");
