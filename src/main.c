@@ -17,7 +17,7 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
             tileslist[discard]);
 
 		if (get_histobit(&hand->wintiles, discard)) {
-			puts("RON!\n");
+			wprintf(L"RON!\n\n");
 			add_tile_hand(hand, discard);
 			makegroups(hand, grouplist);
 			print_victory(hand, grouplist);
@@ -76,7 +76,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 			//if (!get_histobit(&hand->wintiles, index))
 				continue;
 
-			wprintf(L"TSUMO!\n");
+			wprintf(L"TSUMO!\n\n");
 			makegroups(hand, grouplist);
 
 			print_victory(hand, grouplist);
@@ -147,6 +147,8 @@ int play() {
 		}
 
 		if (player_turn(&hand, &grouplist)) {
+			wprintf(L"TSUMO!\n");
+			print_victory(&hand, &grouplist);
 			// The player has won
 			return 1;
 		}

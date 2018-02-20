@@ -108,8 +108,8 @@ void print_groups(struct group *groups) {
 			case SEQUENCE:
 				wprintf(L"Sequence (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n + 1,
                 f, n + 2, f, tileslist[groups[i].tile],
-                tileslist[groups[i + 1].tile],
-                tileslist[groups[i + 2].tile]);
+                tileslist[groups[i].tile + 1],
+                tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
 				wprintf(L"Triplet (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n, f,
