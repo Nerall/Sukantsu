@@ -2,7 +2,7 @@
 #define _DEBUG_H_
 
 // Decomment to remove all assertions
-// #define NGDEBUG
+#define NGDEBUG
 
 #ifdef NGDEBUG
 
