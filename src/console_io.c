@@ -11,7 +11,7 @@ histo_index_t char_to_index(char family, char number) {
 	ASSERT_BACKTRACE(number >= '1' && number <= '9');
 	ASSERT_BACKTRACE(family != 'z' || number <= '7');
 
-	histo_index_t index;
+	histo_index_t index = 0;
 
 	// Familty to index
 	if (family == 'p')
@@ -57,7 +57,7 @@ void print_histo(struct histogram *histo) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
-	
+
   wprintf(L"\n\n");
 	wprintf(L"-----------------------------------\n");
 
@@ -165,12 +165,12 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 		c = lower_case(c);
 		if (c == 'k') {
 			// Kan action
-	    
+
       while ((family = getchar()) != ' ' && family != '\n')
 				;
 
 			*action = ACTION_KAN;
-      
+
       // Get family
       while ((family = getchar()) == ' ' || family == '\n')
 				;

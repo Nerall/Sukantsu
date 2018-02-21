@@ -6,7 +6,7 @@
 
 #ifdef NGDEBUG
 
-#define ASSERT_BACKTRACE(expr) ;
+#define ASSERT_BACKTRACE(expr) {}
 
 #else // NGDEBUG
 

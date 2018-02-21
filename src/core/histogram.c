@@ -104,6 +104,7 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 	}
 
 	ASSERT_BACKTRACE(0 && "random_pop_wall: histogram - out of bounds");
+	return NO_TILE_INDEX;
 }
 
 // Do a deep-copy of histo to histocopy
