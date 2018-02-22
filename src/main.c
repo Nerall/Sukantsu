@@ -31,13 +31,16 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 // Applies the action after that
 // Return 1 if the player has won
 static int player_turn(struct hand *hand, struct grouplist *grouplist) {
+	if (isvalid(hand, grouplist))
+		return 1;
+
 	while (1) {
 		enum action action;
 		histo_index_t index = get_input(&hand->histo, &action);
-
 		char f, n;
 		if (index != NO_TILE_INDEX)
 			index_to_char(index, &f, &n);
+
 		if (action == ACTION_DISCARD) {
 			wprintf(L"action -> discard (%c%c)\n", n, f);
 			remove_tile_hand(hand, index);
@@ -182,7 +185,7 @@ int play() {
 
 int main() {
 	setlocale(LC_ALL, "");
-	srand(time(NULL));
+	srand(42);
 
 	char c;
 	do {
