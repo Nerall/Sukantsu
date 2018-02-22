@@ -1,9 +1,9 @@
 #include "console_io.h"
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <wchar.h>
-#include <locale.h>
 
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
@@ -13,8 +13,8 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 		histo_index_t discard = random_pop_histogram(wall);
 		char f, n;
 		index_to_char(discard, &f, &n);
-		wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f, 
-            tileslist[discard]);
+		wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f,
+		        tileslist[discard]);
 
 		if (get_histobit(&hand->wintiles, discard)) {
 			wprintf(L"RON!\n\n");
@@ -73,20 +73,20 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 
 		if (action == ACTION_TSUMO) {
 			wprintf(L"action -> tsumo\n"); //(%c%c)\n", n, f);
-			//if (!get_histobit(&hand->wintiles, index))
-				continue;
+			// if (!get_histobit(&hand->wintiles, index))
+			continue;
 
 			wprintf(L"TSUMO!\n\n");
 			makegroups(hand, grouplist);
 
 			print_victory(hand, grouplist);
-      continue;
+			continue;
 			return 1;
 		}
 
 		if (action == ACTION_KAN) {
 			wprintf(L"action -> kan\n");
-      continue;
+			continue;
 			return 0;
 		}
 
@@ -128,9 +128,9 @@ int play() {
 
 		wprintf(L"\n-------------------------------\n\n");
 		wprintf(L"Remaining tiles: %u\n\n", (wall.nb_tiles - 14));
-    
-    print_histo(&hand.histo);
-    wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
+
+		print_histo(&hand.histo);
+		wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
 
 		// Show best discards
 		tilestodiscard(&hand, &grouplist);
@@ -183,12 +183,6 @@ int play() {
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
-
-	wprintf(L"Sizeof structures:\n");
-	wprintf(L"\thistogram : %lu\n", sizeof(struct histogram));
-	wprintf(L"\thistobit  : %lu\n", sizeof(struct histobit));
-	wprintf(L"\tgroup     : %lu\n", sizeof(struct group));
-	wprintf(L"\thand      : %lu\n", sizeof(struct hand));
 
 	char c;
 	do {

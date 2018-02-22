@@ -58,7 +58,7 @@ void print_histo(struct histogram *histo) {
 		}
 	}
 
-  wprintf(L"\n\n");
+	wprintf(L"\n\n");
 	wprintf(L"-----------------------------------\n");
 
 	wprintf(L"| Index       |");
@@ -103,24 +103,24 @@ void print_groups(struct group *groups) {
 		switch (groups[i].type) {
 			case PAIR:
 				wprintf(L"Pair (%c%c, %c%c)  %lc %lc\n", n, f, n, f,
-                tileslist[groups[i].tile], tileslist[groups[i].tile]);
+				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case SEQUENCE:
-				wprintf(L"Sequence (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n + 1,
-                f, n + 2, f, tileslist[groups[i].tile],
-                tileslist[groups[i].tile + 1],
-                tileslist[groups[i].tile + 2]);
+				wprintf(L"Sequence (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f,
+				        n + 1, f, n + 2, f, tileslist[groups[i].tile],
+				        tileslist[groups[i].tile + 1],
+				        tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
-				wprintf(L"Triplet (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n, f,
-                n, f, tileslist[groups[i].tile],
-                tileslist[groups[i].tile], tileslist[groups[i].tile]);
+				wprintf(L"Triplet (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n,
+				        f, n, f, tileslist[groups[i].tile],
+				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case QUAD:
-				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)  %lc %lc %lc %lc\n", n, f,
-                n, f, n, f, n, f, tileslist[groups[i].tile],
-                tileslist[groups[i].tile], tileslist[groups[i].tile],
-                tileslist[groups[i].tile]);
+				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)  %lc %lc %lc %lc\n", n,
+				        f, n, f, n, f, n, f, tileslist[groups[i].tile],
+				        tileslist[groups[i].tile], tileslist[groups[i].tile],
+				        tileslist[groups[i].tile]);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",
@@ -166,25 +166,23 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 		if (c == 'k') {
 			// Kan action
 
-      while ((family = getchar()) != ' ' && family != '\n')
+			while ((family = getchar()) != ' ' && family != '\n')
 				;
 
 			*action = ACTION_KAN;
 
-      // Get family
-      while ((family = getchar()) == ' ' || family == '\n')
+			// Get family
+			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		}
-    else if (c == 't') {
+		} else if (c == 't') {
 			// Tsumo action
 
-			while (getchar() !='\n')
+			while (getchar() != '\n')
 				;
 
 			*action = ACTION_TSUMO;
-      return NO_TILE_INDEX;
-		}
-    else if (c == 'd') {
+			return NO_TILE_INDEX;
+		} else if (c == 'd') {
 			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
@@ -195,8 +193,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		}
-    else if (c == 'r') {
+		} else if (c == 'r') {
 			// Riichi or Ron
 
 			while ((c = getchar()) != ' ' && c != '\n')
@@ -206,8 +203,7 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		}
-    else {
+		} else {
 			// Discard (implicit)
 			*action = ACTION_DISCARD;
 			family = c;
