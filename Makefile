@@ -1,11 +1,11 @@
 # Makefile
 
 DEBUG_FLAGS = -O0 -g -rdynamic -fsanitize=address
-RELEASE_FLAGS = -O2 -fshort-enums
+RELEASE_FLAGS = -O2 -fshort-enums -DNGDEBUG
 
 CC = gcc
 CPPFLAGS = -MMD
-CFLAGS = -Wall -Wextra -std=c99 ${RELEASE_FLAGS}
+CFLAGS = -Wall -Wextra -std=c99 ${DEBUG_FLAGS}
 LDFLAGS =
 LDLIBS =
 

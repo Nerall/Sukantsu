@@ -185,7 +185,7 @@ int play() {
 
 int main() {
 	setlocale(LC_ALL, "");
-	srand(42);
+	srand(time(NULL));
 
 	char c;
 	do {
