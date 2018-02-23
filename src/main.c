@@ -105,9 +105,6 @@ int play() {
 	struct hand hand;
 	init_hand(&hand);
 	struct grouplist grouplist;
-	// Next line is for tests
-	// histo_cell_t starthand[] = { 0, 0, 9, 9, 18, 18, 27, 27, 29, 29, 31, 32,
-	// 33 };
 
 	// Give 13 tiles to each player
 	for (int i = 0; i < 13; ++i) {
@@ -183,9 +180,66 @@ int play() {
 	return 0;
 }
 
+int win_at_first_sight(struct histogram *wall, struct hand *hand,
+                       struct grouplist *grouplist) {
+	// Initialization
+	init_histogram(wall, 4);
+	init_hand(hand);
+
+	// Give 13 tiles to each player
+	for (int i = 0; i < 13; ++i) {
+		// add_tile_hand(&hand, starthand[i]);
+		add_tile_hand(hand, random_pop_histogram(wall));
+		random_pop_histogram(wall);
+		random_pop_histogram(wall);
+		random_pop_histogram(wall);
+	}
+
+	// To initialize the waits
+	tenpailist(hand, grouplist);
+	histo_index_t randi = random_pop_histogram(wall);
+	add_tile_hand(hand, randi);
+	if (isvalid(hand, grouplist)) {
+		for (int i = 0; i < 31; ++i) {
+			for (histo_cell_t j = hand->histo.cells[i]; j > 0; --j) {
+				wprintf(L"%lc ", tileslist[i]);
+			}
+		}
+		for (histo_cell_t j = hand->histo.cells[31]; j > 0; --j) {
+			wprintf(L"%lc", tileslist[31]);
+		}
+		for (int i = 32; i < 34; ++i) {
+			for (histo_cell_t j = hand->histo.cells[i]; j > 0; --j) {
+				wprintf(L"%lc ", tileslist[i]);
+			}
+		}
+		return 1;
+	}
+	return 0;
+}
+
+#define FUN_MODE 1
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
+
+	if (FUN_MODE) {
+		struct histogram wall;
+		struct hand hand;
+		struct grouplist grouplist;
+		const int big_number = 1 << 22;
+		int nb_win = 0;
+		wprintf(L"Testing all seeds up to %lld:\n", big_number);
+		for (int i = 0; i < big_number; ++i) {
+			srand(i);
+			if (win_at_first_sight(&wall, &hand, &grouplist)) {
+				++nb_win;
+				wprintf(L" (seed=%lld)\n", i);
+			}
+		}
+		wprintf(L"Proba: %g%\n", 100.0*(double)nb_win/big_number);
+		return 1;
+	}
 
 	char c;
 	do {

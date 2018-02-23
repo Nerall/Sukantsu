@@ -1,5 +1,6 @@
 #include "detect.h"
 #include "../debug.h"
+#include "histogram.h"
 #include <string.h>
 
 // Initialize the grouplist
@@ -22,19 +23,22 @@ void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
 int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
-	unsigned char pair = 0;
+	int pair = 0;
 	for (int i = 0; i < 34; ++i) {
-		if (hand->histo.cells[i] >= 2)
-			pair += 1;
+		if (hand->histo.cells[i] >= 2) {
+			++pair;
+			if (pair >= 7)
+				return 1;
+		}
 	}
-	return pair >= 7;
+	return 0;
 }
 
 int iskokushi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
-	unsigned char pair = 0;
+	int pair = 0;
 	for (int i = 0; i < 13; ++i)
 		if (hand->histo.cells[TerminalsHonors[i]] >= 2)
 			pair = 1;
@@ -53,13 +57,12 @@ int isvalid(struct hand *hand, struct grouplist *grouplist) {
 }
 
 // Recursive function of makegroups
-static void makegroups_rec(struct hand *hand, int index,
+static void makegroups_rec(struct hand *hand, histo_index_t index,
                            struct grouplist *grouplist, unsigned char pair) {
 	ASSERT_BACKTRACE(hand);
 
 	if (hand->nb_groups >= 5) {
 		add_copy_grouplist(grouplist, hand->groups);
-		// printf("Group found!\n");
 		return;
 	}
 
@@ -148,7 +151,7 @@ void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 	// hand->last_tile was overwritten by add_tile_hand
 	hand->last_tile = last_tile;
 
-	// To reset flags
+	// To reset hand->tenpai and hand->wintiles flags
 	tenpailist(hand, grouplist);
 }
 
@@ -158,35 +161,23 @@ void tilestocall(struct hand *hand, struct grouplist *grouplist) {
 	init_histobit(&hand->chiitiles, 0);
 	init_histobit(&hand->pontiles, 0);
 	init_histobit(&hand->kantiles, 0);
-	if (grouplist->nb_groups < 4) {
-		for (int i = 0; i < 34; ++i) {
-			if (hand->histo.cells[i] >= 2) {
-				set_histobit(&hand->pontiles, i);
-				if (hand->histo.cells[i] >= 3)
-					set_histobit(&hand->kantiles, i);
-			}
-			if (i < 27 && i % 9 < 7) {
-				if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
-					set_histobit(&hand->chiitiles, i);
-				if (hand->histo.cells[i]) {
-					if (hand->histo.cells[i + 2])
-						set_histobit(&hand->chiitiles, i + 1);
-					if (hand->histo.cells[i + 1])
-						set_histobit(&hand->chiitiles, i + 2);
-				}
-				/*if (hand->histo.cells[i] && hand->histo.cells[i + 2])
-				  set_histobit(&hand->chiitiles, i + 1);
-				if (hand->histo.cells[i] && hand->histo.cells[i + 1])
-				  set_histobit(&hand->chiitiles, i + 2);
-				if (i % 9 > 1)
-				  if (hand->histo.cells[i - 1] && hand->histo.cells[i - 2])
-				    set_histobit(&hand->chiitiles, i);
-				if (i % 9 < 7)
-				  if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
-				    set_histobit(&hand->chiitiles, i);
-				if (i % 9 > 0 && i % 9 < 8)
-				  if (hand->histo.cells[i - 1] && hand->histo.cells[i + 1])
-				    set_histobit(&hand->chiitiles, i);*/
+	if (grouplist->nb_groups >= 5)
+		return;
+
+	for (int i = 0; i < 34; ++i) {
+		if (hand->histo.cells[i] >= 2) {
+			set_histobit(&hand->pontiles, i);
+			if (hand->histo.cells[i] >= 3)
+				set_histobit(&hand->kantiles, i);
+		}
+		if (i < 27 && i % 9 < 7) {
+			if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
+				set_histobit(&hand->chiitiles, i);
+			if (hand->histo.cells[i]) {
+				if (hand->histo.cells[i + 2])
+					set_histobit(&hand->chiitiles, i + 1);
+				if (hand->histo.cells[i + 1])
+					set_histobit(&hand->chiitiles, i + 2);
 			}
 		}
 	}
@@ -200,18 +191,16 @@ void groups_to_histo(struct hand *hand, struct histogram *histocopy) {
 	copy_histogram(&hand->histo, histocopy);
 	for (int i = 0; i < hand->nb_groups; ++i) {
 		histo_index_t tile = hand->groups[i].tile;
+		add_histogram(histocopy, tile);
 		switch (hand->groups[i].type) {
 			case PAIR:
 				add_histogram(histocopy, tile);
-				add_histogram(histocopy, tile);
 				break;
 			case SEQUENCE:
-				add_histogram(histocopy, tile);
 				add_histogram(histocopy, tile + 1);
 				add_histogram(histocopy, tile + 2);
 				break;
 			case TRIPLET:
-				add_histogram(histocopy, tile);
 				add_histogram(histocopy, tile);
 				add_histogram(histocopy, tile);
 				break;
@@ -219,8 +208,9 @@ void groups_to_histo(struct hand *hand, struct histogram *histocopy) {
 				add_histogram(histocopy, tile);
 				add_histogram(histocopy, tile);
 				add_histogram(histocopy, tile);
-				add_histogram(histocopy, tile);
 				break;
+			default:
+				ASSERT_BACKTRACE(0 && "Group type not recongized");
 		}
 	}
 }

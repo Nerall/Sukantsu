@@ -27,7 +27,7 @@ struct hand {
 	struct histobit riichitiles; // tiles you have to discard to be tenpai (hand
 	                             // > 13 tiles without considering quads)
 	struct group groups[HAND_NB_GROUPS]; // each revealed group
-	histo_index_t last_tile;             // current tile drawn
+	histo_index_t last_tile : 7;         // current tile drawn
 	unsigned char nb_groups : 3;         // number of groups revealed (<= 5)
 	unsigned char tenpai : 1;            // boolean, is waiting for winning
 	unsigned char closed : 1;            // boolean, are only hidden groups

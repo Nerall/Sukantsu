@@ -52,8 +52,16 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 void print_histo(struct histogram *histo) {
 	ASSERT_BACKTRACE(histo);
 
-	for (int i = 0; i < 34; ++i) {
-		for (int j = histo->cells[i]; j > 0; --j) {
+	for (int i = 0; i < 31; ++i) {
+		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+			wprintf(L"%lc ", tileslist[i]);
+		}
+	}
+	for (histo_cell_t j = histo->cells[31]; j > 0; --j) {
+		wprintf(L"%lc", tileslist[31]);
+	}
+	for (int i = 32; i < 34; ++i) {
+		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
