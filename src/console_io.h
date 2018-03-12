@@ -1,7 +1,7 @@
 #ifndef _CONSOLE_INPUT_H_
 #define _CONSOLE_INPUT_H_
 
-#include "core/detect.h"
+#include "AI/detect.h"
 #include "core/hand.h"
 #include "core/histogram.h"
 #include <wchar.h>

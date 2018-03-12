@@ -1,8 +1,8 @@
 #ifndef _DETECT_H_
 #define _DETECT_H_
 
-#include "hand.h"
-#include "histogram.h"
+#include "../core/hand.h"
+#include "../core/histogram.h"
 
 #define GROUPLIST_CAPACITY 32
 

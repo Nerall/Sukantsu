@@ -213,7 +213,7 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 	return 0;
 }
 
-#define FUN_MODE 1
+#define FUN_MODE 0
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));

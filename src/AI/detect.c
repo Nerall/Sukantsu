@@ -1,6 +1,6 @@
 #include "detect.h"
 #include "../debug.h"
-#include "histogram.h"
+//#include "histogram.h"
 #include <string.h>
 
 // Initialize the grouplist
