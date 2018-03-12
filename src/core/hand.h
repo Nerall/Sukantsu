@@ -39,6 +39,8 @@ void init_hand(struct hand *hand);
 void add_group_hand(struct hand *hand, unsigned char hidden,
                     enum group_type type, histo_index_t tile);
 
+void pop_last_group(struct hand *hand);
+
 void add_tile_hand(struct hand *hand, histo_index_t tile);
 
 void remove_tile_hand(struct hand *hand, histo_index_t tile);

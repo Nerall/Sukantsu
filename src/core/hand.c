@@ -76,6 +76,37 @@ void add_group_hand(struct hand *hand, unsigned char hidden,
 	group->tile = tile;
 }
 
+// Remove the last group of hand->groups
+// Put all tiles of group in hand-histo
+void pop_last_group(struct hand *hand) {
+	ASSERT_BACKTRACE(hand);
+	ASSERT_BACKTRACE(hand->nb_groups > 0);
+
+	histo_index_t tile = hand->groups[hand->nb_groups - 1].tile;
+	add_histogram(&hand->histo, tile);
+	switch (hand->groups[hand->nb_groups - 1].type) {
+		case PAIR:
+			add_histogram(&hand->histo, tile);
+			break;
+		case SEQUENCE:
+			add_histogram(&hand->histo, tile + 1);
+			add_histogram(&hand->histo, tile + 2);
+			break;
+		case TRIPLET:
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			break;
+		case QUAD:
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			break;
+		default:
+			ASSERT_BACKTRACE(0 && "Group type not recognized");
+	}
+	hand->groups[--hand->nb_groups].tile = NO_TILE_INDEX;
+}
+
 // Add a tile to the hand histogram
 // Will also update hand->last_tile
 // The pointer's data must be accessible
