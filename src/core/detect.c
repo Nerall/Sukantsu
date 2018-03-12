@@ -56,6 +56,37 @@ int isvalid(struct hand *hand, struct grouplist *grouplist) {
 	return grouplist->nb_groups || ischiitoi(hand) || iskokushi(hand);
 }
 
+// Remove the last group of hand->groups
+// Put all tiles of group in hand-histo
+static void pop_last_group(struct hand *hand) {
+	ASSERT_BACKTRACE(hand);
+	ASSERT_BACKTRACE(hand->nb_groups > 0);
+
+	histo_index_t tile = hand->groups[hand->nb_groups - 1].tile;
+	add_histogram(&hand->histo, tile);
+	switch (hand->groups[hand->nb_groups - 1].type) {
+		case PAIR:
+			add_histogram(&hand->histo, tile);
+			break;
+		case SEQUENCE:
+			add_histogram(&hand->histo, tile + 1);
+			add_histogram(&hand->histo, tile + 2);
+			break;
+		case TRIPLET:
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			break;
+		case QUAD:
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			add_histogram(&hand->histo, tile);
+			break;
+		default:
+			ASSERT_BACKTRACE(0 && "Group type not recognized");
+	}
+	hand->groups[--hand->nb_groups].tile = NO_TILE_INDEX;
+}
+
 // Recursive function of makegroups
 static void makegroups_rec(struct hand *hand, histo_index_t index,
                            struct grouplist *grouplist, unsigned char pair) {
@@ -69,46 +100,52 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 	if (index >= 34)
 		return;
 
+	histo_index_t last_tile = hand->last_tile;
+
 	// Check triplet group
 	if (hand->histo.cells[index] >= 3) {
-		struct hand handcopy;
-		copy_hand(hand, &handcopy);
-		add_group_hand(&handcopy, 1, TRIPLET, index);
-		makegroups_rec(&handcopy, index, grouplist, pair);
+		add_group_hand(hand, 1, TRIPLET, index);
+		makegroups_rec(hand, index, grouplist, pair);
+		pop_last_group(hand);
+		hand->last_tile = last_tile;
 	}
 
 	// Check pair group
 	if (!pair && hand->histo.cells[index] >= 2) {
-		struct hand handcopy;
-		copy_hand(hand, &handcopy);
-		add_group_hand(&handcopy, 1, PAIR, index);
-		makegroups_rec(&handcopy, index, grouplist, 1);
+		add_group_hand(hand, 1, PAIR, index);
+		makegroups_rec(hand, index, grouplist, 1);
+		pop_last_group(hand);
+		hand->last_tile = last_tile;
 	}
 
 	// Check sequence group
 	if (index % 9 < 7 && index < 25 && hand->histo.cells[index] >= 1 &&
 	    hand->histo.cells[index + 1] >= 1 &&
 	    hand->histo.cells[index + 2] >= 1) {
-		struct hand handcopy;
-		copy_hand(hand, &handcopy);
-		add_group_hand(&handcopy, 1, SEQUENCE, index);
-		makegroups_rec(&handcopy, index, grouplist, pair);
+		add_group_hand(hand, 1, SEQUENCE, index);
+		makegroups_rec(hand, index, grouplist, pair);
+		pop_last_group(hand);
+		hand->last_tile = last_tile;
 	}
 
 	// Check no group
+	int nb_removed = 0;
 	while (hand->histo.cells[index]) {
 		remove_tile_hand(hand, index);
+		++nb_removed;
 	}
 	makegroups_rec(hand, index + 1, grouplist, pair);
+	while (nb_removed--) {
+		add_tile_hand(hand, index);
+	}
+	hand->last_tile = last_tile;
 }
 
 // Overwrite grouplist with all possible groups from hand
 // Will not modify hand
 void makegroups(struct hand *hand, struct grouplist *grouplist) {
-	struct hand handcopy;
-	copy_hand(hand, &handcopy);
 	init_grouplist(grouplist);
-	makegroups_rec(&handcopy, 0, grouplist, 0);
+	makegroups_rec(hand, 0, grouplist, 0);
 }
 
 void tenpailist(struct hand *hand, struct grouplist *grouplist) {
@@ -210,7 +247,7 @@ void groups_to_histo(struct hand *hand, struct histogram *histocopy) {
 				add_histogram(histocopy, tile);
 				break;
 			default:
-				ASSERT_BACKTRACE(0 && "Group type not recongized");
+				ASSERT_BACKTRACE(0 && "Group type not recognized");
 		}
 	}
 }
