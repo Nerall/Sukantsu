@@ -200,18 +200,13 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 	histo_index_t randi = random_pop_histogram(wall);
 	add_tile_hand(hand, randi);
 	if (isvalid(hand, grouplist)) {
-		for (int i = 0; i < 31; ++i) {
+		for (int i = 0; i < 33; ++i) {
 			for (histo_cell_t j = hand->histo.cells[i]; j > 0; --j) {
 				wprintf(L"%lc ", tileslist[i]);
 			}
 		}
-		for (histo_cell_t j = hand->histo.cells[31]; j > 0; --j) {
-			wprintf(L"%lc", tileslist[31]);
-		}
-		for (int i = 32; i < 34; ++i) {
-			for (histo_cell_t j = hand->histo.cells[i]; j > 0; --j) {
-				wprintf(L"%lc ", tileslist[i]);
-			}
+		for (histo_cell_t j = hand->histo.cells[33]; j > 0; --j) {
+			wprintf(L"%lc", tileslist[33]);
 		}
 		return 1;
 	}
