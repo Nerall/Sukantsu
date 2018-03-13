@@ -51,23 +51,32 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 // Pretty print an histogram
 void print_histo(struct histogram *histo) {
 	ASSERT_BACKTRACE(histo);
-
-	for (int i = 0; i < 31; ++i) {
+  
+	for (int i = 0; i < 33; ++i) {
 		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
-	for (histo_cell_t j = histo->cells[31]; j > 0; --j) {
-		wprintf(L"%lc", tileslist[31]);
-	}
-	for (int i = 32; i < 34; ++i) {
-		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
-			wprintf(L"%lc ", tileslist[i]);
-		}
-	}
+	for (histo_cell_t j = histo->cells[33]; j > 0; --j) {
+    wprintf(L"%lc", tileslist[33]);
+  }
+  
+  wprintf(L"\n");
 
+  char PSMZ[] = { 0, 0, 0, 0 };
+  for (int i = 0; i < 34; ++i) {
+    for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+      wprintf(L"%d", 1 + (i % 9));
+    }
+    if (histo->cells[i])
+      PSMZ[i / 9] = 1;
+    if ((i % 9 == 8 || i == 33) && PSMZ[i / 9])
+      wprintf(L"%lc", L"psmz"[i / 9]);
+  }
+ 
 	wprintf(L"\n\n");
-	wprintf(L"-----------------------------------\n");
+	
+  /*wprintf(L"-----------------------------------\n");
 
 	wprintf(L"| Index       |");
 	for (int i = 1; i < 10; ++i)
@@ -96,7 +105,7 @@ void print_histo(struct histogram *histo) {
 		wprintf(L" %d", histo->cells[i]);
 	wprintf(L"     |\n");
 
-	wprintf(L"-----------------------------------\n\n");
+	wprintf(L"-----------------------------------\n\n");*/
 }
 
 // Print all possible groups

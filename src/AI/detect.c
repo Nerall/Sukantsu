@@ -73,7 +73,7 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 	// Check triplet group
 	if (hand->histo.cells[index] >= 3) {
 		add_group_hand(hand, 1, TRIPLET, index);
-		makegroups_rec(hand, index, grouplist, pair);
+		makegroups_rec(hand, index + 1, grouplist, pair);
 		pop_last_group(hand);
 		hand->last_tile = last_tile;
 	}
@@ -81,7 +81,7 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 	// Check pair group
 	if (!pair && hand->histo.cells[index] >= 2) {
 		add_group_hand(hand, 1, PAIR, index);
-		makegroups_rec(hand, index, grouplist, 1);
+		makegroups_rec(hand, index + 1, grouplist, 1);
 		pop_last_group(hand);
 		hand->last_tile = last_tile;
 	}
