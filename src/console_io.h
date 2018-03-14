@@ -23,7 +23,7 @@ histo_index_t char_to_index(char family, char number);
 
 void index_to_char(histo_index_t index, char *family, char *number);
 
-void print_histo(struct histogram *histo);
+void print_histo(struct histogram *histo, histo_index_t last_tile);
 
 void print_groups(struct group *groups);
 

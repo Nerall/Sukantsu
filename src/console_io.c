@@ -13,14 +13,16 @@ histo_index_t char_to_index(char family, char number) {
 
 	histo_index_t index = 0;
 
-	// Familty to index
+	// Family to index
 	if (family == 'p')
 		index = 0;
 	else if (family == 's')
 		index = 9;
 	else if (family == 'm')
 		index = 18;
-	else if (family == 'z')
+	else if (family == 
+  
+'z')
 		index = 27;
 	else
 		ASSERT_BACKTRACE(0 && "family not recognized");
@@ -49,32 +51,41 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 }
 
 // Pretty print an histogram
-void print_histo(struct histogram *histo) {
+void print_histo(struct histogram *histo, histo_index_t last_tile) {
 	ASSERT_BACKTRACE(histo);
   
 	for (int i = 0; i < 33; ++i) {
-		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+		for (histo_cell_t j = histo->cells[i];
+    (i == last_tile) ? j > 1 : j > 0; --j) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
-	for (histo_cell_t j = histo->cells[33]; j > 0; --j) {
+	for (histo_cell_t j = histo->cells[33];
+  (33 == last_tile) ? j > 1 : j > 0; --j) {
     wprintf(L"%lc", tileslist[33]);
   }
+  if (last_tile != NO_TILE_INDEX)
+    wprintf(L" %lc", tileslist[last_tile]);
   
   wprintf(L"\n");
 
   char PSMZ[] = { 0, 0, 0, 0 };
   for (int i = 0; i < 34; ++i) {
-    for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
-      wprintf(L"%d", 1 + (i % 9));
+    for (histo_cell_t j = histo->cells[i];
+    (i == last_tile) ? j > 1 : j > 0; --j) {
+      wprintf(L"%d", 1 + i % 9);
     }
-    if (histo->cells[i])
+    if ((i == last_tile && histo->cells[i] > 1) ||
+    (i != last_tile && histo->cells[i]))
       PSMZ[i / 9] = 1;
     if ((i % 9 == 8 || i == 33) && PSMZ[i / 9])
-      wprintf(L"%lc", L"psmz"[i / 9]);
+      wprintf(L"%lc ", L"psmz"[i / 9]);
   }
- 
-	wprintf(L"\n\n");
+  
+  if (last_tile != NO_TILE_INDEX)
+    wprintf(L" %d%lc", 1 + last_tile % 9, L"psmz"[last_tile / 9]);
+  
+  wprintf(L"\n\n");
 	
   /*wprintf(L"-----------------------------------\n");
 
@@ -119,23 +130,23 @@ void print_groups(struct group *groups) {
 		index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
-				wprintf(L"Pair (%c%c, %c%c)  %lc %lc\n", n, f, n, f,
+				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f,
 				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case SEQUENCE:
-				wprintf(L"Sequence (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f,
-				        n + 1, f, n + 2, f, tileslist[groups[i].tile],
+				wprintf(L"Sequence (%c%c%c%c)  %lc %lc %lc\n", n,
+				        n + 1, n + 2, f, tileslist[groups[i].tile],
 				        tileslist[groups[i].tile + 1],
 				        tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
-				wprintf(L"Triplet (%c%c, %c%c, %c%c)  %lc %lc %lc\n", n, f, n,
-				        f, n, f, tileslist[groups[i].tile],
+				wprintf(L"Triplet (%c%c%c%c)  %lc %lc %lc\n", n, n,
+				        n, f, tileslist[groups[i].tile],
 				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case QUAD:
-				wprintf(L"Quad (%c%c, %c%c, %c%c, %c%c)  %lc %lc %lc %lc\n", n,
-				        f, n, f, n, f, n, f, tileslist[groups[i].tile],
+				wprintf(L"Quad (%c%c%c%c%c)  %lc %lc %lc %lc\n", n,
+				        n, n, n, f, tileslist[groups[i].tile],
 				        tileslist[groups[i].tile], tileslist[groups[i].tile],
 				        tileslist[groups[i].tile]);
 				break;
@@ -154,7 +165,7 @@ void print_victory(struct hand *hand, struct grouplist *grouplist) {
 	struct histogram histo;
 	groups_to_histo(hand, &histo);
 
-	print_histo(&histo);
+	print_histo(&histo, hand->last_tile);
 	if (iskokushi(hand))
 		wprintf(L"WOW, Thirteen orphans!!\n\n");
 	else {
