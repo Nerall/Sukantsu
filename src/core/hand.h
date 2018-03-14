@@ -2,20 +2,11 @@
 #define _HAND_H_
 
 #include "histogram.h"
+#include "groups.h"
 
-enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
 enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 #define HAND_NB_GROUPS 5
-#define GROUP_NB_TILES 4
-
-struct group {
-	unsigned char hidden : 1; // boolean, is the group hidden
-	histo_index_t tile : 7;   // first tile in group
-	enum group_type type;
-};
-
-void init_group(struct group *group);
 
 struct hand {
 	struct histogram histo;           // tiles in hand

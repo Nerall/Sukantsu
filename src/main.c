@@ -7,23 +7,25 @@
 
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
-	if (wall->nb_tiles > 14) {
-		char *players[] = {"East", "South", "West", "North"};
+	if (wall->nb_tiles <= 14)
+		return 0;
 
-		histo_index_t discard = random_pop_histogram(wall);
-		char f, n;
-		index_to_char(discard, &f, &n);
-		wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f,
-		        tileslist[discard]);
+	char *players[] = {"East", "South", "West", "North"};
 
-		if (get_histobit(&hand->wintiles, discard)) {
-			wprintf(L"RON!\n\n");
-			add_tile_hand(hand, discard);
-			makegroups(hand, grouplist);
-			print_victory(hand, grouplist);
-			return 1;
-		}
+	histo_index_t discard = random_pop_histogram(wall);
+	char f, n;
+	index_to_char(discard, &f, &n);
+	wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f,
+			tileslist[discard]);
+
+	if (get_histobit(&hand->wintiles, discard)) {
+		wprintf(L"RON!\n\n");
+		add_tile_hand(hand, discard);
+		makegroups(hand, grouplist);
+		print_victory(hand, grouplist);
+		return 1;
 	}
+
 	return 0;
 }
 

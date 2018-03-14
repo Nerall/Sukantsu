@@ -2,23 +2,6 @@
 #include "../debug.h"
 #include <string.h>
 
-// Initialize the grouplist
-void init_grouplist(struct grouplist *grouplist) {
-	ASSERT_BACKTRACE(grouplist);
-
-	grouplist->nb_groups = 0;
-}
-
-// Add a copy of group to the grouplist
-void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
-	ASSERT_BACKTRACE(grouplist);
-	ASSERT_BACKTRACE(group);
-	ASSERT_BACKTRACE(grouplist->nb_groups < GROUPLIST_CAPACITY);
-
-	memcpy(grouplist->groups[grouplist->nb_groups++], group,
-	       HAND_NB_GROUPS * sizeof(struct group));
-}
-
 int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
