@@ -2,16 +2,6 @@
 #include "../debug.h"
 #include <string.h>
 
-// Initialize an empty group
-// The pointer's data must be accessible
-void init_group(struct group *group) {
-	ASSERT_BACKTRACE(group);
-
-	group->hidden = 1;
-	group->type = -1;
-	group->tile = NO_TILE_INDEX;
-}
-
 // Initialize an empty hand
 // The pointer's data must be accessible
 void init_hand(struct hand *hand) {

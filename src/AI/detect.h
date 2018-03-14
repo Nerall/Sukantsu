@@ -4,17 +4,6 @@
 #include "../core/hand.h"
 #include "../core/histogram.h"
 
-#define GROUPLIST_CAPACITY 32
-
-struct grouplist {
-	struct group groups[GROUPLIST_CAPACITY][5];
-	unsigned char nb_groups;
-};
-
-void init_grouplist(struct grouplist *grouplist);
-
-void add_copy_grouplist(struct grouplist *grouplist, struct group *group);
-
 int ischiitoi(struct hand *hand);
 
 int iskokushi(struct hand *hand);
