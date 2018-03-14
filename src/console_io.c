@@ -202,7 +202,9 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		} else if (c == 't') {
+		}
+    
+    else if (c == 't') {
 			// Tsumo action
 
 			while (getchar() != '\n')
@@ -210,7 +212,9 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 
 			*action = ACTION_TSUMO;
 			return NO_TILE_INDEX;
-		} else if (c == 'd') {
+		}
+    
+    else if (c == 'd') {
 			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
@@ -221,7 +225,9 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		} else if (c == 'r') {
+		}
+    
+    else if (c == 'r') {
 			// Riichi or Ron
 
 			while ((c = getchar()) != ' ' && c != '\n')
@@ -231,7 +237,9 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			// Get family
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
-		} else {
+		}
+    
+    else {
 			// Discard (implicit)
 			*action = ACTION_DISCARD;
 			family = c;

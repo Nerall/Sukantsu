@@ -30,14 +30,36 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 // Ask the player for an action until this one is correct
 // Applies the action after that
 // Return 1 if the player has won
-static int player_turn(struct hand *hand, struct grouplist *grouplist) {
+static int player_turn(struct hand *hand, struct grouplist *grouplist,
+                       unsigned int IA_mode) {
 	if (isvalid(hand, grouplist))
 		return 1;
-
+  
 	while (1) {
 		enum action action;
-		histo_index_t index = get_input(&hand->histo, &action);
-		char f, n;
+    histo_index_t index = NO_TILE_INDEX;
+    if (IA_mode) {
+      int i = 33;
+      if (hand->tenpai) {
+        while (index == NO_TILE_INDEX && i > -1) {
+          if (get_histobit(&hand->riichitiles, i))
+            index = i;
+          --i;
+        }
+      }
+      i = 33;
+      while (index == NO_TILE_INDEX) {
+        if (hand->histo.cells[i])
+          index = i;
+        --i;
+      }
+      action = ACTION_DISCARD;
+    }
+
+    else
+		  index = get_input(&hand->histo, &action);
+		
+    char f, n;
 		if (index != NO_TILE_INDEX)
 			index_to_char(index, &f, &n);
 
@@ -98,7 +120,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 	return 0;
 }
 
-int play(unsigned int nb_games) {
+int play(char IA_MODE, unsigned int nb_games) {
 	// Initialization
 	struct histogram wall;
 	init_histogram(&wall, 4);
@@ -119,9 +141,10 @@ int play(unsigned int nb_games) {
 
 	// To initialize the waits
 	tenpailist(&hand, &grouplist);
-	// Main loop
+	
+  // Main loop
 	while (wall.nb_tiles > 14) {
-		// Give one tile to player
+		// Give one tile to players
 		histo_index_t randi = random_pop_histogram(&wall);
 		add_tile_hand(&hand, randi);
 
@@ -149,7 +172,7 @@ int play(unsigned int nb_games) {
 			wprintf(L"\n");
 		}
 
-		if (player_turn(&hand, &grouplist)) {
+		if (player_turn(&hand, &grouplist, IA_MODE)) {
 			wprintf(L"TSUMO!\n");
 			print_victory(&hand, &grouplist);
 			// The player has won
@@ -216,6 +239,8 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 }
 
 #define FUN_MODE 0
+#define IA_MODE 1
+
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
@@ -241,16 +266,19 @@ int main() {
 	char c;
   unsigned int nb_games = 1;
 	do {
-		play(nb_games);
-		wprintf(L"Do you want to continue (y/n)\n> ");
+		char victory = play(IA_MODE, nb_games);
+		if (!IA_MODE)
+      wprintf(L"Do you want to continue (y/n)\n> ");
 		++nb_games;
     fflush(stdout);
 		do {
-			c = getchar();
+      c = (IA_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
 			if (c >= 'a')
 				c += 'A' - 'a';
 		} while (c != 'Y' && c != 'N');
-		while (getchar() != '\n')
-			;
+		while ( !IA_MODE && getchar() != '\n')
+    ;
 	} while (c != 'N');
+
+  wprintf(L"\nYou played %d games.\n", nb_games);
 }
