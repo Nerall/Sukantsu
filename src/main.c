@@ -98,7 +98,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 	return 0;
 }
 
-int play() {
+int play(unsigned int nb_games) {
 	// Initialization
 	struct histogram wall;
 	init_histogram(&wall, 4);
@@ -115,6 +115,8 @@ int play() {
 		random_pop_histogram(&wall);
 	}
 
+  wprintf(L"\nGame %u:\n\n", nb_games);
+
 	// To initialize the waits
 	tenpailist(&hand, &grouplist);
 	// Main loop
@@ -126,13 +128,14 @@ int play() {
 		char family, number;
 		index_to_char(randi, &family, &number);
 
-		wprintf(L"\n-------------------------------\n\n");
+		wprintf(L"-------------------------------\n\n");
 		wprintf(L"Remaining tiles: %u\n\n", (wall.nb_tiles - 14));
 
-		print_histo(&hand.histo);
-		wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
+		print_histo(&hand.histo, hand.last_tile);
+	
+    //wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
 
-		// Show best discards
+    // Show best discards
 		tilestodiscard(&hand, &grouplist);
 		if (hand.tenpai) {
 			wprintf(L"You are tenpai if you discard:\n");
@@ -153,7 +156,6 @@ int play() {
 			return 1;
 		}
 
-		wprintf(L"\n");
 		// Show winning tiles
 		tenpailist(&hand, &grouplist);
 		if (hand.tenpai) {
@@ -237,10 +239,12 @@ int main() {
 	}
 
 	char c;
+  unsigned int nb_games = 1;
 	do {
-		play();
+		play(nb_games);
 		wprintf(L"Do you want to continue (y/n)\n> ");
-		fflush(stdout);
+		++nb_games;
+    fflush(stdout);
 		do {
 			c = getchar();
 			if (c >= 'a')
