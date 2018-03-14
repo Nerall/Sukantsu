@@ -20,9 +20,7 @@ histo_index_t char_to_index(char family, char number) {
 		index = 9;
 	else if (family == 'm')
 		index = 18;
-	else if (family == 
-  
-'z')
+	else if (family == 'z')
 		index = 27;
 	else
 		ASSERT_BACKTRACE(0 && "family not recognized");
@@ -127,7 +125,7 @@ void print_groups(struct group *groups) {
 
 	wprintf(L"Groups:\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
-		index_to_char(groups[i].tile, &f, &n);
+    index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
 				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f,
@@ -167,10 +165,10 @@ void print_victory(struct hand *hand, struct grouplist *grouplist) {
 
 	print_histo(&histo, hand->last_tile);
 	if (iskokushi(hand))
-		wprintf(L"WOW, Thirteen orphans!!\n\n");
+		wprintf(L"WOW, Thirteen orphans!!\n");
 	else {
 		if (ischiitoi(hand))
-			wprintf(L"WOW, Seven pairs!\n\n");
+			wprintf(L"WOW, Seven pairs!\n");
 		for (int i = 0; i < grouplist->nb_groups; ++i)
 			print_groups(grouplist->groups[i]);
 	}

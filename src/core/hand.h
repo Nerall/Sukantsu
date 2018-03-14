@@ -6,8 +6,6 @@
 
 enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
-#define HAND_NB_GROUPS 5
-
 struct hand {
 	struct histogram histo;           // tiles in hand
 	struct histogram discarded_tiles; // each tiles discarded

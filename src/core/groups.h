@@ -5,6 +5,7 @@
 
 #define GROUPLIST_CAPACITY 32
 #define GROUP_NB_TILES 4
+#define HAND_NB_GROUPS 5
 
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
 

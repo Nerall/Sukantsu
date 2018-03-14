@@ -26,5 +26,5 @@ void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
 	ASSERT_BACKTRACE(grouplist->nb_groups < GROUPLIST_CAPACITY);
 
 	memcpy(grouplist->groups[grouplist->nb_groups++], group,
-	       sizeof(struct group));
+	       HAND_NB_GROUPS*sizeof(struct group));
 }
