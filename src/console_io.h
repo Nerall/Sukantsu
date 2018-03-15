@@ -1,23 +1,13 @@
 #ifndef _CONSOLE_INPUT_H_
 #define _CONSOLE_INPUT_H_
 
-#include "AI/detect.h"
-#include "core/hand.h"
+#include "definitions.h"
 #include "core/histogram.h"
+#include "core/groups.h"
+#include "core/hand.h"
 #include <wchar.h>
 
 static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
-
-enum action {
-	ACTION_RIICHI,
-	ACTION_RON,
-	ACTION_TSUMO,
-	ACTION_DISCARD,
-	ACTION_PASS,
-	ACTION_CHII,
-	ACTION_PON,
-	ACTION_KAN
-};
 
 histo_index_t char_to_index(char family, char number);
 

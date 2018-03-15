@@ -1,10 +1,9 @@
 #ifndef _HAND_H_
 #define _HAND_H_
 
-#include "groups.h"
+#include "../definitions.h"
 #include "histogram.h"
-
-enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
+#include "groups.h"
 
 struct hand {
 	struct histogram histo;           // tiles in hand

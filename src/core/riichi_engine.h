@@ -1,19 +1,10 @@
 #ifndef _RIICHI_ENGINE_
 #define _RIICHI_ENGINE_
 
+#include "../definitions.h"
+#include "histogram.h"
 #include "hand.h"
-
-#define NB_PLAYERS 4
-#define AI_MODE 1 // For AI debug and tests
-
-enum game_phase {
-	PHASE_INIT,
-	PHASE_DRAW,
-	PHASE_GETINPUT,
-	PHASE_TSUMO,
-	PHASE_WAIT,
-	PHASE_CLAIM
-};
+#include "groups.h"
 
 struct riichi_engine {
 	struct histogram wall;

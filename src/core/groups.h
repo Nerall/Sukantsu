@@ -1,13 +1,7 @@
 #ifndef _GROUPS_H_
 #define _GROUPS_H_
 
-#include "histogram.h"
-
-#define GROUPLIST_CAPACITY 32
-#define GROUP_NB_TILES 4
-#define HAND_NB_GROUPS 5
-
-enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
+#include "../definitions.h"
 
 struct group {
 	unsigned char hidden : 1; // boolean, is the group hidden

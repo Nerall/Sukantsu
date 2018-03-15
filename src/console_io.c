@@ -1,4 +1,5 @@
 #include "console_io.h"
+#include "AI/detect.h"
 #include "debug.h"
 #include <stdio.h>
 

@@ -2,6 +2,7 @@
 #define _DETECT_H_
 
 #include "../core/hand.h"
+#include "../core/groups.h"
 #include "../core/histogram.h"
 
 int ischiitoi(struct hand *hand);

@@ -1,4 +1,6 @@
+#include "AI/detect.h"
 #include "console_io.h"
+#include "core/riichi_engine.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
