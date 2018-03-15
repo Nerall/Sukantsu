@@ -51,70 +51,47 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 // Pretty print an histogram
 void print_histo(struct histogram *histo, histo_index_t last_tile) {
 	ASSERT_BACKTRACE(histo);
-  
+	ASSERT_BACKTRACE(last_tile == NO_TILE_INDEX ||
+	                 (is_valid_index(last_tile) && histo->cells[last_tile]));
+
+	// "Remove" the last_tile to print at the side
+	if (last_tile != NO_TILE_INDEX)
+		histo->cells[last_tile]--;
+
 	for (int i = 0; i < 33; ++i) {
-		for (histo_cell_t j = histo->cells[i];
-    (i == last_tile) ? j > 1 : j > 0; --j) {
+		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
-	for (histo_cell_t j = histo->cells[33];
-  (33 == last_tile) ? j > 1 : j > 0; --j) {
-    wprintf(L"%lc", tileslist[33]);
-  }
-  if (last_tile != NO_TILE_INDEX)
-    wprintf(L" %lc", tileslist[last_tile]);
-  
-  wprintf(L"\n");
+	for (histo_cell_t j = histo->cells[33]; j > 0; --j) {
+		wprintf(L"%lc", tileslist[33]);
+	}
 
-  char PSMZ[] = { 0, 0, 0, 0 };
-  for (int i = 0; i < 34; ++i) {
-    for (histo_cell_t j = histo->cells[i];
-    (i == last_tile) ? j > 1 : j > 0; --j) {
-      wprintf(L"%d", 1 + i % 9);
-    }
-    if ((i == last_tile && histo->cells[i] > 1) ||
-    (i != last_tile && histo->cells[i]))
-      PSMZ[i / 9] = 1;
-    if ((i % 9 == 8 || i == 33) && PSMZ[i / 9])
-      wprintf(L"%lc ", L"psmz"[i / 9]);
-  }
-  
-  if (last_tile != NO_TILE_INDEX)
-    wprintf(L" %d%lc", 1 + last_tile % 9, L"psmz"[last_tile / 9]);
-  
-  wprintf(L"\n\n");
-	
-  /*wprintf(L"-----------------------------------\n");
+	if (last_tile != NO_TILE_INDEX)
+		wprintf(L" %lc", tileslist[last_tile]);
 
-	wprintf(L"| Index       |");
-	for (int i = 1; i < 10; ++i)
-		wprintf(L" %d", i);
-	wprintf(L" |\n");
+	wprintf(L"\n");
 
-	wprintf(L"-----------------------------------\n");
+	char PSMZ[] = {0, 0, 0, 0};
+	for (int i = 0; i < 34; ++i) {
+		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+			wprintf(L"%d", 1 + i % 9);
+		}
 
-	wprintf(L"| Coin    (p) |");
-	for (int i = 0; i < 9; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" |\n");
+		if (histo->cells[i])
+			PSMZ[i / 9] = 1;
 
-	wprintf(L"| Bamboo  (s) |");
-	for (int i = 9; i < 18; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" |\n");
+		if ((i == 33 || i % 9 == 8) && PSMZ[i / 9])
+			wprintf(L"%lc ", L"psmz"[i / 9]);
+	}
 
-	wprintf(L"| Numeral (m) |");
-	for (int i = 18; i < 27; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L" |\n");
+	if (last_tile != NO_TILE_INDEX) {
+		wprintf(L" %d%lc", 1 + last_tile % 9, L"psmz"[last_tile / 9]);
+		// "Re-Add" the last_tile
+		histo->cells[last_tile]++;
+	}
 
-	wprintf(L"| Honor   (z) |");
-	for (int i = 27; i < 34; ++i)
-		wprintf(L" %d", histo->cells[i]);
-	wprintf(L"     |\n");
-
-	wprintf(L"-----------------------------------\n\n");*/
+	wprintf(L"\n\n");
 }
 
 // Print all possible groups
@@ -125,28 +102,27 @@ void print_groups(struct group *groups) {
 
 	wprintf(L"Groups:\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
-    index_to_char(groups[i].tile, &f, &n);
+		index_to_char(groups[i].tile, &f, &n);
 		switch (groups[i].type) {
 			case PAIR:
 				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f,
 				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			case SEQUENCE:
-				wprintf(L"Sequence (%c%c%c%c)  %lc %lc %lc\n", n,
-				        n + 1, n + 2, f, tileslist[groups[i].tile],
+				wprintf(L"Sequence (%c%c%c%c)  %lc %lc %lc\n", n, n + 1, n + 2,
+				        f, tileslist[groups[i].tile],
 				        tileslist[groups[i].tile + 1],
 				        tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
-				wprintf(L"Triplet (%c%c%c%c)  %lc %lc %lc\n", n, n,
-				        n, f, tileslist[groups[i].tile],
-				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
-				break;
-			case QUAD:
-				wprintf(L"Quad (%c%c%c%c%c)  %lc %lc %lc %lc\n", n,
-				        n, n, n, f, tileslist[groups[i].tile],
+				wprintf(L"Triplet (%c%c%c%c)  %lc %lc %lc\n", n, n, n, f,
 				        tileslist[groups[i].tile], tileslist[groups[i].tile],
 				        tileslist[groups[i].tile]);
+				break;
+			case QUAD:
+				wprintf(L"Quad (%c%c%c%c%c)  %lc %lc %lc %lc\n", n, n, n, n, f,
+				        tileslist[groups[i].tile], tileslist[groups[i].tile],
+				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",
@@ -201,8 +177,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		}
-    
-    else if (c == 't') {
+
+		else if (c == 't') {
 			// Tsumo action
 
 			while (getchar() != '\n')
@@ -211,8 +187,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			*action = ACTION_TSUMO;
 			return NO_TILE_INDEX;
 		}
-    
-    else if (c == 'd') {
+
+		else if (c == 'd') {
 			// Discard (explicit)
 
 			// In this line, family is only use to pass unnecessary chars
@@ -224,8 +200,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		}
-    
-    else if (c == 'r') {
+
+		else if (c == 'r') {
 			// Riichi or Ron
 
 			while ((c = getchar()) != ' ' && c != '\n')
@@ -236,8 +212,8 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			while ((family = getchar()) == ' ' || family == '\n')
 				;
 		}
-    
-    else {
+
+		else {
 			// Discard (implicit)
 			*action = ACTION_DISCARD;
 			family = c;

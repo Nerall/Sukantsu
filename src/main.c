@@ -16,7 +16,7 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 	char f, n;
 	index_to_char(discard, &f, &n);
 	wprintf(L"%s's discard: %c%c %lc\n\n", players[player], n, f,
-			tileslist[discard]);
+	        tileslist[discard]);
 
 	if (get_histobit(&hand->wintiles, discard)) {
 		wprintf(L"RON!\n\n");
@@ -39,29 +39,29 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist,
 
 	while (1) {
 		enum action action;
-    histo_index_t index = NO_TILE_INDEX;
-    if (IA_mode) {
-      int i = 33;
-      if (hand->tenpai) {
-        while (index == NO_TILE_INDEX && i > -1) {
-          if (get_histobit(&hand->riichitiles, i))
-            index = i;
-          --i;
-        }
-      }
-      i = 33;
-      while (index == NO_TILE_INDEX) {
-        if (hand->histo.cells[i])
-          index = i;
-        --i;
-      }
-      action = ACTION_DISCARD;
-    }
+		histo_index_t index = NO_TILE_INDEX;
+		if (IA_mode) {
+			int i = 33;
+			if (hand->tenpai) {
+				while (index == NO_TILE_INDEX && i > -1) {
+					if (get_histobit(&hand->riichitiles, i))
+						index = i;
+					--i;
+				}
+			}
+			i = 33;
+			while (index == NO_TILE_INDEX) {
+				if (hand->histo.cells[i])
+					index = i;
+				--i;
+			}
+			action = ACTION_DISCARD;
+		}
 
-    else
-		  index = get_input(&hand->histo, &action);
+		else
+			index = get_input(&hand->histo, &action);
 
-    char f, n;
+		char f, n;
 		if (index != NO_TILE_INDEX)
 			index_to_char(index, &f, &n);
 
@@ -139,12 +139,12 @@ int play(char IA_MODE, unsigned int nb_games) {
 		random_pop_histogram(&wall);
 	}
 
-  wprintf(L"\nGame %u:\n\n", nb_games);
+	wprintf(L"\nGame %u:\n\n", nb_games);
 
 	// To initialize the waits
 	tenpailist(&hand, &grouplist);
 
-  // Main loop
+	// Main loop
 	while (wall.nb_tiles > 14) {
 		// Give one tile to players
 		histo_index_t randi = random_pop_histogram(&wall);
@@ -158,9 +158,10 @@ int play(char IA_MODE, unsigned int nb_games) {
 
 		print_histo(&hand.histo, hand.last_tile);
 
-    //wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
+		// wprintf(L"Tile drawn: %c%c %lc\n\n", number, family,
+		// tileslist[randi]);
 
-    // Show best discards
+		// Show best discards
 		tilestodiscard(&hand, &grouplist);
 		if (hand.tenpai) {
 			wprintf(L"You are tenpai if you discard:\n");
@@ -241,7 +242,7 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 }
 
 #define FUN_MODE 0
-#define IA_MODE 0
+#define IA_MODE 1
 
 int main() {
 	setlocale(LC_ALL, "");
@@ -261,26 +262,26 @@ int main() {
 				wprintf(L" (seed=%lld)\n", i);
 			}
 		}
-		wprintf(L"Proba: %g\n", 100.0*(double)nb_win/big_number);
+		wprintf(L"Proba: %g\n", 100.0 * (double)nb_win / big_number);
 		return 1;
 	}
 
 	char c;
-  unsigned int nb_games = 0;
+	unsigned int nb_games = 0;
 	do {
 		char victory = play(IA_MODE, nb_games);
 		if (!IA_MODE)
-      wprintf(L"Do you want to continue (y/n)\n> ");
+			wprintf(L"Do you want to continue (y/n)\n> ");
 		++nb_games;
-    fflush(stdout);
+		fflush(stdout);
 		do {
-      c = (IA_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
+			c = (IA_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
 			if (c >= 'a')
 				c += 'A' - 'a';
 		} while (c != 'Y' && c != 'N');
-		while ( !IA_MODE && getchar() != '\n')
-    ;
+		while (!IA_MODE && getchar() != '\n')
+			;
 	} while (c != 'N');
 
-  wprintf(L"\nYou played %d game%s.\n", nb_games, (nb_games > 1) ? "s" : "");
+	wprintf(L"\nYou played %d game%s.\n", nb_games, (nb_games > 1) ? "s" : "");
 }
