@@ -1,5 +1,5 @@
 #ifndef _GROUPS_H_
-#define	_GROUPS_H_
+#define _GROUPS_H_
 
 #include "histogram.h"
 
@@ -18,7 +18,7 @@ struct group {
 void init_group(struct group *group);
 
 struct grouplist {
-	struct group groups[GROUPLIST_CAPACITY][5];
+	struct group groups[GROUPLIST_CAPACITY][HAND_NB_GROUPS];
 	unsigned char nb_groups;
 };
 

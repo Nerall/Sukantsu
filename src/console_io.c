@@ -103,26 +103,23 @@ void print_groups(struct group *groups) {
 	wprintf(L"Groups:\n");
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		index_to_char(groups[i].tile, &f, &n);
+		wchar_t c_tile = tileslist[groups[i].tile];
 		switch (groups[i].type) {
 			case PAIR:
-				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f,
-				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
+				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f, c_tile, c_tile);
 				break;
 			case SEQUENCE:
 				wprintf(L"Sequence (%c%c%c%c)  %lc %lc %lc\n", n, n + 1, n + 2,
-				        f, tileslist[groups[i].tile],
-				        tileslist[groups[i].tile + 1],
+				        f, c_tile, tileslist[groups[i].tile + 1],
 				        tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
 				wprintf(L"Triplet (%c%c%c%c)  %lc %lc %lc\n", n, n, n, f,
-				        tileslist[groups[i].tile], tileslist[groups[i].tile],
-				        tileslist[groups[i].tile]);
+				        c_tile, c_tile, c_tile);
 				break;
 			case QUAD:
 				wprintf(L"Quad (%c%c%c%c%c)  %lc %lc %lc %lc\n", n, n, n, n, f,
-				        tileslist[groups[i].tile], tileslist[groups[i].tile],
-				        tileslist[groups[i].tile], tileslist[groups[i].tile]);
+				        c_tile, c_tile, c_tile, c_tile);
 				break;
 			default:
 				fprintf(stderr, "print_groups: enum type not recognized: %d\n",

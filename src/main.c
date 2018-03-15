@@ -242,7 +242,7 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 }
 
 #define FUN_MODE 0
-#define IA_MODE 1
+#define IA_MODE 0
 
 int main() {
 	setlocale(LC_ALL, "");
