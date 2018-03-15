@@ -36,7 +36,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist,
                        unsigned int IA_mode) {
 	if (isvalid(hand, grouplist))
 		return 1;
-  
+
 	while (1) {
 		enum action action;
     histo_index_t index = NO_TILE_INDEX;
@@ -60,7 +60,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist,
 
     else
 		  index = get_input(&hand->histo, &action);
-		
+
     char f, n;
 		if (index != NO_TILE_INDEX)
 			index_to_char(index, &f, &n);
@@ -78,7 +78,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist,
 
 		if (action == ACTION_RIICHI) {
 			wprintf(L"action -> riichi (%c%c)\n", n, f);
-			if (hand->riichi == NORIICHI || !hand->closed ||
+			if (hand->riichi != NORIICHI || !hand->closed ||
 			    !get_histobit(&hand->riichitiles, index)) {
 				continue;
 			}
@@ -143,7 +143,7 @@ int play(char IA_MODE, unsigned int nb_games) {
 
 	// To initialize the waits
 	tenpailist(&hand, &grouplist);
-	
+
   // Main loop
 	while (wall.nb_tiles > 14) {
 		// Give one tile to players
@@ -153,11 +153,11 @@ int play(char IA_MODE, unsigned int nb_games) {
 		char family, number;
 		index_to_char(randi, &family, &number);
 
-		wprintf(L"-------------------------------\n\n");
+		wprintf(L"--------------------------------\n\n");
 		wprintf(L"Remaining tiles: %u\n\n", (wall.nb_tiles - 14));
 
 		print_histo(&hand.histo, hand.last_tile);
-	
+
     //wprintf(L"Tile drawn: %c%c %lc\n\n", number, family, tileslist[randi]);
 
     // Show best discards
@@ -261,12 +261,12 @@ int main() {
 				wprintf(L" (seed=%lld)\n", i);
 			}
 		}
-		wprintf(L"Proba: %g%\n", 100.0*(double)nb_win/big_number);
+		wprintf(L"Proba: %g\n", 100.0*(double)nb_win/big_number);
 		return 1;
 	}
 
 	char c;
-  unsigned int nb_games = 1;
+  unsigned int nb_games = 0;
 	do {
 		char victory = play(IA_MODE, nb_games);
 		if (!IA_MODE)
@@ -282,5 +282,5 @@ int main() {
     ;
 	} while (c != 'N');
 
-  wprintf(L"\nYou played %d games.\n", nb_games);
+  wprintf(L"\nYou played %d game%s.\n", nb_games, (nb_games > 1) ? "s" : "");
 }
