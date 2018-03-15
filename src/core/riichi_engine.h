@@ -4,9 +4,16 @@
 #include "hand.h"
 
 #define NB_PLAYERS 4
-#define IA_MODE 1 // For IA debug and tests
+#define AI_MODE 1 // For AI debug and tests
 
-enum game_phase { PHASE_INIT, PHASE_DRAW, PHASE_WAIT, PHASE_CLAIM };
+enum game_phase {
+	PHASE_INIT,
+	PHASE_DRAW,
+	PHASE_GETINPUT,
+	PHASE_TSUMO,
+	PHASE_WAIT,
+	PHASE_CLAIM
+};
 
 struct riichi_engine {
 	struct histogram wall;
