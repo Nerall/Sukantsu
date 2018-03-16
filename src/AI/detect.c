@@ -40,7 +40,7 @@ int is_valid_hand(struct hand *hand, struct grouplist *grouplist) {
 
 // Recursive function of makegroups
 static void makegroups_rec(struct hand *hand, histo_index_t index,
-                           struct grouplist *grouplist, unsigned char pair) {
+                           struct grouplist *grouplist, int pair) {
 	ASSERT_BACKTRACE(hand);
 
 	if (hand->nb_groups >= 5) {
@@ -58,7 +58,6 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 		add_group_hand(hand, 1, TRIPLET, index);
 		makegroups_rec(hand, index + 1, grouplist, pair);
 		pop_last_group(hand);
-		hand->last_tile = last_tile;
 	}
 
 	// Check pair group
@@ -66,7 +65,6 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 		add_group_hand(hand, 1, PAIR, index);
 		makegroups_rec(hand, index + 1, grouplist, 1);
 		pop_last_group(hand);
-		hand->last_tile = last_tile;
 	}
 
 	// Check sequence group
@@ -76,19 +74,10 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 		add_group_hand(hand, 1, SEQUENCE, index);
 		makegroups_rec(hand, index, grouplist, pair);
 		pop_last_group(hand);
-		hand->last_tile = last_tile;
 	}
 
 	// Check no group
-	int nb_removed = 0;
-	while (hand->histo.cells[index]) {
-		remove_tile_hand(hand, index);
-		++nb_removed;
-	}
 	makegroups_rec(hand, index + 1, grouplist, pair);
-	while (nb_removed--) {
-		add_tile_hand(hand, index);
-	}
 	hand->last_tile = last_tile;
 }
 
