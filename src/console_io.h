@@ -1,23 +1,11 @@
 #ifndef _CONSOLE_INPUT_H_
 #define _CONSOLE_INPUT_H_
 
-#include "AI/detect.h"
-#include "core/hand.h"
+#include "definitions.h"
 #include "core/histogram.h"
-#include <wchar.h>
-
-static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
-
-enum action {
-	ACTION_RIICHI,
-	ACTION_RON,
-	ACTION_TSUMO,
-	ACTION_DISCARD,
-	ACTION_PASS,
-	ACTION_CHII,
-	ACTION_PON,
-	ACTION_KAN
-};
+#include "core/groups.h"
+#include "core/hand.h"
+#include "core/riichi_engine.h"
 
 histo_index_t char_to_index(char family, char number);
 
@@ -30,5 +18,7 @@ void print_groups(struct group *groups);
 void print_victory(struct hand *hand, struct grouplist *grouplist);
 
 histo_index_t get_input(struct histogram *histo, enum action *action);
+
+void display_riichi(struct riichi_engine *engine, int current_player);
 
 #endif // _CONSOLE_INPUT_H_

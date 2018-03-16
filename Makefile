@@ -10,7 +10,7 @@ LDFLAGS =
 LDLIBS =
 
 EXE := sukantsu
-SRC := $(shell find src -name '*.c')
+SRC := $(wildcard src/*.c src/core/*.c src/AI/*.c)
 OBJ := ${SRC:.c=.o}
 DEP := ${SRC:.c=.d}
 

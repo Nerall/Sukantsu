@@ -2,13 +2,14 @@
 #define _DETECT_H_
 
 #include "../core/hand.h"
+#include "../core/groups.h"
 #include "../core/histogram.h"
 
 int ischiitoi(struct hand *hand);
 
 int iskokushi(struct hand *hand);
 
-int isvalid(struct hand *hand, struct grouplist *grouplist);
+int is_valid_hand(struct hand *hand, struct grouplist *grouplist);
 
 void makegroups(struct hand *hand, struct grouplist *grouplist);
 

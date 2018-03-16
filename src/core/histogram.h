@@ -1,16 +1,10 @@
 #ifndef _HISTOGRAM_H_
 #define _HISTOGRAM_H_
 
-#define HISTO_INDEX_MAX 34
-#define NO_TILE_INDEX 63
+#include "../definitions.h"
 
 // Suppose that index is unsigned
 #define is_valid_index(index) ((index) < HISTO_INDEX_MAX)
-
-// histo_cell_t  is guaranted to be at most 3 bits
-// histo_index_t is guaranted to be at most 7 bits
-typedef unsigned char histo_cell_t;
-typedef unsigned char histo_index_t;
 
 struct histobit {
 	unsigned char cells[5];

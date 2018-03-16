@@ -6,7 +6,7 @@ int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int pair = 0;
-	for (int i = 0; i < 34; ++i) {
+	for (histo_index_t i = 0; i < 34; ++i) {
 		if (hand->histo.cells[i] >= 2) {
 			++pair;
 			if (pair >= 7)
@@ -30,7 +30,7 @@ int iskokushi(struct hand *hand) {
 }
 
 // Check if a hand is valid; cleans grouplist by calling makegroups
-int isvalid(struct hand *hand, struct grouplist *grouplist) {
+int is_valid_hand(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(grouplist);
 
 	makegroups(hand, grouplist);
@@ -40,7 +40,7 @@ int isvalid(struct hand *hand, struct grouplist *grouplist) {
 
 // Recursive function of makegroups
 static void makegroups_rec(struct hand *hand, histo_index_t index,
-                           struct grouplist *grouplist, unsigned char pair) {
+                           struct grouplist *grouplist, int pair) {
 	ASSERT_BACKTRACE(hand);
 
 	if (hand->nb_groups >= 5) {
@@ -51,45 +51,37 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 	if (index >= 34)
 		return;
 
-	histo_index_t last_tile = hand->last_tile;
+	histo_cell_t *cur_cell = &hand->histo.cells[index];
+	if (*cur_cell >= 1) {
+		histo_index_t last_tile = hand->last_tile;
 
-	// Check triplet group
-	if (hand->histo.cells[index] >= 3) {
-		add_group_hand(hand, 1, TRIPLET, index);
-		makegroups_rec(hand, index + 1, grouplist, pair);
-		pop_last_group(hand);
-		hand->last_tile = last_tile;
-	}
+		// Check sequence group
+		if (index % 9 < 7 && index < 25 && *(cur_cell + 1) && *(cur_cell + 2)) {
+			add_group_hand(hand, 1, SEQUENCE, index);
+			makegroups_rec(hand, index, grouplist, pair);
+			pop_last_group(hand);
+		}
 
-	// Check pair group
-	if (!pair && hand->histo.cells[index] >= 2) {
-		add_group_hand(hand, 1, PAIR, index);
-		makegroups_rec(hand, index + 1, grouplist, 1);
-		pop_last_group(hand);
-		hand->last_tile = last_tile;
-	}
+		if (*cur_cell >= 2) {
+			// Check pair group
+			if (!pair) {
+				add_group_hand(hand, 1, PAIR, index);
+				makegroups_rec(hand, index + 1, grouplist, 1);
+				pop_last_group(hand);
+			}
 
-	// Check sequence group
-	if (index % 9 < 7 && index < 25 && hand->histo.cells[index] >= 1 &&
-	    hand->histo.cells[index + 1] >= 1 &&
-	    hand->histo.cells[index + 2] >= 1) {
-		add_group_hand(hand, 1, SEQUENCE, index);
-		makegroups_rec(hand, index, grouplist, pair);
-		pop_last_group(hand);
+			// Check triplet group
+			if (*cur_cell >= 3) {
+				add_group_hand(hand, 1, TRIPLET, index);
+				makegroups_rec(hand, index + 1, grouplist, pair);
+				pop_last_group(hand);
+			}
+		}
 		hand->last_tile = last_tile;
 	}
 
 	// Check no group
-	int nb_removed = 0;
-	while (hand->histo.cells[index]) {
-		remove_tile_hand(hand, index);
-		++nb_removed;
-	}
 	makegroups_rec(hand, index + 1, grouplist, pair);
-	while (nb_removed--) {
-		add_tile_hand(hand, index);
-	}
-	hand->last_tile = last_tile;
 }
 
 // Overwrite grouplist with all possible groups from hand
@@ -108,10 +100,10 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	init_histobit(&hand->wintiles, 0);
 	hand->tenpai = 0;
 	histo_index_t last_tile = hand->last_tile;
-	for (int j = 0; j < 34; ++j) {
+	for (histo_index_t j = 0; j < 34; ++j) {
 		if (histofull.cells[j] < 4) {
 			add_tile_hand(hand, j);
-			if (isvalid(hand, grouplist)) {
+			if (is_valid_hand(hand, grouplist)) {
 				hand->tenpai = 1;
 				set_histobit(&hand->wintiles, j);
 			}
@@ -127,7 +119,7 @@ void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 
 	init_histobit(&hand->riichitiles, 0);
 	histo_index_t last_tile = hand->last_tile;
-	for (int i = 0; i < 34; ++i) {
+	for (histo_index_t i = 0; i < 34; ++i) {
 		if (hand->histo.cells[i]) {
 			remove_tile_hand(hand, i);
 			tenpailist(hand, grouplist);
@@ -152,19 +144,21 @@ void tilestocall(struct hand *hand, struct grouplist *grouplist) {
 	if (grouplist->nb_groups >= 5)
 		return;
 
-	for (int i = 0; i < 34; ++i) {
-		if (hand->histo.cells[i] >= 2) {
+	for (histo_index_t i = 0; i < 34; ++i) {
+		histo_cell_t *cur_cell = &hand->histo.cells[i];
+		if (*cur_cell >= 2) {
 			set_histobit(&hand->pontiles, i);
-			if (hand->histo.cells[i] >= 3)
+			if (*cur_cell >= 3) {
 				set_histobit(&hand->kantiles, i);
+			}
 		}
 		if (i < 27 && i % 9 < 7) {
-			if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
+			if (*(cur_cell + 1) && *(cur_cell + 2))
 				set_histobit(&hand->chiitiles, i);
-			if (hand->histo.cells[i]) {
-				if (hand->histo.cells[i + 2])
+			if (*cur_cell) {
+				if (*(cur_cell + 2))
 					set_histobit(&hand->chiitiles, i + 1);
-				if (hand->histo.cells[i + 1])
+				if (*(cur_cell + 1))
 					set_histobit(&hand->chiitiles, i + 2);
 			}
 		}
