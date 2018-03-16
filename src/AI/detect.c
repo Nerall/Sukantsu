@@ -6,7 +6,7 @@ int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int pair = 0;
-	for (int i = 0; i < 34; ++i) {
+	for (histo_index_t i = 0; i < 34; ++i) {
 		if (hand->histo.cells[i] >= 2) {
 			++pair;
 			if (pair >= 7)
@@ -100,7 +100,7 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	init_histobit(&hand->wintiles, 0);
 	hand->tenpai = 0;
 	histo_index_t last_tile = hand->last_tile;
-	for (int j = 0; j < 34; ++j) {
+	for (histo_index_t j = 0; j < 34; ++j) {
 		if (histofull.cells[j] < 4) {
 			add_tile_hand(hand, j);
 			if (is_valid_hand(hand, grouplist)) {
@@ -119,7 +119,7 @@ void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 
 	init_histobit(&hand->riichitiles, 0);
 	histo_index_t last_tile = hand->last_tile;
-	for (int i = 0; i < 34; ++i) {
+	for (histo_index_t i = 0; i < 34; ++i) {
 		if (hand->histo.cells[i]) {
 			remove_tile_hand(hand, i);
 			tenpailist(hand, grouplist);
@@ -144,19 +144,21 @@ void tilestocall(struct hand *hand, struct grouplist *grouplist) {
 	if (grouplist->nb_groups >= 5)
 		return;
 
-	for (int i = 0; i < 34; ++i) {
-		if (hand->histo.cells[i] >= 2) {
+	for (histo_index_t i = 0; i < 34; ++i) {
+		histo_cell_t *cur_cell = &hand->histo.cells[i];
+		if (*cur_cell >= 2) {
 			set_histobit(&hand->pontiles, i);
-			if (hand->histo.cells[i] >= 3)
+			if (*cur_cell >= 3) {
 				set_histobit(&hand->kantiles, i);
+			}
 		}
 		if (i < 27 && i % 9 < 7) {
-			if (hand->histo.cells[i + 1] && hand->histo.cells[i + 2])
+			if (*(cur_cell + 1) && *(cur_cell + 2))
 				set_histobit(&hand->chiitiles, i);
-			if (hand->histo.cells[i]) {
-				if (hand->histo.cells[i + 2])
+			if (*cur_cell) {
+				if (*(cur_cell + 2))
 					set_histobit(&hand->chiitiles, i + 1);
-				if (hand->histo.cells[i + 1])
+				if (*(cur_cell + 1))
 					set_histobit(&hand->chiitiles, i + 2);
 			}
 		}

@@ -59,7 +59,8 @@ void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(nb_tiles_index <= 4);
 
-	for (int i = 0; i < HISTO_INDEX_MAX; histo->cells[i++] = nb_tiles_index)
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX;
+	     histo->cells[i++] = nb_tiles_index)
 		;
 	histo->nb_tiles = nb_tiles_index * HISTO_INDEX_MAX;
 }
@@ -95,7 +96,7 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 
 	// We get a random number in [1, nb_tiles]
 	int r = 1 + (rand() % histo->nb_tiles);
-	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
 		r -= histo->cells[i];
 		if (r <= 0) {
 			remove_histogram(histo, i);
