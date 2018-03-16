@@ -7,6 +7,8 @@
 #include <time.h>
 #include <wchar.h>
 
+static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
+
 static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
                             struct histogram *wall, unsigned char player) {
 	if (wall->nb_tiles <= 14)
@@ -34,15 +36,14 @@ static int opponent_discard(struct hand *hand, struct grouplist *grouplist,
 // Ask the player for an action until this one is correct
 // Applies the action after that
 // Return 1 if the player has won
-static int player_turn(struct hand *hand, struct grouplist *grouplist,
-                       unsigned int IA_mode) {
+static int player_turn(struct hand *hand, struct grouplist *grouplist) {
 	if (isvalid(hand, grouplist))
 		return 1;
 
 	while (1) {
 		enum action action;
 		histo_index_t index = NO_TILE_INDEX;
-		if (IA_mode) {
+		if (AI_MODE) {
 			int i = 33;
 			if (hand->tenpai) {
 				while (index == NO_TILE_INDEX && i > -1) {
@@ -124,7 +125,7 @@ static int player_turn(struct hand *hand, struct grouplist *grouplist,
 	return 0;
 }
 
-int play(char IA_MODE, unsigned int nb_games) {
+int play(unsigned int nb_games) {
 	// Initialization
 	struct histogram wall;
 	init_histogram(&wall, 4);
@@ -177,7 +178,7 @@ int play(char IA_MODE, unsigned int nb_games) {
 			wprintf(L"\n");
 		}
 
-		if (player_turn(&hand, &grouplist, IA_MODE)) {
+		if (player_turn(&hand, &grouplist)) {
 			wprintf(L"TSUMO!\n");
 			print_victory(&hand, &grouplist);
 			// The player has won
@@ -243,9 +244,6 @@ int win_at_first_sight(struct histogram *wall, struct hand *hand,
 	return 0;
 }
 
-#define FUN_MODE 0
-#define IA_MODE 0
-
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
@@ -271,17 +269,17 @@ int main() {
 	char c;
 	unsigned int nb_games = 0;
 	do {
-		char victory = play(IA_MODE, nb_games);
-		if (!IA_MODE)
+		char victory = play(nb_games);
+		if (!AI_MODE)
 			wprintf(L"Do you want to continue (y/n)\n> ");
 		++nb_games;
 		fflush(stdout);
 		do {
-			c = (IA_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
+			c = (AI_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
 			if (c >= 'a')
 				c += 'A' - 'a';
 		} while (c != 'Y' && c != 'N');
-		while (!IA_MODE && getchar() != '\n')
+		while (!AI_MODE && getchar() != '\n')
 			;
 	} while (c != 'N');
 

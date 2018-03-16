@@ -2,6 +2,9 @@
 #include "AI/detect.h"
 #include "debug.h"
 #include <stdio.h>
+#include <wchar.h>
+
+static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
 
 static inline int lower_case(char c) {
 	return (c < 'A' || c >= 'a' ? c : c - 'A' + 'a');
@@ -244,5 +247,66 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 			continue;
 
 		return index;
+	}
+}
+
+// Display informations based on the structure
+// Current game phase can be obtained via the enum engine->phase
+// Current player should not be needed in the future (but still useful now)
+void display_riichi(struct riichi_engine *engine, int current_player) {
+	ASSERT_BACKTRACE(engine);
+
+	struct hand *player_hand = &engine->players[current_player].hand;
+
+	switch (engine->phase) {
+		case PHASE_INIT: {
+			wprintf(L"\nGame %u:\n\n", engine->nb_games);
+			break;
+		}
+
+		case PHASE_DRAW: {
+			wprintf(L"--------------------------------\n\n");
+			wprintf(L"Remaining tiles: %u\n\n", (engine->wall.nb_tiles - 14));
+
+			print_histo(&player_hand->histo, player_hand->last_tile);
+
+			// Show best discards (hints)
+			if (player_hand->tenpai) {
+				wprintf(L"You are tenpai if you discard:\n");
+				for (int r = 0; r < 34; ++r) {
+					if (get_histobit(&player_hand->riichitiles, r)) {
+						char f, n;
+						index_to_char(r, &f, &n);
+						wprintf(L"%c%c %lc\n", n, f, tileslist[r]);
+					}
+				}
+				wprintf(L"\n");
+			}
+			break;
+		}
+
+		case PHASE_TSUMO: {
+			wprintf(L"TSUMO!\n");
+			print_victory(player_hand, &engine->grouplist);
+			break;
+		}
+
+		case PHASE_WAIT: {
+			if (player_hand->tenpai) {
+				wprintf(L"You win if you get:\n");
+				for (int w = 0; w < 34; ++w) {
+					if (get_histobit(&player_hand->wintiles, w)) {
+						char f, n;
+						index_to_char(w, &f, &n);
+						wprintf(L"%c%c %lc\n", n, f, tileslist[w]);
+					}
+				}
+				wprintf(L"\n");
+			}
+			break;
+		}
+
+		default:
+			ASSERT_BACKTRACE(0 && "Phase not recognized");
 	}
 }

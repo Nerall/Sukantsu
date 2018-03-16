@@ -3,6 +3,7 @@
 
 // For AI debug and tests
 #define AI_MODE 1
+#define FUN_MODE 0
 
 #define GROUPLIST_CAPACITY 32
 #define GROUP_NB_TILES 4
@@ -17,6 +18,7 @@ typedef unsigned char histo_cell_t;
 typedef unsigned char histo_index_t;
 
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
+enum player_type { PLAYER_HUMAN, PLAYER_AI, PLAYER_AI_TEST };
 enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 enum action {

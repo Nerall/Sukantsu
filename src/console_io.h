@@ -5,9 +5,7 @@
 #include "core/histogram.h"
 #include "core/groups.h"
 #include "core/hand.h"
-#include <wchar.h>
-
-static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
+#include "core/riichi_engine.h"
 
 histo_index_t char_to_index(char family, char number);
 
@@ -20,5 +18,7 @@ void print_groups(struct group *groups);
 void print_victory(struct hand *hand, struct grouplist *grouplist);
 
 histo_index_t get_input(struct histogram *histo, enum action *action);
+
+void display_riichi(struct riichi_engine *engine, int current_player);
 
 #endif // _CONSOLE_INPUT_H_
