@@ -2,7 +2,6 @@
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
-#include <wchar.h>
 
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
@@ -26,7 +25,7 @@ static int player_turn(struct player *player, struct grouplist *grouplist,
 
 	struct hand *player_hand = &player->hand;
 
-	if (isvalid(player_hand, grouplist))
+	if (is_valid_hand(player_hand, grouplist))
 		return 1;
 
 	for (;;) {
@@ -166,7 +165,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 					add_tile_hand(&other_player->hand, discard);
 
 					ASSERT_BACKTRACE(
-					    isvalid(&other_player->hand, &engine->grouplist));
+					    is_valid_hand(&other_player->hand, &engine->grouplist));
 
 					// Player p2 win
 					engine->phase = PHASE_TSUMO;

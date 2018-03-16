@@ -30,7 +30,7 @@ int iskokushi(struct hand *hand) {
 }
 
 // Check if a hand is valid; cleans grouplist by calling makegroups
-int isvalid(struct hand *hand, struct grouplist *grouplist) {
+int is_valid_hand(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(grouplist);
 
 	makegroups(hand, grouplist);
@@ -111,7 +111,7 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	for (int j = 0; j < 34; ++j) {
 		if (histofull.cells[j] < 4) {
 			add_tile_hand(hand, j);
-			if (isvalid(hand, grouplist)) {
+			if (is_valid_hand(hand, grouplist)) {
 				hand->tenpai = 1;
 				set_histobit(&hand->wintiles, j);
 			}

@@ -9,7 +9,7 @@ int ischiitoi(struct hand *hand);
 
 int iskokushi(struct hand *hand);
 
-int isvalid(struct hand *hand, struct grouplist *grouplist);
+int is_valid_hand(struct hand *hand, struct grouplist *grouplist);
 
 void makegroups(struct hand *hand, struct grouplist *grouplist);
 
