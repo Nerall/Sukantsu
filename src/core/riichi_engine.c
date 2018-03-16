@@ -92,7 +92,9 @@ static int player_turn(struct player *player, struct grouplist *grouplist,
 	}
 }
 
-void play_riichi_game(struct riichi_engine *engine) {
+// Play a riichi game and return the index of the player who has won
+// If noone has won, return -1
+int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
 	engine->phase = PHASE_INIT;
@@ -145,7 +147,7 @@ void play_riichi_game(struct riichi_engine *engine) {
 			// Tsumo Phase (player p win)
 			engine->phase = PHASE_TSUMO;
 			display_riichi(engine, p);
-			return;
+			return p;
 		}
 
 		// Claim Phase (for all other players)
@@ -159,7 +161,7 @@ void play_riichi_game(struct riichi_engine *engine) {
 					// Player p2 win
 					engine->phase = PHASE_TSUMO;
 					display_riichi(engine, p2);
-					return;
+					return p2;
 				}
 			}
 		}
@@ -172,4 +174,6 @@ void play_riichi_game(struct riichi_engine *engine) {
 
 		display_riichi(engine, p);
 	}
+
+	return -1;
 }

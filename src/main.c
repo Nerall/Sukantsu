@@ -266,22 +266,31 @@ int main() {
 		return 1;
 	}
 
-	char c;
-	unsigned int nb_games = 0;
+	struct riichi_engine engine;
+	init_riichi_engine(&engine, PLAYER_HUMAN, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+	char c = 0;
 	do {
-		char victory = play(nb_games);
-		if (!AI_MODE)
-			wprintf(L"Do you want to continue (y/n)\n> ");
-		++nb_games;
+		int index_win = play(++engine.nb_games);
+		//int index_win = play_riichi_game(&engine);
+		if (AI_MODE) {
+			if (index_win == 0) continue;
+			if (index_win != -1)
+				break;
+			else
+				continue;
+		}
+
+		wprintf(L"Do you want to continue (y/n)\n> ");
 		fflush(stdout);
+
 		do {
-			c = (AI_MODE) ? ((victory) ? 'N' : 'Y') : getchar();
+			c = getchar();
 			if (c >= 'a')
 				c += 'A' - 'a';
 		} while (c != 'Y' && c != 'N');
-		while (!AI_MODE && getchar() != '\n')
+		while (getchar() != '\n')
 			;
 	} while (c != 'N');
 
-	wprintf(L"\nYou played %d game%s.\n", nb_games, (nb_games > 1) ? "s" : "");
+	wprintf(L"\nYou played %d game(s).\n", engine.nb_games);
 }
