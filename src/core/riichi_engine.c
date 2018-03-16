@@ -20,7 +20,8 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 // Ask the player for an action until this one is correct
 // Applies the action after that
 // Return 1 if the player has won
-static int player_turn(struct player *player, struct grouplist *grouplist) {
+static int player_turn(struct player *player, struct grouplist *grouplist,
+                       histo_index_t *index_rem) {
 	ASSERT_BACKTRACE(player);
 
 	struct hand *player_hand = &player->hand;
@@ -31,6 +32,7 @@ static int player_turn(struct player *player, struct grouplist *grouplist) {
 	for (;;) {
 		enum action action;
 		histo_index_t index = get_player_input(player, &action);
+		*index_rem = index;
 
 		switch (action) {
 			case ACTION_DISCARD: {
@@ -136,13 +138,30 @@ void play_riichi_game(struct riichi_engine *engine) {
 
 		// GetInput Phase
 		engine->phase = PHASE_GETINPUT;
-		int win = player_turn(player, &engine->grouplist);
+		histo_index_t discard;
+		int win = player_turn(player, &engine->grouplist, &discard);
 
-		// Tsumo Phase (if win)
 		if (win) {
+			// Tsumo Phase (player p win)
 			engine->phase = PHASE_TSUMO;
 			display_riichi(engine, p);
 			return;
+		}
+
+		// Claim Phase (for all other players)
+		if (is_valid_index(discard)) {
+			engine->phase = PHASE_CLAIM;
+			for (int p2 = 0; p2 < NB_PLAYERS; ++p2) {
+				if (p == p2)
+					continue;
+
+				if (get_histobit(&engine->players[p2].hand.wintiles, discard)) {
+					// Player p2 win
+					engine->phase = PHASE_TSUMO;
+					display_riichi(engine, p2);
+					return;
+				}
+			}
 		}
 
 		// Wait Phase
