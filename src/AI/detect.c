@@ -51,34 +51,37 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 	if (index >= 34)
 		return;
 
-	histo_index_t last_tile = hand->last_tile;
+	histo_cell_t *cur_cell = &hand->histo.cells[index];
+	if (*cur_cell >= 1) {
+		histo_index_t last_tile = hand->last_tile;
 
-	// Check triplet group
-	if (hand->histo.cells[index] >= 3) {
-		add_group_hand(hand, 1, TRIPLET, index);
-		makegroups_rec(hand, index + 1, grouplist, pair);
-		pop_last_group(hand);
-	}
+		// Check sequence group
+		if (index % 9 < 7 && index < 25 && *(cur_cell + 1) && *(cur_cell + 2)) {
+			add_group_hand(hand, 1, SEQUENCE, index);
+			makegroups_rec(hand, index, grouplist, pair);
+			pop_last_group(hand);
+		}
 
-	// Check pair group
-	if (!pair && hand->histo.cells[index] >= 2) {
-		add_group_hand(hand, 1, PAIR, index);
-		makegroups_rec(hand, index + 1, grouplist, 1);
-		pop_last_group(hand);
-	}
+		if (*cur_cell >= 2) {
+			// Check pair group
+			if (!pair) {
+				add_group_hand(hand, 1, PAIR, index);
+				makegroups_rec(hand, index + 1, grouplist, 1);
+				pop_last_group(hand);
+			}
 
-	// Check sequence group
-	if (index % 9 < 7 && index < 25 && hand->histo.cells[index] >= 1 &&
-	    hand->histo.cells[index + 1] >= 1 &&
-	    hand->histo.cells[index + 2] >= 1) {
-		add_group_hand(hand, 1, SEQUENCE, index);
-		makegroups_rec(hand, index, grouplist, pair);
-		pop_last_group(hand);
+			// Check triplet group
+			if (*cur_cell >= 3) {
+				add_group_hand(hand, 1, TRIPLET, index);
+				makegroups_rec(hand, index + 1, grouplist, pair);
+				pop_last_group(hand);
+			}
+		}
+		hand->last_tile = last_tile;
 	}
 
 	// Check no group
 	makegroups_rec(hand, index + 1, grouplist, pair);
-	hand->last_tile = last_tile;
 }
 
 // Overwrite grouplist with all possible groups from hand
