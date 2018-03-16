@@ -134,6 +134,7 @@ void print_groups(struct group *groups) {
 	wprintf(L"\n");
 }
 
+// TODO: histo[last_tile] == 0 sometimes
 void print_victory(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(grouplist);
 
@@ -260,7 +261,7 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 
 	switch (engine->phase) {
 		case PHASE_INIT: {
-			wprintf(L"\nGame %u:\n\n", engine->nb_games);
+			wprintf(L"\n# Game %u:\n", engine->nb_games);
 			break;
 		}
 

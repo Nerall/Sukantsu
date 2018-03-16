@@ -2,7 +2,7 @@
 #define _DEFINITIONS_H_
 
 // For AI debug and tests
-#define AI_MODE 1
+#define AI_MODE 0
 #define FUN_MODE 0
 
 #define GROUPLIST_CAPACITY 32

@@ -267,14 +267,19 @@ int main() {
 	}
 
 	struct riichi_engine engine;
-	init_riichi_engine(&engine, PLAYER_HUMAN, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HUMAN;
+	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
 	char c = 0;
 	do {
-		int index_win = play(++engine.nb_games);
-		//int index_win = play_riichi_game(&engine);
+		//int index_win = play(++engine.nb_games);
+		int index_win = play_riichi_game(&engine);
+		if (index_win == -1) {
+			wprintf(L"Result: Draw\n");
+		} else {
+			wprintf(L"Result: Player %d has won!\n", index_win + 1);
+		}
 		if (AI_MODE) {
-			if (index_win == 0) continue;
-			if (index_win != -1)
+			if (index_win == 0)
 				break;
 			else
 				continue;

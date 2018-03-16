@@ -97,6 +97,7 @@ static int player_turn(struct player *player, struct grouplist *grouplist,
 int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
+	++engine->nb_games;
 	engine->phase = PHASE_INIT;
 
 	// Initialize structures
@@ -136,7 +137,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// Calculate best discards (hints)
 		tilestodiscard(&player->hand, &engine->grouplist);
 
-		display_riichi(engine, p);
+		if (player->player_type == PLAYER_HUMAN)
+			display_riichi(engine, p);
 
 		// GetInput Phase
 		engine->phase = PHASE_GETINPUT;
@@ -157,9 +159,18 @@ int play_riichi_game(struct riichi_engine *engine) {
 				if (p == p2)
 					continue;
 
-				if (get_histobit(&engine->players[p2].hand.wintiles, discard)) {
+				struct player *other_player = &engine->players[p2];
+
+				if (get_histobit(&other_player->hand.wintiles, discard)) {
+					// Claim the tile
+					add_tile_hand(&other_player->hand, discard);
+
+					ASSERT_BACKTRACE(
+					    isvalid(&other_player->hand, &engine->grouplist));
+
 					// Player p2 win
 					engine->phase = PHASE_TSUMO;
+					makegroups(&other_player->hand, &engine->grouplist);
 					display_riichi(engine, p2);
 					return p2;
 				}
@@ -172,7 +183,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// Calculate winning tiles
 		tenpailist(&player->hand, &engine->grouplist);
 
-		display_riichi(engine, p);
+		if (player->player_type == PLAYER_HUMAN)
+			display_riichi(engine, p);
 	}
 
 	return -1;
