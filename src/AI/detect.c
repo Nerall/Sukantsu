@@ -48,12 +48,11 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 		return;
 	}
 
-	if (index >= 34)
-		return;
+	for (; index < 34; ++index) {
+		histo_cell_t *cur_cell = &hand->histo.cells[index];
 
-	histo_cell_t *cur_cell = &hand->histo.cells[index];
-	if (*cur_cell >= 1) {
-		histo_index_t last_tile = hand->last_tile;
+		if (*cur_cell == 0)
+			continue;
 
 		// Check sequence group
 		if (index % 9 < 7 && index < 25 && *(cur_cell + 1) && *(cur_cell + 2)) {
@@ -77,18 +76,16 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 				pop_last_group(hand);
 			}
 		}
-		hand->last_tile = last_tile;
 	}
-
-	// Check no group
-	makegroups_rec(hand, index + 1, grouplist, pair);
 }
 
 // Overwrite grouplist with all possible groups from hand
 // Will not modify hand
 void makegroups(struct hand *hand, struct grouplist *grouplist) {
+	histo_index_t last_tile = hand->last_tile;
 	init_grouplist(grouplist);
 	makegroups_rec(hand, 0, grouplist, 0);
+	hand->last_tile = last_tile;
 }
 
 void tenpailist(struct hand *hand, struct grouplist *grouplist) {
