@@ -14,6 +14,7 @@ int main() {
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HUMAN;
 	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+
 	char c = 0;
 	do {
 		//int index_win = play(++engine.nb_games);
