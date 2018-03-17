@@ -72,9 +72,9 @@ void pop_last_group(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(hand->nb_groups > 0);
 
-	histo_index_t tile = hand->groups[hand->nb_groups - 1].tile;
+	histo_index_t tile = hand->groups[--hand->nb_groups].tile;
 	add_histogram(&hand->histo, tile);
-	switch (hand->groups[hand->nb_groups - 1].type) {
+	switch (hand->groups[hand->nb_groups].type) {
 		case PAIR:
 			add_histogram(&hand->histo, tile);
 			break;
@@ -94,7 +94,6 @@ void pop_last_group(struct hand *hand) {
 		default:
 			ASSERT_BACKTRACE(0 && "Group type not recognized");
 	}
-	hand->groups[--hand->nb_groups].tile = NO_TILE_INDEX;
 }
 
 // Add a tile to the hand histogram
