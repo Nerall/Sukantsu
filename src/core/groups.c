@@ -7,8 +7,6 @@
 void init_group(struct group *group) {
 	ASSERT_BACKTRACE(group);
 
-	group->hidden = 1;
-	group->type = -1;
 	group->tile = NO_TILE_INDEX;
 }
 
