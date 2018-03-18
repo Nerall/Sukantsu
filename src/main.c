@@ -1,15 +1,23 @@
 #include "AI/detect.h"
 #include "console_io.h"
 #include "core/riichi_engine.h"
+#include "network/network.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <wchar.h>
 
+#define NETWORK_TEST 1
+
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
+
+	if (NETWORK_TEST) {
+		network_test();
+		return 0;
+	}
 
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HUMAN;
