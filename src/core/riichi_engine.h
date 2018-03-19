@@ -5,11 +5,13 @@
 #include "groups.h"
 #include "histogram.h"
 #include "player.h"
+#include "../network/net_server.h"
 
 struct riichi_engine {
 	struct histogram wall;
 	struct player players[NB_PLAYERS];
 	struct grouplist grouplist;
+	struct net_server server;
 
 	unsigned nb_games;
 	enum game_phase phase;
