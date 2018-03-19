@@ -1,7 +1,6 @@
-#include "network.h"
+#include "net_server.h"
 #include <stdio.h>
 #include <string.h>
-#include <SFML/Network.h>
 
 void network_test() {
 	printf("This is the server (use nc for example to connect)\n");

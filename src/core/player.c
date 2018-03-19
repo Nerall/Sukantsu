@@ -9,6 +9,10 @@ void init_player(struct player *player, enum player_type player_type) {
 	player->player_type = player_type;
 }
 
+static histo_index_t input_console(struct player *player, enum action *action) {
+	return get_input(&player->hand.histo, action);
+}
+
 static histo_index_t input_AI(struct player *player, enum action *action) {
 	ASSERT_BACKTRACE(player);
 	ASSERT_BACKTRACE(action);
@@ -37,23 +41,25 @@ static histo_index_t input_AI(struct player *player, enum action *action) {
 	return NO_TILE_INDEX;
 }
 
-static histo_index_t input_console(struct player *player, enum action *action) {
-	return get_input(&player->hand.histo, action);
+static histo_index_t input_network(struct player *player, enum action *action) {
+	player = player;
+	action = action;
+	ASSERT_BACKTRACE(0 && "TODO: Input for network player");
+	return NO_TILE_INDEX;
 }
 
 histo_index_t get_player_input(struct player *player, enum action *action) {
 	ASSERT_BACKTRACE(player);
 
 	switch (player->player_type) {
-		case PLAYER_HUMAN:
+		case PLAYER_HOST:
 			return input_console(player, action);
 
 		case PLAYER_AI:
 			return input_AI(player, action);
 
-		case PLAYER_AI_TEST:
-			ASSERT_BACKTRACE(0 && "No AI-Test set-up");
-			return NO_TILE_INDEX;
+		case PLAYER_NETWORK:
+			return input_network(player, action);
 
 		default:
 			ASSERT_BACKTRACE(0 && "Player-Type not recognized");

@@ -4,6 +4,9 @@
 #include "../definitions.h"
 #include "hand.h"
 
+// TODO: Include a client struct in player
+// TODO: Include a server struct in riichi_engine
+
 struct player {
 	struct hand hand;
 	enum player_type player_type;

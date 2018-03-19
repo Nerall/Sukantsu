@@ -136,7 +136,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// Calculate best discards (hints)
 		tilestodiscard(&player->hand, &engine->grouplist);
 
-		if (player->player_type == PLAYER_HUMAN)
+		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, p);
 
 		// GetInput Phase
@@ -182,7 +182,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// Calculate winning tiles
 		tenpailist(&player->hand, &engine->grouplist);
 
-		if (player->player_type == PLAYER_HUMAN)
+		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, p);
 	}
 

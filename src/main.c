@@ -1,7 +1,7 @@
 #include "AI/detect.h"
 #include "console_io.h"
 #include "core/riichi_engine.h"
-#include "network/network.h"
+#include "network/net_server.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +20,7 @@ int main() {
 	}
 
 	struct riichi_engine engine;
-	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HUMAN;
+	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
 	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
 
 	char c = 0;
