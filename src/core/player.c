@@ -1,12 +1,88 @@
 #include "player.h"
 #include "../console_io.h"
 #include "../debug.h"
+#include "../AI/detect.h"
 
 void init_player(struct player *player, enum player_type player_type) {
 	ASSERT_BACKTRACE(player);
 
 	init_hand(&player->hand);
 	player->player_type = player_type;
+}
+
+// Ask the player for an action until this one is correct
+// Applies the action after that
+// Return 1 if the player has won
+int player_turn(struct player *player, struct grouplist *grouplist,
+                       histo_index_t *index_rem) {
+	ASSERT_BACKTRACE(player);
+
+	struct hand *player_hand = &player->hand;
+
+	if (is_valid_hand(player_hand, grouplist))
+		return 1;
+
+	for (;;) {
+		enum action action;
+		histo_index_t index = get_player_input(player, &action);
+		*index_rem = index;
+
+		switch (action) {
+			case ACTION_DISCARD: {
+				remove_tile_hand(player_hand, index);
+				player_hand->discarded_tiles.cells[index] += 1;
+				if (index != player_hand->last_tile) {
+					tilestocall(player_hand, grouplist);
+					tenpailist(player_hand, grouplist);
+				}
+				return 0;
+			}
+
+			case ACTION_RIICHI: {
+				if (player_hand->riichi != NORIICHI || !player_hand->closed ||
+				    !get_histobit(&player_hand->riichitiles, index)) {
+					break;
+				}
+
+				remove_tile_hand(player_hand, index);
+				player_hand->discarded_tiles.cells[index] += 1;
+				tenpailist(player_hand, grouplist);
+
+				// Will be set at RIICHI next turn
+				player_hand->riichi = IPPATSU;
+
+				// Init values that will be no more used later
+				init_histobit(&player_hand->riichitiles, 0);
+				init_histobit(&player_hand->chiitiles, 0);
+				init_histobit(&player_hand->pontiles, 0);
+				init_histobit(&player_hand->kantiles, 0);
+				return 0;
+			}
+
+			case ACTION_TSUMO: {
+				break;
+				/*
+				// if (!get_histobit(&hand->wintiles, index))
+				continue;
+
+				wprintf(L"TSUMO!\n\n");
+				makegroups(hand, grouplist);
+
+				print_victory(hand, grouplist);
+				continue;
+				return 1;
+				*/
+			}
+
+			case ACTION_KAN: {
+				break;
+			}
+
+			default:
+				ASSERT_BACKTRACE(0 && "Action not recognized");
+				break;
+		}
+	}
 }
 
 static histo_index_t input_AI(struct player *player, enum action *action) {

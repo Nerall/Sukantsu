@@ -11,6 +11,9 @@ struct player {
 
 void init_player(struct player *player, enum player_type player_type);
 
+int player_turn(struct player *player, struct grouplist *grouplist,
+                       histo_index_t *index_rem);
+
 histo_index_t get_player_input(struct player *player, enum action *action);
 
 #endif // _PLAYER_H_
