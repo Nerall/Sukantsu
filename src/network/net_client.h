@@ -4,7 +4,10 @@
 #include <SFML/Network.h>
 
 struct net_client {
-	//sfTcpSocket *client;
+	sfTcpSocket *socket;
+	sfIpAdress host;
+	unsigned short port;
+	sfTime timeout;
 };
 
 void client_test();
