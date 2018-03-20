@@ -12,7 +12,7 @@ int listen_net_server(struct net_server *server, unsigned short port_min,
 	ASSERT_BACKTRACE(server);
 
 	server->listener = sfTcpListener_create();
-	for (unsigned short port = port_min; port < port_max; ++port) {
+	for (unsigned short port = port_min; port < port_max; port += 100) {
 		printf("[SERVER] Trying listening to port %u\n", port);
 		if (sfTcpListener_listen(server->listener, port, sfIpAddress_Any) ==
 		    sfSocketDone) {
@@ -44,18 +44,21 @@ void stop_listen_net_server(struct net_server *server) {
 // Check if someone is trying to connect and add it to server->clients
 // Do nothing if server->nb_clients >= 4
 // Do not block (listener has been set to non-blocking in listen_net_server)
-void check_new_connection_net_server(struct net_server *server) {
+// Return 1 if a player has connected
+int check_new_connection_net_server(struct net_server *server) {
 	ASSERT_BACKTRACE(server);
 
 	if (server->nb_clients >= 4)
-		return;
+		return 0;
 
 	sfTcpSocket *client;
 	if (sfTcpListener_accept(server->listener, &client) == sfSocketDone) {
 		printf("[SERVER] New client accepted\n");
 		server->clients[server->nb_clients] = client;
 		++server->nb_clients;
+		return 1;
 	}
+	return 0;
 }
 
 // Clean the net_server

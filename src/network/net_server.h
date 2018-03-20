@@ -14,7 +14,7 @@ int listen_net_server(struct net_server *server, unsigned short port_min,
 
 void stop_listen_net_server(struct net_server *server);
 
-void check_new_connection_net_server(struct net_server *server);
+int check_new_connection_net_server(struct net_server *server);
 
 void clean_net_server(struct net_server *server);
 
