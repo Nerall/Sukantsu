@@ -3,6 +3,9 @@
 #include "../console_io.h"
 #include "../debug.h"
 
+#include <stdio.h>
+#include <wchar.h>
+
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
                         enum player_type t4) {
@@ -21,6 +24,11 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
+	struct net_server *server = &engine->server;
+
+	////////////////
+	// INIT PHASE //
+	////////////////
 	++engine->nb_games;
 	engine->phase = PHASE_INIT;
 
@@ -32,10 +40,26 @@ int play_riichi_game(struct riichi_engine *engine) {
 	}
 
 	// Give 13 tiles to each player
-	for (int i = 0; i < 13; ++i) {
-		for (int p = 0; p < NB_PLAYERS; ++p) {
+	for (int p = 0; p < NB_PLAYERS; ++p) {
+		for (int i = 0; i < 13; ++i) {
 			histo_index_t r = random_pop_histogram(&engine->wall);
 			add_tile_hand(&engine->players[p].hand, r);
+		}
+	}
+
+	// [SERVER] Send tiles to all clients
+	for (int p = 0; p < NB_PLAYERS; ++p) {
+		if (engine->players[p].player_type != PLAYER_CLIENT)
+			continue;
+
+		struct player *player = &engine->players[p];
+		int net_id = player->net_id;
+
+		if (sfTcpSocket_send(server->clients[net_id], &player->hand.histo,
+		                     sizeof(struct histogram)) != sfSocketDone) {
+			fprintf(stderr, "[ERROR][SERVER] Error while sending init data to"
+			                " player %d\n",
+			        p);
 		}
 	}
 
@@ -51,12 +75,18 @@ int play_riichi_game(struct riichi_engine *engine) {
 	for (int p = 0; engine->wall.nb_tiles > 14; p = (p + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[p];
 
-		// Draw Phase
+		////////////////
+		// DRAW PHASE //
+		////////////////
 		engine->phase = PHASE_DRAW;
 
 		// Give one tile to the player
 		histo_index_t r = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, r);
+
+		//
+		// TODO: Send tile to client p
+		//
 
 		// Calculate best discards (hints)
 		tilestodiscard(&player->hand, &engine->grouplist);
@@ -69,16 +99,34 @@ int play_riichi_game(struct riichi_engine *engine) {
 		histo_index_t discard;
 		int win = player_turn(player, &engine->grouplist, &discard);
 
+		//
+		// TODO: Receive input from client p
+		//
+
 		if (win) {
-			// Tsumo Phase (player p win)
+			/////////////////
+			// TSUMO PHASE //
+			/////////////////
 			engine->phase = PHASE_TSUMO;
 			display_riichi(engine, p);
+
+			//
+			// TODO: Send victory infos to all clients
+			//
+
 			return p;
 		}
 
-		// Claim Phase (for all other players)
 		if (is_valid_index(discard)) {
+			/////////////////
+			// CLAIM PHASE //
+			/////////////////
 			engine->phase = PHASE_CLAIM;
+
+			//
+			// TODO: Send claim infos to all clients
+			//
+
 			for (int p2 = 0; p2 < NB_PLAYERS; ++p2) {
 				if (p == p2)
 					continue;
@@ -99,9 +147,15 @@ int play_riichi_game(struct riichi_engine *engine) {
 					return p2;
 				}
 			}
+
+			//
+			// TODO: Receive claim inputs from all clients
+			//
 		}
 
-		// Wait Phase
+		////////////////
+		// WAIT PHASE //
+		////////////////
 		engine->phase = PHASE_WAIT;
 
 		// Calculate winning tiles

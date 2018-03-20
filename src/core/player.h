@@ -10,6 +10,7 @@
 struct player {
 	struct hand hand;
 	enum player_type player_type;
+	int net_id;
 };
 
 void init_player(struct player *player, enum player_type player_type);

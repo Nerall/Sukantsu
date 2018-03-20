@@ -134,7 +134,7 @@ histo_index_t get_player_input(struct player *player, enum action *action) {
 		case PLAYER_AI:
 			return input_AI(player, action);
 
-		case PLAYER_NETWORK:
+		case PLAYER_CLIENT:
 			return input_network(player, action);
 
 		default:
