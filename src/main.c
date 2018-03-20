@@ -2,14 +2,16 @@
 #include "AI/detect.h"
 #include "console_io.h"
 #include "core/riichi_engine.h"
-#include "network/net_server.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <wchar.h>
 
-#define NETWORK_TEST 0
+#include "network/net_server.h"
+#include "network/net_client.h"
+
+#define NETWORK_TEST 1
 
 void wait_for_players(struct riichi_engine *engine) {
 	const unsigned short port_min = 5000, port_max = 10000;
@@ -58,7 +60,7 @@ int main() {
 	srand(time(NULL));
 
 	if (NETWORK_TEST) {
-		network_test();
+		client_test();
 		return 0;
 	}
 

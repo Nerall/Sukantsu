@@ -7,6 +7,6 @@ struct net_client {
 	//sfTcpSocket *client;
 };
 
-//void init_net_client(struct net_client *client);
+void client_test();
 
 #endif // _NET_CLIENT_H_
