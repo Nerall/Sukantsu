@@ -78,7 +78,6 @@ void network_test() {
 	const unsigned short port_min = 5000, port_max = 6000;
 	const time_t timeout = 5;
 	const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
-	const struct timespec delay2 = {tv_sec : 0, tv_nsec : 50 * 1000000};
 
 	char *message = "Tell me something\n> ";
 	char *message2 = "I've received that!\n";

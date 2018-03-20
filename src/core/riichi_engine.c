@@ -3,6 +3,8 @@
 #include "../console_io.h"
 #include "../debug.h"
 
+#include <stdio.h>
+
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
                         enum player_type t4) {
@@ -21,6 +23,8 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
+	struct net_server *server = &engine->server;
+
 	////////////////
 	// INIT PHASE //
 	////////////////
@@ -35,16 +39,27 @@ int play_riichi_game(struct riichi_engine *engine) {
 	}
 
 	// Give 13 tiles to each player
-	for (int i = 0; i < 13; ++i) {
-		for (int p = 0; p < NB_PLAYERS; ++p) {
+	for (int p = 0; p < NB_PLAYERS; ++p) {
+		for (int i = 0; i < 13; ++i) {
 			histo_index_t r = random_pop_histogram(&engine->wall);
 			add_tile_hand(&engine->players[p].hand, r);
 		}
 	}
 
-	//
-	// TODO: Send tiles to all clients
-	//
+	// [SERVER] Send tiles to all clients
+	for (int p = 0; p < NB_PLAYERS; ++p) {
+		if (engine->players[p].player_type != PLAYER_CLIENT)
+			continue;
+
+		struct player *player = &engine->players[p];
+
+		if (sfTcpSocket_send(server->clients[p], &player->hand.histo,
+		                     sizeof(struct histogram)) != sfSocketDone) {
+			fprintf(stderr, "[ERROR][SERVER] Error while sending init data to"
+			                " player %d\n",
+			        p);
+		}
+	}
 
 	// To initialize the waits
 	for (int p = 0; p < NB_PLAYERS; ++p) {

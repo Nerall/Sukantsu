@@ -17,7 +17,7 @@ typedef unsigned char histo_cell_t;
 typedef unsigned char histo_index_t;
 
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
-enum player_type { PLAYER_HOST, PLAYER_AI, PLAYER_NETWORK };
+enum player_type { PLAYER_HOST, PLAYER_AI, PLAYER_CLIENT };
 enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
 
 enum action {

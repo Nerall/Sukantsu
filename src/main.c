@@ -8,7 +8,7 @@
 #include <time.h>
 #include <wchar.h>
 
-#define NETWORK_TEST 1
+#define NETWORK_TEST 0
 
 int main() {
 	setlocale(LC_ALL, "");
