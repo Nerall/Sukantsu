@@ -8,13 +8,13 @@ void init_hand(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	init_histogram(&hand->histo, 0);
-	init_histogram(&hand->discarded_tiles, 0);
 	init_histobit(&hand->chiitiles, 0);
 	init_histobit(&hand->pontiles, 0);
 	init_histobit(&hand->kantiles, 0);
 	init_histobit(&hand->wintiles, 0);
-	init_histobit(&hand->riichitiles, 0);
-
+	init_histobit(&hand->furitentiles, 0);
+  init_histobit(&hand->riichitiles, 0);
+  init_discardlist(&hand->discardlist);
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}

@@ -30,8 +30,9 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 		switch (action) {
 			case ACTION_DISCARD: {
 				remove_tile_hand(player_hand, index);
-				player_hand->discarded_tiles.cells[index] += 1;
-				if (index != player_hand->last_tile) {
+				set_histobit(&player_hand->furitentiles, index);
+				add_discard(&player_hand->discardlist, index);
+        if (index != player_hand->last_tile) {
 					tilestocall(player_hand, grouplist);
 					tenpailist(player_hand, grouplist);
 				}
@@ -45,7 +46,8 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 				}
 
 				remove_tile_hand(player_hand, index);
-				player_hand->discarded_tiles.cells[index] += 1;
+				set_histobit(&player_hand->furitentiles, index);
+        add_discard(&player_hand->discardlist, index);
 				tenpailist(player_hand, grouplist);
 
 				// Will be set at RIICHI next turn

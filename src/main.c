@@ -13,7 +13,7 @@ int main() {
 
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HUMAN;
-	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+	init_riichi_engine(&engine, ptype, PLAYER_HUMAN, PLAYER_AI, PLAYER_AI);
 
 	char c = 0;
 	do {
@@ -43,5 +43,6 @@ int main() {
 			;
 	} while (c != 'N');
 
-	wprintf(L"\nYou played %d game(s).\n", engine.nb_games);
+	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
+  (engine.nb_games > 1) ? "s" : "");
 }
