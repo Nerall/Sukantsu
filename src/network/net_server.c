@@ -99,31 +99,27 @@ void network_test() {
 		sfTcpSocket *client = server.clients[i];
 		if (client) {
 			sfSocketStatus status;
-			do {
-				status = sfTcpSocket_send(client, message, strlen(message));
-				nanosleep(&delay2, NULL);
-			} while (status == sfSocketNotReady);
+			status = sfTcpSocket_send(client, message, strlen(message));
+			if (status != sfSocketDone) {
+				fprintf(stderr, "[ERROR][SERVER] Send error\n");
+			}
 
 			char *buffer[1024];
 			size_t n;
-			do {
-				status = sfTcpSocket_receive(client, buffer,
-				                             1024 * sizeof(char), &n);
-				nanosleep(&delay2, NULL);
-			} while (status == sfSocketNotReady);
+			status =
+			    sfTcpSocket_receive(client, buffer, 1024 * sizeof(char), &n);
+			if (status != sfSocketDone) {
+				fprintf(stderr, "[ERROR][SERVER] Receive error\n");
+			}
 
-			do {
-				status = sfTcpSocket_send(client, message2, strlen(message2));
-				nanosleep(&delay2, NULL);
-			} while (status == sfSocketNotReady);
+			status = sfTcpSocket_send(client, message2, strlen(message2));
+			if (status != sfSocketDone) {
+				fprintf(stderr, "[ERROR][SERVER] Send error\n");
+			}
 
-			do {
-				status = sfTcpSocket_send(client, buffer, n);
-				nanosleep(&delay2, NULL);
-			} while (status == sfSocketNotReady);
-
-			if (status == sfSocketError) {
-				fprintf(stderr, "[ERROR][SERVER] Could not send data\n");
+			status = sfTcpSocket_send(client, buffer, n);
+			if (status != sfSocketDone) {
+				fprintf(stderr, "[ERROR][SERVER] Send error\n");
 			}
 		}
 	}
