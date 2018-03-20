@@ -6,7 +6,7 @@
 void client_test()
 {
 	sfTcpSocket* socket = sfTcpSocket_create();
-	sfIpAddress host = {"208.97.177.124"};
+	sfIpAddress host = sfIpAddress_fromString("perdu.com");
 	sfTime timeout = sfSeconds(60);
 	if (sfTcpSocket_connect(socket, host, 80, timeout) != sfSocketDone)
 	{
