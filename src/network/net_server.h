@@ -9,7 +9,8 @@ struct net_server {
 	int nb_clients;
 };
 
-void listen_net_server(struct net_server *server, unsigned port);
+int listen_net_server(struct net_server *server, unsigned short port_min,
+                      unsigned short port_max);
 
 void stop_listen_net_server(struct net_server *server);
 
