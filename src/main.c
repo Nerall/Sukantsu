@@ -21,17 +21,17 @@ void wait_for_players(struct riichi_engine *engine) {
 		return;
 	}
 
-	printf("Wait for network players ? (Y/N)\n> ");
+	wprintf(L"Wait for network players ? (Y/N)\n> ");
 	char c = getchar();
 	while (c == 'Y' || c == 'y') {
 		if (engine->server.nb_clients >= 3) {
-			printf("No more room for other clients\n");
+			wprintf(L"No more room for other clients\n");
 			break;
 		}
 		time_t t1 = time(NULL);
 		do {
 			if (check_new_connection_net_server(server)) {
-				printf("New connection!\n");
+				wprintf(L"New connection!\n");
 				for (int p = 1; p < 4; ++p) {
 					struct player *player = &engine->players[p];
 					if (player->player_type != PLAYER_AI)
@@ -41,10 +41,11 @@ void wait_for_players(struct riichi_engine *engine) {
 					player->player_type = PLAYER_CLIENT;
 					break;
 				}
+				break;
 			}
 			nanosleep(&delay, NULL);
 		} while (time(NULL) - t1 < timeout);
-		printf("Continue waiting for network players ? (Y/N)\n> ");
+		wprintf(L"Continue waiting for network players ? (Y/N)\n> ");
 		while (getchar() != '\n');
 		c = getchar();
 	}
@@ -70,7 +71,6 @@ int main() {
 
 	char c = 0;
 	do {
-		// int index_win = play(++engine.nb_games);
 		int index_win = play_riichi_game(&engine);
 		if (index_win == -1) {
 			wprintf(L"Result: Draw\n");

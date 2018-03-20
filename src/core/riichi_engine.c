@@ -4,6 +4,7 @@
 #include "../debug.h"
 
 #include <stdio.h>
+#include <wchar.h>
 
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
@@ -52,8 +53,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 			continue;
 
 		struct player *player = &engine->players[p];
+		int net_id = player->net_id;
 
-		if (sfTcpSocket_send(server->clients[p], &player->hand.histo,
+		if (sfTcpSocket_send(server->clients[net_id], &player->hand.histo,
 		                     sizeof(struct histogram)) != sfSocketDone) {
 			fprintf(stderr, "[ERROR][SERVER] Error while sending init data to"
 			                " player %d\n",

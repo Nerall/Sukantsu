@@ -1,9 +1,11 @@
 #define _POSIX_C_SOURCE 199309L
 #include "net_server.h"
 #include "../debug.h"
-#include <stdio.h>
+
 #include <string.h>
 #include <time.h>
+#include <stdio.h>
+#include <wchar.h>
 
 // Begin listening to the given port
 // Return 0 if no error occured
@@ -13,7 +15,7 @@ int listen_net_server(struct net_server *server, unsigned short port_min,
 
 	server->listener = sfTcpListener_create();
 	for (unsigned short port = port_min; port < port_max; port += 100) {
-		printf("[SERVER] Trying listening to port %u\n", port);
+		wprintf(L"[SERVER] Trying listening to port %u\n", port);
 		if (sfTcpListener_listen(server->listener, port, sfIpAddress_Any) ==
 		    sfSocketDone) {
 			sfTcpListener_setBlocking(server->listener, sfFalse);
@@ -25,7 +27,7 @@ int listen_net_server(struct net_server *server, unsigned short port_min,
 		}
 	}
 
-	fprintf(stderr, "[ERROR][SERVER] Could not connect to any port in [%u, %u[",
+	wprintf(L"[ERROR][SERVER] Could not connect to any port in [%u, %u[",
 	        port_min, port_max);
 	return 1;
 }
@@ -36,7 +38,7 @@ void stop_listen_net_server(struct net_server *server) {
 
 	if (server->listener) {
 		sfTcpListener_destroy(server->listener);
-		printf("[SERVER] Stoped listening\n");
+		wprintf(L"[SERVER] Stoped listening\n");
 		server->listener = NULL;
 	}
 }
@@ -53,7 +55,7 @@ int check_new_connection_net_server(struct net_server *server) {
 
 	sfTcpSocket *client;
 	if (sfTcpListener_accept(server->listener, &client) == sfSocketDone) {
-		printf("[SERVER] New client accepted\n");
+		wprintf(L"[SERVER] New client accepted\n");
 		server->clients[server->nb_clients] = client;
 		++server->nb_clients;
 		return 1;
@@ -92,7 +94,7 @@ void network_test() {
 
 	time_t t1 = time(NULL);
 	do {
-		printf("%2lu s left\n", timeout - (time(NULL) - t1));
+		wprintf(L"%2lu s left\n", timeout - (time(NULL) - t1));
 		check_new_connection_net_server(&server);
 		nanosleep(&delay, NULL);
 	} while (time(NULL) - t1 < timeout);
@@ -103,7 +105,7 @@ void network_test() {
 			sfSocketStatus status;
 			status = sfTcpSocket_send(client, message, strlen(message));
 			if (status != sfSocketDone) {
-				fprintf(stderr, "[ERROR][SERVER] Send error\n");
+				wprintf(L"[ERROR][SERVER] Send error\n");
 			}
 
 			char *buffer[1024];
@@ -111,17 +113,17 @@ void network_test() {
 			status =
 			    sfTcpSocket_receive(client, buffer, 1024 * sizeof(char), &n);
 			if (status != sfSocketDone) {
-				fprintf(stderr, "[ERROR][SERVER] Receive error\n");
+				wprintf(L"[ERROR][SERVER] Receive error\n");
 			}
 
 			status = sfTcpSocket_send(client, message2, strlen(message2));
 			if (status != sfSocketDone) {
-				fprintf(stderr, "[ERROR][SERVER] Send error\n");
+				wprintf(L"[ERROR][SERVER] Send error\n");
 			}
 
 			status = sfTcpSocket_send(client, buffer, n);
 			if (status != sfSocketDone) {
-				fprintf(stderr, "[ERROR][SERVER] Send error\n");
+				wprintf(L"[ERROR][SERVER] Send error\n");
 			}
 		}
 	}
