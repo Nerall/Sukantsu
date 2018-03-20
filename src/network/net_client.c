@@ -5,9 +5,9 @@
 #include <string.h>
 #include <wchar.h>
 
-sfTcpSocket* init_client_from_host_and_port(const char* host, unsigned short port) 
+struct net_client* init_client_from_host_and_port(const char* host, unsigned short port) 
 {
-	struct net_client *client;
+	struct net_client *client = malloc(sizeof(struct net_client));
 	client->socket = sfTcpSocket_create();
 	client->host = sfIpAddress_fromString(host);
 	client->port = port;
@@ -24,11 +24,17 @@ int connect_to_server(struct net_client *client)
 	return 1;
 }
 
-int disconnect_from_server(struct net_client *client)
+void disconnect_from_server(struct net_client *client)
 {
 	sfIpAddress cur_address = sfTcpSocket_getRemoteAddress(client->socket);
 	sfTcpSocket_disconnect(client->socket);
 	wprintf(L"%s%s\n", "Disconnected from", cur_address.address);
+}
+
+void client_buster(struct net_client *client)
+{
+	sfTcpSocket_destroy(client->socket);
+	free(client);
 }
 
 void client_test() {

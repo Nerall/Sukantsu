@@ -5,7 +5,7 @@
 
 struct net_client {
 	sfTcpSocket *socket;
-	sfIpAdress host;
+	sfIpAddress host;
 	unsigned short port;
 	sfTime timeout;
 };
