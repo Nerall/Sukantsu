@@ -23,15 +23,15 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 		return 1;
 
 	for (;;) {
-		enum action action;
-		histo_index_t index = get_player_input(player, &action);
-		*index_rem = index;
+		struct action_input input;
+		get_player_input(player, &input);
+		*index_rem = input.tile;
 
-		switch (action) {
+		switch (input.action) {
 			case ACTION_DISCARD: {
-				remove_tile_hand(player_hand, index);
-				player_hand->discarded_tiles.cells[index] += 1;
-				if (index != player_hand->last_tile) {
+				remove_tile_hand(player_hand, input.tile);
+				player_hand->discarded_tiles.cells[input.tile] += 1;
+				if (input.tile != player_hand->last_tile) {
 					tilestocall(player_hand, grouplist);
 					tenpailist(player_hand, grouplist);
 				}
@@ -40,12 +40,12 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 
 			case ACTION_RIICHI: {
 				if (player_hand->riichi != NORIICHI || !player_hand->closed ||
-				    !get_histobit(&player_hand->riichitiles, index)) {
+				    !get_histobit(&player_hand->riichitiles, input.tile)) {
 					break;
 				}
 
-				remove_tile_hand(player_hand, index);
-				player_hand->discarded_tiles.cells[index] += 1;
+				remove_tile_hand(player_hand, input.tile);
+				player_hand->discarded_tiles.cells[input.tile] += 1;
 				tenpailist(player_hand, grouplist);
 
 				// Will be set at RIICHI next turn
@@ -62,7 +62,7 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 			case ACTION_TSUMO: {
 				break;
 				/*
-				// if (!get_histobit(&hand->wintiles, index))
+				// if (!get_histobit(&hand->wintiles, input.tile))
 				continue;
 
 				wprintf(L"TSUMO!\n\n");
@@ -85,60 +85,70 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 	}
 }
 
-static histo_index_t input_console(struct player *player, enum action *action) {
-	return get_input(&player->hand.histo, action);
+static void input_console(struct player *player, struct action_input *input) {
+	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(input);
+
+	input->tile = get_input(&player->hand.histo, &input->action);
 }
 
-static histo_index_t input_AI(struct player *player, enum action *action) {
+static void input_AI(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
-	ASSERT_BACKTRACE(action);
+	ASSERT_BACKTRACE(input);
 
 	struct hand *player_hand = &player->hand;
-	*action = ACTION_DISCARD;
+	input->action = ACTION_DISCARD;
+	input->tile = NO_TILE_INDEX;
 
 	if (player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
-				return i - 1;
+				input->tile = i - 1;
+				return;
 			}
 		}
 
 		ASSERT_BACKTRACE(0 && "RiichiTiles Histobit is empty");
-		return NO_TILE_INDEX;
+		return;
 	}
 
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
-			return i - 1;
+			input->tile = i - 1;
+			return;
 		}
 	}
 
 	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
-	return NO_TILE_INDEX;
 }
 
-static histo_index_t input_client(struct player *player, enum action *action) {
+static void input_client(struct player *player, struct action_input *input) {
+	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(input);
+
 	player = player;
-	action = action;
+	input = input;
 	ASSERT_BACKTRACE(0 && "TODO: Input for network player");
-	return NO_TILE_INDEX;
 }
 
-histo_index_t get_player_input(struct player *player, enum action *action) {
+void get_player_input(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
 	switch (player->player_type) {
 		case PLAYER_HOST:
-			return input_console(player, action);
+			input_console(player, input);
+			return;
 
 		case PLAYER_AI:
-			return input_AI(player, action);
+			input_AI(player, input);
+			return;
 
 		case PLAYER_CLIENT:
-			return input_client(player, action);
+			input_client(player, input);
+			return;
 
 		default:
 			ASSERT_BACKTRACE(0 && "Player-Type not recognized");
-			return NO_TILE_INDEX;
+			return;
 	}
 }
