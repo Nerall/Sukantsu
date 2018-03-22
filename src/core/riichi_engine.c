@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <wchar.h>
 
+#define TIMEOUT_SEND 5
+#define TIMEOUT_RECEIVE 15
+
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
                         enum player_type t4) {
@@ -53,10 +56,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 			continue;
 
 		struct player *player = &engine->players[p];
-		int net_id = player->net_id;
 
-		if (sfTcpSocket_send(server->clients[net_id], &player->hand.histo,
-		                     sizeof(struct histogram)) != sfSocketDone) {
+		sfTcpSocket_setBlocking(server->clients[player->net_id], sfFalse);
+
+		if (send_data_to_client(server, player->net_id, &player->hand.histo,
+		                        sizeof(struct histogram), TIMEOUT_SEND)) {
 			fprintf(stderr, "[ERROR][SERVER] Error while sending init data to"
 			                " player %d\n",
 			        p);
@@ -88,7 +92,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// Send tile to client p
 		if (is_client) {
 			if (send_data_to_client(server, player->net_id, &randi,
-			                        sizeof(histo_index_t), 5)) {
+			                        sizeof(histo_index_t), TIMEOUT_SEND)) {
 				fprintf(stderr,
 				        "[ERROR][SERVER] Error while sending popped tile to"
 				        " player %d\n",

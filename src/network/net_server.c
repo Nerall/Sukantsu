@@ -95,12 +95,21 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 	time_t t1 = time(NULL);
 
 	do {
-		status = sfTcpSocket_send(client, data, data_size);
-		if (status == sfSocketDone)
-			return 0;
+		size_t sent;
+		switch (sfTcpSocket_sendPartial(client, data, data_size, &sent)) {
+			case sfSocketDone:
+				return 0;
 
-		if (status == sfSocketError)
-			return 1;
+			case sfSocketPartial: {
+				// Shift based on the number of byte sent
+				data += sent;
+				data_size -= sent;
+				break;
+			}
+
+			default:
+				return 1;
+		}
 
 		nanosleep(&delay, NULL);
 	} while (time(NULL) - t1 < timeout_s);
@@ -110,6 +119,11 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 	return status != sfSocketDone;
 }
 
+// Receive data from the client
+// If operation takes more than timeout or an error occured, return 1
+// If data has been received without problem, return 0
+// The timeout argument is expressed in seconds
+// The data argument may still be modified when the function returns 1
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
                              size_t data_size, time_t timeout_s) {
 	ASSERT_BACKTRACE(server);
@@ -122,12 +136,20 @@ int receive_data_from_client(struct net_server *server, int iclient, void *data,
 	size_t obt;
 
 	do {
-		status = sfTcpSocket_receive(client, data, data_size, &obt);
-		if (status == sfSocketDone)
-			return 0;
+		switch (sfTcpSocket_receive(client, data, data_size, &obt)) {
+			case sfSocketDone:
+				return 0;
 
-		if (status == sfSocketError)
-			return 1;
+			case sfSocketPartial: {
+				// Shift based on the number of byte received
+				data += obt;
+				data_size -= obt;
+				break;
+			}
+
+			default:
+				return 1;
+		}
 
 		nanosleep(&delay, NULL);
 	} while (time(NULL) - t1 < timeout_s);
