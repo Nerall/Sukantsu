@@ -1,7 +1,7 @@
 #include "player.h"
+#include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
-#include "../AI/detect.h"
 
 void init_player(struct player *player, enum player_type player_type) {
 	ASSERT_BACKTRACE(player);
@@ -14,7 +14,7 @@ void init_player(struct player *player, enum player_type player_type) {
 // Applies the action after that
 // Return 1 if the player has won
 int player_turn(struct player *player, struct grouplist *grouplist,
-                       histo_index_t *index_rem) {
+                histo_index_t *index_rem) {
 	ASSERT_BACKTRACE(player);
 
 	struct hand *player_hand = &player->hand;
@@ -117,7 +117,7 @@ static histo_index_t input_AI(struct player *player, enum action *action) {
 	return NO_TILE_INDEX;
 }
 
-static histo_index_t input_network(struct player *player, enum action *action) {
+static histo_index_t input_client(struct player *player, enum action *action) {
 	player = player;
 	action = action;
 	ASSERT_BACKTRACE(0 && "TODO: Input for network player");
@@ -135,7 +135,7 @@ histo_index_t get_player_input(struct player *player, enum action *action) {
 			return input_AI(player, action);
 
 		case PLAYER_CLIENT:
-			return input_network(player, action);
+			return input_client(player, action);
 
 		default:
 			ASSERT_BACKTRACE(0 && "Player-Type not recognized");

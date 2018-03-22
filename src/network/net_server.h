@@ -2,6 +2,7 @@
 #define _NET_SERVER_H_
 
 #include <SFML/Network.h>
+#include <time.h>
 
 struct net_server {
 	sfTcpListener *listener;
@@ -17,6 +18,12 @@ void stop_listen_net_server(struct net_server *server);
 int check_new_connection_net_server(struct net_server *server);
 
 void clean_net_server(struct net_server *server);
+
+int send_data_to_client(struct net_server *server, int iclient, void *data,
+                        size_t data_size, time_t timeout_s);
+
+int receive_data_from_client(struct net_server *server, int iclient, void *data,
+                             size_t data_size, time_t timeout_s);
 
 void network_test();
 

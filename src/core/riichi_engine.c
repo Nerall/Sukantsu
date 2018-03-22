@@ -74,6 +74,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	// Main loop
 	for (int p = 0; engine->wall.nb_tiles > 14; p = (p + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[p];
+		int is_client = player->player_type == PLAYER_CLIENT;
 
 		////////////////
 		// DRAW PHASE //
@@ -81,12 +82,19 @@ int play_riichi_game(struct riichi_engine *engine) {
 		engine->phase = PHASE_DRAW;
 
 		// Give one tile to the player
-		histo_index_t r = random_pop_histogram(&engine->wall);
-		add_tile_hand(&player->hand, r);
+		histo_index_t randi = random_pop_histogram(&engine->wall);
+		add_tile_hand(&player->hand, randi);
 
-		//
-		// TODO: Send tile to client p
-		//
+		// Send tile to client p
+		if (is_client) {
+			if (send_data_to_client(server, player->net_id, &randi,
+			                        sizeof(histo_index_t), 5)) {
+				fprintf(stderr,
+				        "[ERROR][SERVER] Error while sending popped tile to"
+				        " player %d\n",
+				        p);
+			}
+		}
 
 		// Calculate best discards (hints)
 		tilestodiscard(&player->hand, &engine->grouplist);
@@ -99,9 +107,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		histo_index_t discard;
 		int win = player_turn(player, &engine->grouplist, &discard);
 
-		//
 		// TODO: Receive input from client p
-		//
 
 		if (win) {
 			/////////////////

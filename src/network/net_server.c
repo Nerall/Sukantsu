@@ -2,9 +2,9 @@
 #include "net_server.h"
 #include "../debug.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <stdio.h>
 #include <wchar.h>
 
 // Begin listening to the given port
@@ -66,6 +66,8 @@ int check_new_connection_net_server(struct net_server *server) {
 // Clean the net_server
 // Stop listening and destroy all clients
 void clean_net_server(struct net_server *server) {
+	ASSERT_BACKTRACE(server);
+
 	stop_listen_net_server(server);
 
 	for (int i = 0; i < 4; ++i) {
@@ -76,6 +78,63 @@ void clean_net_server(struct net_server *server) {
 	}
 
 	server->nb_clients = 0;
+}
+
+// Send data to the client
+// If operation takes more than timeout or an error occured, return 1
+// If data has been sent without problem, return 0
+// The timeout argument is expressed in seconds
+int send_data_to_client(struct net_server *server, int iclient, void *data,
+                        size_t data_size, time_t timeout_s) {
+	ASSERT_BACKTRACE(server);
+	ASSERT_BACKTRACE(server->clients[iclient]);
+
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 25 * 1000000};
+	sfTcpSocket *client = server->clients[iclient];
+	sfSocketStatus status;
+	time_t t1 = time(NULL);
+
+	do {
+		status = sfTcpSocket_send(client, data, data_size);
+		if (status == sfSocketDone)
+			return 0;
+
+		if (status == sfSocketError)
+			return 1;
+
+		nanosleep(&delay, NULL);
+	} while (time(NULL) - t1 < timeout_s);
+
+	status = sfTcpSocket_send(client, data, data_size);
+
+	return status != sfSocketDone;
+}
+
+int receive_data_from_client(struct net_server *server, int iclient, void *data,
+                             size_t data_size, time_t timeout_s) {
+	ASSERT_BACKTRACE(server);
+	ASSERT_BACKTRACE(server->clients[iclient]);
+
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 25 * 1000000};
+	sfTcpSocket *client = server->clients[iclient];
+	sfSocketStatus status;
+	time_t t1 = time(NULL);
+	size_t obt;
+
+	do {
+		status = sfTcpSocket_receive(client, data, data_size, &obt);
+		if (status == sfSocketDone)
+			return 0;
+
+		if (status == sfSocketError)
+			return 1;
+
+		nanosleep(&delay, NULL);
+	} while (time(NULL) - t1 < timeout_s);
+
+	status = sfTcpSocket_receive(client, data, data_size, &obt);
+
+	return status != sfSocketDone;
 }
 
 void network_test() {

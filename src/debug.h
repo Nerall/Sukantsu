@@ -13,8 +13,8 @@
 #include <execinfo.h>
 
 static void dump_trace() {
-	void *buffer[255];
-	const int calls = backtrace(buffer, sizeof(buffer) / sizeof(void *));
+	void *buffer[63];
+	const int calls = backtrace(buffer, 63);
 	backtrace_symbols_fd(buffer, calls, 1);
 }
 

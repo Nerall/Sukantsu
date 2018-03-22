@@ -7,6 +7,11 @@
 // TODO: Include a client struct in player
 // TODO: Include a server struct in riichi_engine
 
+struct action_input {
+	enum action action;
+	histo_index_t tile;
+};
+
 struct player {
 	struct hand hand;
 	enum player_type player_type;

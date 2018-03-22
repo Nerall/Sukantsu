@@ -11,7 +11,7 @@
 #include "network/net_server.h"
 #include "network/net_client.h"
 
-#define NETWORK_TEST 1
+#define NETWORK_TEST 0
 
 void wait_for_players(struct riichi_engine *engine) {
 	const unsigned short port_min = 5000, port_max = 10000;
