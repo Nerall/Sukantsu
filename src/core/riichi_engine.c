@@ -25,6 +25,31 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 
 static int verify_action(struct riichi_engine *engine,
                          struct action_input *input) {
+	ASSERT_BACKTRACE(engine);
+	ASSERT_BACKTRACE(input);
+
+	switch (input->action) {
+		case ACTION_DISCARD: {
+			break;
+		}
+
+		case ACTION_RIICHI: {
+			break;
+		}
+
+		case ACTION_KAN: {
+			break;
+		}
+
+		case ACTION_RIICHI: {
+			break;
+		}
+
+		default:
+			ASSERT_BACKTRACE(0 && "Action-Type not recognized");
+			break;
+	}
+
 	return 1;
 }
 
