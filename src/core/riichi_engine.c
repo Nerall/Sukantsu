@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <wchar.h>
+#include <time.h>
 
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
@@ -22,8 +23,16 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	engine->nb_games = 0;
 }
 
+static int verify_action(struct riichi_engine *engine,
+                         struct action_input *input) {
+	return 1;
+}
+
 static int apply_action(struct riichi_engine *engine, struct player *player,
                         struct action_input *input) {
+	ASSERT_BACKTRACE(engine);
+	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(input);
 
 	struct hand *player_hand = &player->hand;
 	struct grouplist *grouplist = &engine->grouplist;
@@ -179,15 +188,30 @@ int play_riichi_game(struct riichi_engine *engine) {
 		struct action_input input;
 		if (!win) {
 			int done = 0;
-			while (!done) {
-				// TODO: Receive input from client p
-				get_player_input(player, &input);
+			time_t t1 = time(NULL);
+			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
+				if (is_client) {
+					// [SERVER] Receive input from client p
+					if (receive_data_from_client(server, player->net_id, &input,
+					                             sizeof(struct action_input),
+					                             TIMEOUT_RECEIVE)) {
+						fprintf(stderr, "[ERROR][SERVER] Error while receiving"
+						                " input from player %d\n",
+						        p);
+					}
+				} else {
+					get_player_input(player, &input);
+				}
 
-				// TODO: Verify action here
-				done = 1;
-
-				win = apply_action(engine, player, &input);
+				done = verify_action(engine, &input);
 			}
+
+			if (!done) {
+				input.action = ACTION_DISCARD;
+				input.tile = random_pop_histogram(&player->hand.histo);
+			}
+
+			win = apply_action(engine, player, &input);
 		}
 
 		if (win) {

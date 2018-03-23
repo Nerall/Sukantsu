@@ -47,15 +47,6 @@ static void input_AI(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
 }
 
-static void input_client(struct player *player, struct action_input *input) {
-	ASSERT_BACKTRACE(player);
-	ASSERT_BACKTRACE(input);
-
-	player = player;
-	input = input;
-	ASSERT_BACKTRACE(0 && "TODO: Input for network player");
-}
-
 void get_player_input(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
@@ -66,10 +57,6 @@ void get_player_input(struct player *player, struct action_input *input) {
 
 		case PLAYER_AI:
 			input_AI(player, input);
-			return;
-
-		case PLAYER_CLIENT:
-			input_client(player, input);
 			return;
 
 		default:
