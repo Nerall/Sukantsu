@@ -4,8 +4,8 @@
 #include "../debug.h"
 
 #include <stdio.h>
-#include <wchar.h>
 #include <time.h>
+#include <wchar.h>
 
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
@@ -23,31 +23,37 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	engine->nb_games = 0;
 }
 
-static int verify_action(struct riichi_engine *engine,
+// Verify if the action is valid and return 1 if it is
+static int verify_action(struct riichi_engine *engine, struct player *player,
                          struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
 	switch (input->action) {
 		case ACTION_DISCARD: {
-			break;
+			if (player->hand.histo.cells[input->tile] == 0)
+				return 0;
+			return 1;
 		}
 
 		case ACTION_RIICHI: {
-			break;
+			if (player->hand.riichi != NORIICHI || !player->hand.closed ||
+			    !get_histobit(&player->hand.riichitiles, input->tile))
+				return 0;
+			return 1;
 		}
 
 		case ACTION_KAN: {
 			break;
 		}
 
-		case ACTION_RIICHI: {
-			break;
+		case ACTION_TSUMO: {
+			return is_valid_hand(&player->hand, &engine->grouplist);
 		}
 
 		default:
 			ASSERT_BACKTRACE(0 && "Action-Type not recognized");
-			break;
+			return 0;
 	}
 
 	return 1;
@@ -74,11 +80,6 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_RIICHI: {
-			if (player_hand->riichi != NORIICHI || !player_hand->closed ||
-			    !get_histobit(&player_hand->riichitiles, input->tile)) {
-				break;
-			}
-
 			remove_tile_hand(player_hand, input->tile);
 			player_hand->discarded_tiles.cells[input->tile] += 1;
 			tenpailist(player_hand, grouplist);
@@ -228,7 +229,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 					get_player_input(player, &input);
 				}
 
-				done = verify_action(engine, &input);
+				done = verify_action(engine, player, &input);
 			}
 
 			if (!done) {
