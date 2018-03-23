@@ -22,6 +22,70 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	engine->nb_games = 0;
 }
 
+static int apply_action(struct riichi_engine *engine, struct player *player,
+                        struct action_input *input) {
+
+	struct hand *player_hand = &player->hand;
+	struct grouplist *grouplist = &engine->grouplist;
+
+	switch (input->action) {
+		case ACTION_DISCARD: {
+			remove_tile_hand(player_hand, input->tile);
+			player_hand->discarded_tiles.cells[input->tile] += 1;
+			if (input->tile != player_hand->last_tile) {
+				tilestocall(player_hand, grouplist);
+				tenpailist(player_hand, grouplist);
+			}
+			return 0;
+		}
+
+		case ACTION_RIICHI: {
+			if (player_hand->riichi != NORIICHI || !player_hand->closed ||
+			    !get_histobit(&player_hand->riichitiles, input->tile)) {
+				break;
+			}
+
+			remove_tile_hand(player_hand, input->tile);
+			player_hand->discarded_tiles.cells[input->tile] += 1;
+			tenpailist(player_hand, grouplist);
+
+			// Will be set at RIICHI next turn
+			player_hand->riichi = IPPATSU;
+
+			// Init values that will be no more used later
+			init_histobit(&player_hand->riichitiles, 0);
+			init_histobit(&player_hand->chiitiles, 0);
+			init_histobit(&player_hand->pontiles, 0);
+			init_histobit(&player_hand->kantiles, 0);
+			return 0;
+		}
+
+		case ACTION_TSUMO: {
+			break;
+			/*
+			// if (!get_histobit(&hand->wintiles, input.tile))
+			continue;
+
+			wprintf(L"TSUMO!\n\n");
+			makegroups(hand, grouplist);
+
+			print_victory(hand, grouplist);
+			continue;
+			return 1;
+			*/
+		}
+
+		case ACTION_KAN: {
+			break;
+		}
+
+		default:
+			ASSERT_BACKTRACE(0 && "Action not recognized");
+			break;
+	}
+	return 0;
+}
+
 // Play a riichi game and return the index of the player who has won
 // If noone has won, return -1
 int play_riichi_game(struct riichi_engine *engine) {
@@ -89,7 +153,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		histo_index_t randi = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, randi);
 
-		// Send tile to client p
+		// [SERVER] Send tile to client p
 		if (is_client) {
 			if (send_data_to_client(server, player->net_id, &randi,
 			                        sizeof(histo_index_t), TIMEOUT_SEND)) {
@@ -108,10 +172,23 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		// GetInput Phase
 		engine->phase = PHASE_GETINPUT;
-		histo_index_t discard;
-		int win = player_turn(player, &engine->grouplist, &discard);
+		int win = 0;
+		if (is_valid_hand(&player->hand, &engine->grouplist))
+			win = 1;
 
-		// TODO: Receive input from client p
+		struct action_input input;
+		if (!win) {
+			int done = 0;
+			while (!done) {
+				// TODO: Receive input from client p
+				get_player_input(player, &input);
+
+				// TODO: Verify action here
+				done = 1;
+
+				win = apply_action(engine, player, &input);
+			}
+		}
 
 		if (win) {
 			/////////////////
@@ -127,7 +204,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			return p;
 		}
 
-		if (is_valid_index(discard)) {
+		if (is_valid_index(input.tile)) {
 			/////////////////
 			// CLAIM PHASE //
 			/////////////////
@@ -143,9 +220,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 				struct player *other_player = &engine->players[p2];
 
-				if (get_histobit(&other_player->hand.wintiles, discard)) {
+				if (get_histobit(&other_player->hand.wintiles, input.tile)) {
 					// Claim the tile
-					add_tile_hand(&other_player->hand, discard);
+					add_tile_hand(&other_player->hand, input.tile);
 
 					ASSERT_BACKTRACE(
 					    is_valid_hand(&other_player->hand, &engine->grouplist));
