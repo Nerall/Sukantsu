@@ -44,7 +44,8 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_KAN: {
-			break;
+			// TODO: Kan action
+			return 0;
 		}
 
 		case ACTION_TSUMO: {
@@ -55,8 +56,6 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 			ASSERT_BACKTRACE(0 && "Action-Type not recognized");
 			return 0;
 	}
-
-	return 1;
 }
 
 static int apply_action(struct riichi_engine *engine, struct player *player,
@@ -96,18 +95,7 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_TSUMO: {
-			break;
-			/*
-			// if (!get_histobit(&hand->wintiles, input.tile))
-			continue;
-
-			wprintf(L"TSUMO!\n\n");
-			makegroups(hand, grouplist);
-
-			print_victory(hand, grouplist);
-			continue;
 			return 1;
-			*/
 		}
 
 		case ACTION_KAN: {
