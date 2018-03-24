@@ -6,7 +6,7 @@ Projet de S4
 ## Needed programs & libraries
 - GCC
 - GNU Make
-- CSFML 2
+- CSFML 2.4 (or higher)
 
 ## How to build the program
 - Go to the root of the project (where the makefile is)
