@@ -1,8 +1,8 @@
 #ifndef _NET_PACKET_
 #define _NET_PACKET_
 
-#include "../definitions.h"
 #include "../core/histogram.h"
+#include "../definitions.h"
 
 struct net_packet_init {
 	enum packet_type packet_type; // Keep this at this place
@@ -20,7 +20,7 @@ struct net_packet_input {
 	enum packet_type packet_type; // Keep this at this place
 
 	struct action_input input;
-}
+};
 
 struct net_packet_update {
 	enum packet_type packet_type; // Keep this at this place
@@ -30,12 +30,15 @@ struct net_packet_update {
 	char victory : 1;
 };
 
-#define MAX_PACKET_SIZE 255
+#define MAX_PACKET_SIZE                                                        \
+	(sizeof(struct net_packet_update) > sizeof(struct net_packet_init)         \
+	     ? sizeof(struct net_packet_update)                                    \
+	     : sizeof(struct net_packet_init))
 
 struct net_packet {
 	enum packet_type packet_type; // Keep this at this place
 
-	char data[MAX_PACKET_SIZE];
+	char data[MAX_PACKET_SIZE - sizeof(enum packet_type)];
 };
 
 #endif // _NET_PACKET_

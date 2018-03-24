@@ -25,6 +25,4 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
                              size_t data_size, time_t timeout_s);
 
-void network_test();
-
 #endif // _NET_SERVER_H_

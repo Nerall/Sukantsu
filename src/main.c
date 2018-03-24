@@ -8,7 +8,6 @@
 #include <time.h>
 #include <wchar.h>
 
-#include "network/net_server.h"
 #include "network/net_client.h"
 
 #define NETWORK_TEST 0
@@ -48,7 +47,8 @@ void wait_for_players(struct riichi_engine *engine) {
 			nanosleep(&delay, NULL);
 		} while (time(NULL) - t1 < timeout);
 		wprintf(L"Continue waiting for network players ? (Y/N)\n> ");
-		while (getchar() != '\n');
+		while (getchar() != '\n')
+			;
 		c = getchar();
 	}
 
