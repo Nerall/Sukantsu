@@ -2,7 +2,7 @@
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
-#include "../network/net_packet.h"
+#include "../network/net_packets.h"
 
 #include <stdio.h>
 #include <time.h>
