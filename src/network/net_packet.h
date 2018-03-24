@@ -7,7 +7,8 @@
 struct net_packet_init {
 	enum packet_type packet_type; // Keep this at this place
 
-	struct histogram *histogram;
+	enum table_pos player_pos;
+	struct histogram histo;
 };
 
 struct net_packet_draw {

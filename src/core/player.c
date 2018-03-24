@@ -3,11 +3,13 @@
 #include "../console_io.h"
 #include "../debug.h"
 
-void init_player(struct player *player, enum player_type player_type) {
+void init_player(struct player *player, enum player_type player_type,
+                 enum table_pos player_pos) {
 	ASSERT_BACKTRACE(player);
 
 	init_hand(&player->hand);
 	player->player_type = player_type;
+	player->player_pos = player_pos;
 }
 
 static void input_console(struct player *player, struct action_input *input) {

@@ -19,7 +19,7 @@ typedef unsigned char histo_index_t;
 enum group_type { PAIR, SEQUENCE, TRIPLET, QUAD };
 enum player_type { PLAYER_HOST, PLAYER_AI, PLAYER_CLIENT };
 enum riichi_state { NORIICHI, RIICHI, IPPATSU, DOUBLE_RIICHI, DOUBLE_IPPATSU };
-enum packet_type { PACKET_INIT, PACKET_DRAW, PACKET_UPDATE };
+enum packet_type { PACKET_INIT, PACKET_DRAW, PACKET_INPUT, PACKET_UPDATE };
 enum table_pos { NORTH, EAST, SOUTH, WEST };
 
 enum action {

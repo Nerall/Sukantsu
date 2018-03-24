@@ -2,6 +2,7 @@
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
+#include "../network/net_packet.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -15,10 +16,10 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t4) {
 	ASSERT_BACKTRACE(engine);
 
-	init_player(&engine->players[0], t1);
-	init_player(&engine->players[1], t2);
-	init_player(&engine->players[2], t3);
-	init_player(&engine->players[3], t4);
+	init_player(&engine->players[0], t1, NORTH);
+	init_player(&engine->players[1], t2, EAST);
+	init_player(&engine->players[2], t3, SOUTH);
+	init_player(&engine->players[3], t4, EAST);
 
 	engine->nb_games = 0;
 }
@@ -124,13 +125,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	// Initialize structures
 	init_histogram(&engine->wall, 4);
-	for (int i = 0; i < NB_PLAYERS; ++i) {
-		// player_type has been initialized in init_riichi_engine
-		init_hand(&engine->players[i].hand);
-	}
 
 	// Give 13 tiles to each player
 	for (int p = 0; p < NB_PLAYERS; ++p) {
+		// player_type has been initialized in init_riichi_engine
+		init_hand(&engine->players[p].hand);
 		for (int i = 0; i < 13; ++i) {
 			histo_index_t r = random_pop_histogram(&engine->wall);
 			add_tile_hand(&engine->players[p].hand, r);
@@ -139,17 +138,22 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	// [SERVER] Send tiles to all clients
 	for (int p = 0; p < NB_PLAYERS; ++p) {
-		if (engine->players[p].player_type != PLAYER_CLIENT)
-			continue;
-
 		struct player *player = &engine->players[p];
+
+		if (player->player_type != PLAYER_CLIENT)
+			continue;
 
 		sfTcpSocket_setBlocking(server->clients[player->net_id], sfFalse);
 
-		if (send_data_to_client(server, player->net_id, &player->hand.histo,
-		                        sizeof(struct histogram), TIMEOUT_SEND)) {
-			fprintf(stderr, "[ERROR][SERVER] Error while sending init data to"
-			                " player %d\n",
+		struct net_packet_init packet = {
+			packet_type : PACKET_INIT,
+			histo : player->hand.histo
+		};
+
+		if (send_data_to_client(server, player->net_id, &packet,
+		                        sizeof(struct net_packet_init), TIMEOUT_SEND)) {
+			fprintf(stderr, "[ERROR][SERVER] Error while sending"
+			                " init data to player %d\n",
 			        p);
 		}
 	}
@@ -178,11 +182,16 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		// [SERVER] Send tile to client p
 		if (is_client) {
-			if (send_data_to_client(server, player->net_id, &randi,
-			                        sizeof(histo_index_t), TIMEOUT_SEND)) {
-				fprintf(stderr,
-				        "[ERROR][SERVER] Error while sending popped tile to"
-				        " player %d\n",
+			struct net_packet_draw packet = {
+				packet_type : PACKET_DRAW,
+				tile : randi
+			};
+
+			if (send_data_to_client(server, player->net_id, &packet,
+			                        sizeof(struct net_packet_draw),
+			                        TIMEOUT_SEND)) {
+				fprintf(stderr, "[ERROR][SERVER] Error while sending"
+				                " popped tile to player %d\n",
 				        p);
 			}
 		}
@@ -205,16 +214,29 @@ int play_riichi_game(struct riichi_engine *engine) {
 			time_t t1 = time(NULL);
 			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
 				if (is_client) {
-					// TODO: [SERVER] Ask client p to send input
+					struct net_packet_input packet = {
+						packet_type : PACKET_INPUT
+					};
 
-					// [SERVER] Receive input from client p
-					if (receive_data_from_client(server, player->net_id, &input,
-					                             sizeof(struct action_input),
-					                             TIMEOUT_RECEIVE)) {
-						fprintf(stderr, "[ERROR][SERVER] Error while receiving"
-						                " input from player %d\n",
+					// [SERVER] Ask client p to send input
+					if (send_data_to_client(server, player->net_id, &packet,
+					                        sizeof(struct net_packet_input),
+					                        TIMEOUT_SEND)) {
+						fprintf(stderr, "[ERROR][SERVER] Error while asking"
+						                " input to player %d\n",
 						        p);
 					}
+
+					// [SERVER] Receive input from client p
+					if (receive_data_from_client(
+					        server, player->net_id, &packet,
+					        sizeof(struct net_packet_input), TIMEOUT_RECEIVE)) {
+						fprintf(stderr, "[ERROR][SERVER] Error while"
+						                " receiving input from player %d\n",
+						        p);
+					}
+
+					input = packet.input;
 				} else {
 					get_player_input(player, &input);
 				}
@@ -237,8 +259,28 @@ int play_riichi_game(struct riichi_engine *engine) {
 			engine->phase = PHASE_TSUMO;
 			display_riichi(engine, p);
 
-			// TODO: [SERVER] Send victory infos to all clients
-			// Use net_packet_update
+			// [SERVER] Send victory infos to all clients
+			struct net_packet_update packet = {
+				packet_type : PACKET_UPDATE,
+				player_pos : player->player_pos,
+				input : input,
+				victory : 1
+			};
+
+			for (int c = 0; c < NB_PLAYERS; ++c) {
+				if (engine->players[c].player_type != PLAYER_CLIENT)
+					continue;
+
+				int net_id = engine->players[c].net_id;
+
+				if (send_data_to_client(server, net_id, &packet,
+				                        sizeof(struct net_packet_update),
+				                        TIMEOUT_SEND)) {
+					fprintf(stderr, "[ERROR][SERVER] Error while sending"
+					                " victory packet to player %d\n",
+					        c);
+				}
+			}
 
 			return p;
 		}
