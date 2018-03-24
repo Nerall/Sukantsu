@@ -205,6 +205,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 			time_t t1 = time(NULL);
 			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
 				if (is_client) {
+					// TODO: [SERVER] Ask client p to send input
+
 					// [SERVER] Receive input from client p
 					if (receive_data_from_client(server, player->net_id, &input,
 					                             sizeof(struct action_input),
@@ -235,9 +237,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 			engine->phase = PHASE_TSUMO;
 			display_riichi(engine, p);
 
-			//
-			// TODO: Send victory infos to all clients
-			//
+			// TODO: [SERVER] Send victory infos to all clients
+			// Use net_packet_update
 
 			return p;
 		}
@@ -248,9 +249,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 			/////////////////
 			engine->phase = PHASE_CLAIM;
 
-			//
-			// TODO: Send claim infos to all clients
-			//
+			// TODO: [SERVER] Send claim infos to all clients
+			// Use net_packet_update
 
 			for (int p2 = 0; p2 < NB_PLAYERS; ++p2) {
 				if (p == p2)
@@ -273,9 +273,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 				}
 			}
 
-			//
-			// TODO: Receive claim inputs from all clients
-			//
+			// TODO: [SERVER] Receive claim inputs from all clients
+			// Use net_packet_input
 		}
 
 		////////////////
