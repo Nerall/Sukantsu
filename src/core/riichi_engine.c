@@ -110,6 +110,53 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 	return 0;
 }
 
+static int verify_and_claim(struct riichi_engine *engine, int player_index,
+                            struct action_input input) {
+	ASSERT_BACKTRACE(engine);
+	ASSERT_BACKTRACE(player_index >= 0 && player_index < NB_PLAYERS);
+
+	struct player *player = &engine->players[player_index];
+	struct net_server *server = &engine->server;
+
+	if (get_histobit(&player->hand.wintiles, input.tile)) {
+		// Claim the tile
+		add_tile_hand(&player->hand, input.tile);
+
+		ASSERT_BACKTRACE(is_valid_hand(&player->hand, &engine->grouplist));
+
+		// Player c win
+		engine->phase = PHASE_TSUMO;
+		makegroups(&player->hand, &engine->grouplist);
+		display_riichi(engine, player_index);
+
+		struct net_packet_update v_packet = {
+			packet_type : PACKET_UPDATE,
+			player_pos : player->player_pos,
+			input : input,
+			victory : 1
+		};
+
+		for (int c = 0; c < NB_PLAYERS; ++c) {
+			if (engine->players[c].player_type != PLAYER_CLIENT)
+				continue;
+
+			int net_id = engine->players[c].net_id;
+
+			if (send_data_to_client(server, net_id, &v_packet,
+			                        sizeof(struct net_packet_update),
+			                        TIMEOUT_SEND)) {
+				fprintf(stderr, "[ERROR][SERVER] Error while sending"
+				                " victory packet to player %d\n",
+				        c);
+			}
+		}
+
+		return player_index;
+	}
+
+	return -1;
+}
+
 // Play a riichi game and return the index of the player who has won
 // If noone has won, return -1
 int play_riichi_game(struct riichi_engine *engine) {
@@ -291,32 +338,63 @@ int play_riichi_game(struct riichi_engine *engine) {
 			/////////////////
 			engine->phase = PHASE_CLAIM;
 
-			// TODO: [SERVER] Send claim infos to all clients
-			// Use net_packet_update
+			// [SERVER] Send claim infos to all clients
+			struct net_packet_update packet = {
+				packet_type : PACKET_UPDATE,
+				player_pos : player->player_pos,
+				input : input,
+				victory : 0
+			};
+
+			for (int c = 0; c < NB_PLAYERS; ++c) {
+				if (engine->players[c].player_type != PLAYER_CLIENT)
+					continue;
+
+				int net_id = engine->players[c].net_id;
+
+				if (send_data_to_client(server, net_id, &packet,
+				                        sizeof(struct net_packet_update),
+				                        TIMEOUT_SEND)) {
+					fprintf(stderr, "[ERROR][SERVER] Error while sending"
+					                " update packet to player %d\n",
+					        c);
+				}
+			}
+
+			// [SERVER] Potentially receive claim packets from clients
+			time_t t1 = time(NULL);
+			int claim_client = -1;
+			while (claim_client != -1 && time(NULL) - t1 < TIMEOUT_RECEIVE) {
+				for (int c = 0; claim_client != -1 && c < NB_PLAYERS; ++c) {
+					struct player *other_player = &engine->players[c];
+					if (other_player->player_type != PLAYER_CLIENT)
+						continue;
+
+					struct net_packet_input packet;
+
+					if (receive_data_from_client(
+					        server, player->net_id, &packet,
+					        sizeof(struct net_packet_input), 0)) {
+						// If no claim, continue with next player
+						continue;
+					}
+
+					// Claim received, verify the claim
+					int player_claim = verify_and_claim(engine, c, input);
+					if (player_claim != -1)
+						return c;
+				}
+			}
 
 			for (int p2 = 0; p2 < NB_PLAYERS; ++p2) {
 				if (p == p2)
 					continue;
 
-				struct player *other_player = &engine->players[p2];
-
-				if (get_histobit(&other_player->hand.wintiles, input.tile)) {
-					// Claim the tile
-					add_tile_hand(&other_player->hand, input.tile);
-
-					ASSERT_BACKTRACE(
-					    is_valid_hand(&other_player->hand, &engine->grouplist));
-
-					// Player p2 win
-					engine->phase = PHASE_TSUMO;
-					makegroups(&other_player->hand, &engine->grouplist);
-					display_riichi(engine, p2);
+				// Claim the tile, verify the claim
+				int player_claim = verify_and_claim(engine, p2, input);
+				if (player_claim != -1)
 					return p2;
-				}
 			}
-
-			// TODO: [SERVER] Receive claim inputs from all clients
-			// Use net_packet_input
 		}
 
 		////////////////
