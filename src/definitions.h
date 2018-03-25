@@ -41,4 +41,10 @@ enum game_phase {
 	PHASE_CLAIM
 };
 
+
+struct action_input {
+	enum action action;
+	histo_index_t tile;
+};
+
 #endif // _DEFINITIONS_H_

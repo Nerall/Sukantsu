@@ -1,9 +1,6 @@
 #define _POSIX_C_SOURCE 199309L
 #include "net_client.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wchar.h>
+
 
 struct net_client* init_client_from_host_and_port(const char* host, unsigned short port) 
 {
@@ -38,25 +35,23 @@ int send_to_server(struct net_client *client, const void* data, size_t size)
 	return 1;
 }
 
-int receive_from_server(struct net_client *client)
+int receive_from_server(struct net_client *client, void* buf)
 {
 	if (sfTcpSocket_getRemoteAddress(client->socket).address == 0) {
 		wprintf(L"%s\n", "Socket not connected");
 		return 0;
 	}
-	char buf[256];
-	size_t buflen = 256 * sizeof(char);
 	size_t received = 1;
 	while (received != 0) {
-		sfSocketStatus s = sfTcpSocket_receive(client->socket, buf, buflen, &received);
+		sfSocketStatus s = sfTcpSocket_receive(client->socket, buf, sizeof(buf), &received);
 		if (s == sfSocketError) {
 			wprintf(L"%s\n", "Fail while receiving");
 			return 0;
 		}
 
-		for (size_t i = 0; i < received; ++i) {
-			wprintf(L"%c", buf[i]);
-		}
+		/*for (size_t i = 0; i < received; ++i) {
+			wprintf(L"%c", (char*)buf[i]);
+		}*/
 	}
 	wprintf(L"\n%s\n", "Data received");
 	return 1;
@@ -88,8 +83,8 @@ void client_test() {
 	size_t n = strlen(str);
 	if (!send_to_server(client, str, n))
 		return;
-
-	if (!receive_from_server(client))
+	char buf[256];
+	if (!receive_from_server(client, buf))
 		return;
 
 	disconnect_from_server(client);

@@ -3,6 +3,7 @@
 
 #include "../core/histogram.h"
 #include "../definitions.h"
+//#include "../core/player.h"
 
 struct net_packet_init {
 	enum packet_type packet_type; // Keep this at this place

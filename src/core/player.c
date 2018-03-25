@@ -66,3 +66,63 @@ void get_player_input(struct player *player, struct action_input *input) {
 			return;
 	}
 }
+
+void client_main_loop(struct player *player){
+	struct net_packet *receiver = malloc(sizeof(struct net_packet));
+	if (receive_from_server(player->client, receiver) == 0) 
+		return;
+
+	if (receiver->packet_type == PACKET_INIT) {
+		struct net_packet_init *init = (struct net_packet_init*) receiver;
+		player->hand.histo = init->histo;
+		return;
+	}
+	
+	if (receiver->packet_type == PACKET_DRAW) {
+		struct net_packet_draw *draw = (struct net_packet_draw*) receiver;
+		add_tile_hand(&player->hand, draw->tile);
+		return;
+	}
+	
+	if (receiver->packet_type == PACKET_INPUT)
+	{
+		struct net_packet_input *input = (struct net_packet_input*) receiver;
+		struct action_input *action;
+		action = NULL;
+		get_player_input(player, action);
+		input->input = *action;
+		if (send_to_server(player->client, input, sizeof(input)) == 0)
+			return;
+		return;
+	}
+
+	if (receiver->packet_type == PACKET_UPDATE)
+	{
+		struct net_packet_update *update = (struct net_packet_update*) receiver;
+		if (update->victory)
+		{
+			wprintf(L"%s%s%s\n","Player", update->player_pos, "won the game!");
+			return;
+		}
+		else
+		{
+			if (update->input.action == ACTION_DISCARD)
+			{
+				wprintf(L"%s%s%s%c\n%s\n", "Player", update->player_pos, "just discarded tile", update->input.tile, "Do you claim?");
+				struct action_input claim = {
+					action : ACTION_PASS,
+					tile : NO_TILE_INDEX,
+				};
+				struct net_packet_input input = {
+					packet_type : PACKET_INPUT,
+					input : claim,
+				};
+				if (send_to_server(player->client, &input, sizeof(&input)) == 0)
+					return;
+				return;
+
+			}
+
+		}
+	}
+}
