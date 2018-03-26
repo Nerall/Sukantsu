@@ -11,6 +11,11 @@
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
 
+typedef struct net_packet_init pk_init;
+typedef struct net_packet_draw pk_draw;
+typedef struct net_packet_input pk_input;
+typedef struct net_packet_update pk_update;
+
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
                         enum player_type t4) {
@@ -129,7 +134,7 @@ static int verify_and_claim(struct riichi_engine *engine, int player_index,
 		makegroups(&player->hand, &engine->grouplist);
 		display_riichi(engine, player_index);
 
-		struct net_packet_update v_packet = {
+		pk_update v_packet = {
 			packet_type : PACKET_UPDATE,
 			player_pos : player->player_pos,
 			input : input,
@@ -143,8 +148,7 @@ static int verify_and_claim(struct riichi_engine *engine, int player_index,
 			int net_id = engine->players[c].net_id;
 
 			if (send_data_to_client(server, net_id, &v_packet,
-			                        sizeof(struct net_packet_update),
-			                        TIMEOUT_SEND)) {
+			                        sizeof(pk_update), TIMEOUT_SEND)) {
 				fprintf(stderr, "[ERROR][SERVER] Error while sending"
 				                " victory packet to player %d\n",
 				        c);
@@ -192,13 +196,13 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		sfTcpSocket_setBlocking(server->clients[player->net_id], sfFalse);
 
-		struct net_packet_init packet = {
+		pk_init packet = {
 			packet_type : PACKET_INIT,
 			histo : player->hand.histo
 		};
 
 		if (send_data_to_client(server, player->net_id, &packet,
-		                        sizeof(struct net_packet_init), TIMEOUT_SEND)) {
+		                        sizeof(pk_init), TIMEOUT_SEND)) {
 			fprintf(stderr, "[ERROR][SERVER] Error while sending"
 			                " init data to player %d\n",
 			        p);
@@ -229,14 +233,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		// [SERVER] Send tile to client p
 		if (is_client) {
-			struct net_packet_draw packet = {
-				packet_type : PACKET_DRAW,
-				tile : randi
-			};
+			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
 
 			if (send_data_to_client(server, player->net_id, &packet,
-			                        sizeof(struct net_packet_draw),
-			                        TIMEOUT_SEND)) {
+			                        sizeof(pk_draw), TIMEOUT_SEND)) {
 				fprintf(stderr, "[ERROR][SERVER] Error while sending"
 				                " popped tile to player %d\n",
 				        p);
@@ -261,23 +261,20 @@ int play_riichi_game(struct riichi_engine *engine) {
 			time_t t1 = time(NULL);
 			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
 				if (is_client) {
-					struct net_packet_input packet = {
-						packet_type : PACKET_INPUT
-					};
+					pk_input packet = {packet_type : PACKET_INPUT};
 
 					// [SERVER] Ask client p to send input
 					if (send_data_to_client(server, player->net_id, &packet,
-					                        sizeof(struct net_packet_input),
-					                        TIMEOUT_SEND)) {
+					                        sizeof(pk_input), TIMEOUT_SEND)) {
 						fprintf(stderr, "[ERROR][SERVER] Error while asking"
 						                " input to player %d\n",
 						        p);
 					}
 
 					// [SERVER] Receive input from client p
-					if (receive_data_from_client(
-					        server, player->net_id, &packet,
-					        sizeof(struct net_packet_input), TIMEOUT_RECEIVE)) {
+					if (receive_data_from_client(server, player->net_id,
+					                             &packet, sizeof(pk_input),
+					                             TIMEOUT_RECEIVE)) {
 						fprintf(stderr, "[ERROR][SERVER] Error while"
 						                " receiving input from player %d\n",
 						        p);
@@ -307,7 +304,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			display_riichi(engine, p);
 
 			// [SERVER] Send victory infos to all clients
-			struct net_packet_update packet = {
+			pk_update packet = {
 				packet_type : PACKET_UPDATE,
 				player_pos : player->player_pos,
 				input : input,
@@ -321,8 +318,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 				int net_id = engine->players[c].net_id;
 
 				if (send_data_to_client(server, net_id, &packet,
-				                        sizeof(struct net_packet_update),
-				                        TIMEOUT_SEND)) {
+				                        sizeof(pk_update), TIMEOUT_SEND)) {
 					fprintf(stderr, "[ERROR][SERVER] Error while sending"
 					                " victory packet to player %d\n",
 					        c);
@@ -339,7 +335,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			engine->phase = PHASE_CLAIM;
 
 			// [SERVER] Send claim infos to all clients
-			struct net_packet_update packet = {
+			pk_update packet = {
 				packet_type : PACKET_UPDATE,
 				player_pos : player->player_pos,
 				input : input,
@@ -353,8 +349,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 				int net_id = engine->players[c].net_id;
 
 				if (send_data_to_client(server, net_id, &packet,
-				                        sizeof(struct net_packet_update),
-				                        TIMEOUT_SEND)) {
+				                        sizeof(pk_update), TIMEOUT_SEND)) {
 					fprintf(stderr, "[ERROR][SERVER] Error while sending"
 					                " update packet to player %d\n",
 					        c);
@@ -363,37 +358,58 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 			// [SERVER] Potentially receive claim packets from clients
 			time_t t1 = time(NULL);
-			int claim_client = -1;
-			while (claim_client != -1 && time(NULL) - t1 < TIMEOUT_RECEIVE) {
-				for (int c = 0; claim_client != -1 && c < NB_PLAYERS; ++c) {
+			int player_claim = -1;
+			while (player_claim != -1 && time(NULL) - t1 < TIMEOUT_RECEIVE) {
+				for (int c = 0; player_claim == -1 && c < NB_PLAYERS; ++c) {
 					struct player *other_player = &engine->players[c];
 					if (other_player->player_type != PLAYER_CLIENT)
 						continue;
 
-					struct net_packet_input packet;
+					pk_input packet;
 
-					if (receive_data_from_client(
-					        server, player->net_id, &packet,
-					        sizeof(struct net_packet_input), 0)) {
+					if (receive_data_from_client(server, player->net_id,
+					                             &packet, sizeof(pk_input),
+					                             0)) {
 						// If no claim, continue with next player
 						continue;
 					}
 
 					// Claim received, verify the claim
-					int player_claim = verify_and_claim(engine, c, input);
-					if (player_claim != -1)
-						return c;
+					player_claim = verify_and_claim(engine, c, input);
 				}
 			}
 
-			for (int p2 = 0; p2 < NB_PLAYERS; ++p2) {
+			for (int p2 = 0; player_claim == -1 && p2 < NB_PLAYERS; ++p2) {
 				if (p == p2)
 					continue;
 
 				// Claim the tile, verify the claim
-				int player_claim = verify_and_claim(engine, p2, input);
-				if (player_claim != -1)
-					return p2;
+				player_claim = verify_and_claim(engine, p2, input);
+			}
+
+			// Send infos if there is a claim
+			if (player_claim != -1) {
+				// [SERVER] Send claim infos to all clients
+				pk_update packet = {
+					packet_type : PACKET_UPDATE,
+					player_pos : (enum table_pos)player_claim,
+					input : input,
+					victory : 0
+				};
+
+				for (int c = 0; c < NB_PLAYERS; ++c) {
+					struct player *other_player = &engine->players[c];
+					if (other_player->player_type != PLAYER_CLIENT)
+						continue;
+
+					int net_id = other_player->net_id;
+					if (send_data_to_client(server, net_id, &packet,
+					                        sizeof(pk_update), TIMEOUT_SEND)) {
+						fprintf(stderr, "[ERROR][SERVER] Error while sending"
+						                " update claim packet to player %d\n",
+						        c);
+					}
+				}
 			}
 		}
 
