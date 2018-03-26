@@ -8,10 +8,6 @@
 #include <time.h>
 #include <wchar.h>
 
-#include "network/net_client.h"
-
-#define NETWORK_TEST 0
-
 void wait_for_players(struct riichi_engine *engine) {
 	const unsigned short port_min = 5000, port_max = 10000;
 	const struct timespec delay = {tv_sec : 0, tv_nsec : 250 * 1000000};
@@ -58,11 +54,6 @@ void wait_for_players(struct riichi_engine *engine) {
 int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
-
-	if (NETWORK_TEST) {
-		client_test();
-		return 0;
-	}
 
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;

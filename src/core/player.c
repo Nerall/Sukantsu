@@ -3,6 +3,14 @@
 #include "../console_io.h"
 #include "../debug.h"
 
+#include <stdlib.h>
+#include <wchar.h>
+
+typedef struct net_packet_init pk_init;
+typedef struct net_packet_input pk_input;
+typedef struct net_packet_draw pk_draw;
+typedef struct net_packet_update pk_update;
+
 void init_player(struct player *player, enum player_type player_type,
                  enum table_pos player_pos) {
 	ASSERT_BACKTRACE(player);
@@ -67,62 +75,58 @@ void get_player_input(struct player *player, struct action_input *input) {
 	}
 }
 
-void client_main_loop(struct player *player){
-	struct net_packet *receiver = malloc(sizeof(struct net_packet));
-	if (receive_from_server(player->client, receiver) == 0) 
+void client_main_loop(struct player *player) {
+	struct net_packet receiver;
+	if (!receive_from_server(player->client, &receiver,
+	                         sizeof(struct net_packet)))
 		return;
 
-	if (receiver->packet_type == PACKET_INIT) {
-		struct net_packet_init *init = (struct net_packet_init*) receiver;
-		player->hand.histo = init->histo;
-		return;
-	}
-	
-	if (receiver->packet_type == PACKET_DRAW) {
-		struct net_packet_draw *draw = (struct net_packet_draw*) receiver;
-		add_tile_hand(&player->hand, draw->tile);
-		return;
-	}
-	
-	if (receiver->packet_type == PACKET_INPUT)
-	{
-		struct net_packet_input *input = (struct net_packet_input*) receiver;
-		struct action_input *action;
-		action = NULL;
-		get_player_input(player, action);
-		input->input = *action;
-		if (send_to_server(player->client, input, sizeof(input)) == 0)
-			return;
-		return;
-	}
-
-	if (receiver->packet_type == PACKET_UPDATE)
-	{
-		struct net_packet_update *update = (struct net_packet_update*) receiver;
-		if (update->victory)
-		{
-			wprintf(L"%s%s%s\n","Player", update->player_pos, "won the game!");
-			return;
+	switch (receiver.packet_type) {
+		case PACKET_INIT: {
+			pk_init *init = (pk_init *)&receiver;
+			player->hand.histo = init->histo;
+			break;
 		}
-		else
-		{
-			if (update->input.action == ACTION_DISCARD)
-			{
-				wprintf(L"%s%s%s%c\n%s\n", "Player", update->player_pos, "just discarded tile", update->input.tile, "Do you claim?");
-				struct action_input claim = {
-					action : ACTION_PASS,
-					tile : NO_TILE_INDEX,
-				};
-				struct net_packet_input input = {
-					packet_type : PACKET_INPUT,
-					input : claim,
-				};
-				if (send_to_server(player->client, &input, sizeof(&input)) == 0)
-					return;
-				return;
 
+		case PACKET_DRAW: {
+			pk_draw *draw = (pk_draw *)&receiver;
+			add_tile_hand(&player->hand, draw->tile);
+			break;
+		}
+
+		case PACKET_INPUT: {
+			pk_input *input = (pk_input *)&receiver;
+			get_player_input(player, &input->input);
+			send_to_server(player->client, input, sizeof(pk_input));
+			break;
+		}
+
+		case PACKET_UPDATE: {
+			pk_update *update = (pk_update *)&receiver;
+			if (update->victory) {
+				wprintf(L"Player %s won the game!\n", update->player_pos);
+				break;
 			}
 
+			if (update->input.action == ACTION_DISCARD) {
+				wprintf(L"Player %s just discarded tile %c\nDo you claim?\n",
+				        update->player_pos, update->input.tile);
+
+				pk_input input = {
+					packet_type : PACKET_INPUT,
+					input : {
+						action : ACTION_PASS,
+						tile : NO_TILE_INDEX,
+					},
+				};
+
+				send_to_server(player->client, &input, sizeof(pk_input));
+			}
+			break;
 		}
+
+		default:
+			ASSERT_BACKTRACE(0 && "Packet-Type not recognized");
+			break;
 	}
 }
