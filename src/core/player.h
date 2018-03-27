@@ -2,20 +2,17 @@
 #define _PLAYER_H_
 
 #include "../definitions.h"
-#include "hand.h"
 #include "../network/net_client.h"
-#include "../network/net_packets.h"
-
-// TODO: Include a client struct in player
-// TODO: Include a server struct in riichi_engine
-
+#include "hand.h"
 
 struct player {
 	struct hand hand;
 	enum player_type player_type;
 	enum table_pos player_pos;
-	int net_id;
-	struct net_client *client;
+
+	struct net_client client;
+	unsigned char net_id : 2;     // [0, 3]
+	unsigned char net_status : 1; // bool: 1 = OK
 };
 
 void init_player(struct player *player, enum player_type player_type,

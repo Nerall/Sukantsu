@@ -37,16 +37,12 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 
 	switch (input->action) {
 		case ACTION_DISCARD: {
-			if (player->hand.histo.cells[input->tile] == 0)
-				return 0;
-			return 1;
+			return player->hand.histo.cells[input->tile] != 0;
 		}
 
 		case ACTION_RIICHI: {
-			if (player->hand.riichi != NORIICHI || !player->hand.closed ||
-			    !get_histobit(&player->hand.riichitiles, input->tile))
-				return 0;
-			return 1;
+			return player->hand.riichi == NORIICHI && player->hand.closed &&
+			       get_histobit(&player->hand.riichitiles, input->tile);
 		}
 
 		case ACTION_KAN: {
@@ -64,6 +60,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 	}
 }
 
+// Apply the action and return 1 if the player won
 static int apply_action(struct riichi_engine *engine, struct player *player,
                         struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
@@ -146,9 +143,10 @@ static int verify_and_claim(struct riichi_engine *engine, int player_index,
 				continue;
 
 			int net_id = engine->players[c].net_id;
-
-			if (send_data_to_client(server, net_id, &v_packet,
-			                        sizeof(pk_update), TIMEOUT_SEND)) {
+			int s = send_data_to_client(server, net_id, &v_packet,
+			                            sizeof(pk_update), TIMEOUT_SEND);
+			engine->players[c].net_status = !s;
+			if (s) {
 				fprintf(stderr, "[ERROR][SERVER] Error while sending"
 				                " victory packet to player %d\n",
 				        c);
@@ -201,8 +199,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 			histo : player->hand.histo
 		};
 
-		if (send_data_to_client(server, player->net_id, &packet,
-		                        sizeof(pk_init), TIMEOUT_SEND)) {
+		int s = send_data_to_client(server, player->net_id, &packet,
+		                            sizeof(pk_init), TIMEOUT_SEND);
+		player->net_status = !s;
+		if (s) {
 			fprintf(stderr, "[ERROR][SERVER] Error while sending"
 			                " init data to player %d\n",
 			        p);
@@ -235,8 +235,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (is_client) {
 			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
 
-			if (send_data_to_client(server, player->net_id, &packet,
-			                        sizeof(pk_draw), TIMEOUT_SEND)) {
+			int s = send_data_to_client(server, player->net_id, &packet,
+			                            sizeof(pk_draw), TIMEOUT_SEND);
+			player->net_status = !s;
+			if (s) {
 				fprintf(stderr, "[ERROR][SERVER] Error while sending"
 				                " popped tile to player %d\n",
 				        p);
@@ -261,23 +263,31 @@ int play_riichi_game(struct riichi_engine *engine) {
 			time_t t1 = time(NULL);
 			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
 				if (is_client) {
+					if (!player->net_status)
+						break;
+
 					pk_input packet = {packet_type : PACKET_INPUT};
 
 					// [SERVER] Ask client p to send input
-					if (send_data_to_client(server, player->net_id, &packet,
-					                        sizeof(pk_input), TIMEOUT_SEND)) {
+					int s = send_data_to_client(server, player->net_id, &packet,
+					                            sizeof(pk_input), TIMEOUT_SEND);
+					player->net_status = !s;
+					if (s) {
 						fprintf(stderr, "[ERROR][SERVER] Error while asking"
 						                " input to player %d\n",
 						        p);
+						break;
 					}
 
 					// [SERVER] Receive input from client p
-					if (receive_data_from_client(server, player->net_id,
-					                             &packet, sizeof(pk_input),
-					                             TIMEOUT_RECEIVE)) {
+					receive_data_from_client(server, player->net_id, &packet,
+					                         sizeof(pk_input), TIMEOUT_RECEIVE);
+					player->net_status = !s;
+					if (s) {
 						fprintf(stderr, "[ERROR][SERVER] Error while"
 						                " receiving input from player %d\n",
 						        p);
+						break;
 					}
 
 					input = packet.input;
@@ -291,6 +301,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 			if (!done) {
 				input.action = ACTION_DISCARD;
 				input.tile = random_pop_histogram(&player->hand.histo);
+				player->hand.histo.cells[input.tile]++;
+				ASSERT_BACKTRACE(verify_action(engine, player, &input));
 			}
 
 			win = apply_action(engine, player, &input);
@@ -317,8 +329,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 				int net_id = engine->players[c].net_id;
 
-				if (send_data_to_client(server, net_id, &packet,
-				                        sizeof(pk_update), TIMEOUT_SEND)) {
+				int s = send_data_to_client(server, net_id, &packet,
+				                            sizeof(pk_update), TIMEOUT_SEND);
+				engine->players[c].net_status = !s;
+				if (s) {
 					fprintf(stderr, "[ERROR][SERVER] Error while sending"
 					                " victory packet to player %d\n",
 					        c);
@@ -348,8 +362,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 				int net_id = engine->players[c].net_id;
 
-				if (send_data_to_client(server, net_id, &packet,
-				                        sizeof(pk_update), TIMEOUT_SEND)) {
+				int s = send_data_to_client(server, net_id, &packet,
+				                            sizeof(pk_update), TIMEOUT_SEND);
+				engine->players[c].net_status = !s;
+				if (s) {
 					fprintf(stderr, "[ERROR][SERVER] Error while sending"
 					                " update packet to player %d\n",
 					        c);
@@ -363,6 +379,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 				for (int c = 0; player_claim == -1 && c < NB_PLAYERS; ++c) {
 					struct player *other_player = &engine->players[c];
 					if (other_player->player_type != PLAYER_CLIENT)
+						continue;
+
+					if (!other_player->net_status)
 						continue;
 
 					pk_input packet;
@@ -403,8 +422,12 @@ int play_riichi_game(struct riichi_engine *engine) {
 						continue;
 
 					int net_id = other_player->net_id;
-					if (send_data_to_client(server, net_id, &packet,
-					                        sizeof(pk_update), TIMEOUT_SEND)) {
+
+					int s =
+					    send_data_to_client(server, net_id, &packet,
+					                        sizeof(pk_update), TIMEOUT_SEND);
+					engine->players[c].net_status = !s;
+					if (s) {
 						fprintf(stderr, "[ERROR][SERVER] Error while sending"
 						                " update claim packet to player %d\n",
 						        c);

@@ -1,4 +1,5 @@
 #include "player.h"
+#include "../network/net_packets.h"
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
@@ -76,8 +77,10 @@ void get_player_input(struct player *player, struct action_input *input) {
 }
 
 void client_main_loop(struct player *player) {
+	ASSERT_BACKTRACE(player);
+
 	struct net_packet receiver;
-	if (!receive_from_server(player->client, &receiver,
+	if (!receive_from_server(&player->client, &receiver,
 	                         sizeof(struct net_packet)))
 		return;
 
@@ -97,7 +100,7 @@ void client_main_loop(struct player *player) {
 		case PACKET_INPUT: {
 			pk_input *input = (pk_input *)&receiver;
 			get_player_input(player, &input->input);
-			send_to_server(player->client, input, sizeof(pk_input));
+			send_to_server(&player->client, input, sizeof(pk_input));
 			break;
 		}
 
@@ -120,7 +123,7 @@ void client_main_loop(struct player *player) {
 					},
 				};
 
-				send_to_server(player->client, &input, sizeof(pk_input));
+				send_to_server(&player->client, &input, sizeof(pk_input));
 			}
 			break;
 		}
