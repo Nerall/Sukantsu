@@ -96,11 +96,25 @@ void client_main() {
 	struct player player;
 	init_player(&player, PLAYER_CLIENT, NORTH);
 
-	// TODO: Ask the player (human)
-	char *host = "localhost";
-	unsigned short port = 5000;
+	char server[64];
+	unsigned short port;
+	do {
+		wprintf(L"Type a server to connect to\n> ");
+		fflush(stdout);
+		for (char *c = server; c < server + 127; ++c) {
+			*c = getchar();
+			if (*c == '\n') {
+				*c = '\0';
+				break;
+			}
+		}
 
-	connect_to_server(&player.client, host, port);
+		wprintf(L"Type a port to connect to\n> ");
+		fflush(stdout);
+		scanf("%hu", &port);
+		while (getchar() != '\n');
+	} while (!connect_to_server(&player.client, server, port));
+
 	client_main_loop(&player);
 
 	disconnect_from_server(&player.client);

@@ -16,7 +16,7 @@ int connect_to_server(struct net_client *client, const char *host,
 	    sfSocketDone) {
 		char temp[16];
 		sfIpAddress_toString(address, temp);
-		fprintf(stderr, "Fail while connecting to %s\n", temp);
+		fprintf(stderr, "Fail while connecting to %s:%hu\n", temp, port);
 		return 0;
 	}
 
