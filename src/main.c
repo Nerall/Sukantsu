@@ -1,6 +1,4 @@
 #define _POSIX_C_SOURCE 199309L
-#include "AI/detect.h"
-#include "console_io.h"
 #include "core/riichi_engine.h"
 #include <locale.h>
 #include <stdio.h>
@@ -8,10 +6,10 @@
 #include <time.h>
 #include <wchar.h>
 
-void wait_for_players(struct riichi_engine *engine) {
+static void wait_for_players(struct riichi_engine *engine) {
 	const unsigned short port_min = 5000, port_max = 10000;
 	const struct timespec delay = {tv_sec : 0, tv_nsec : 250 * 1000000};
-	const time_t timeout = 5;
+	const time_t timeout = 10;
 
 	struct net_server *server = &engine->server;
 	if (listen_net_server(&engine->server, port_min, port_max)) {
@@ -51,10 +49,7 @@ void wait_for_players(struct riichi_engine *engine) {
 	stop_listen_net_server(&engine->server);
 }
 
-int main() {
-	setlocale(LC_ALL, "");
-	srand(time(NULL));
-
+void host_main() {
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
 	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
@@ -90,4 +85,38 @@ int main() {
 	} while (c != 'N');
 
 	wprintf(L"\nYou played %d game(s).\n", engine.nb_games);
+}
+
+void client_main() {
+	struct player player;
+	init_player(&player, PLAYER_CLIENT, NORTH);
+
+	// TODO: Ask the player (human)
+	char *host = "127.0.0.1";
+	unsigned short port = 5000;
+
+	connect_to_server(&player.client, host, port);
+	client_main_loop(&player);
+}
+
+int main() {
+	setlocale(LC_ALL, "");
+	srand(time(NULL));
+
+	wprintf(L"Host or Client ? (h/c)\n> ");
+	fflush(stdout);
+	char c;
+	while ((c = getchar()) != 'h' && c != 'c') {
+		if (c == '\n') {
+			wprintf(L"> ");
+			fflush(stdout);
+		}
+	}
+	while (getchar() != '\n')
+		;
+	if (c == 'h') {
+		host_main();
+	} else {
+		client_main();
+	}
 }
