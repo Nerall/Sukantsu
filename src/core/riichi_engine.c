@@ -227,23 +227,26 @@ int play_riichi_game(struct riichi_engine *engine) {
 		////////////////
 		engine->phase = PHASE_DRAW;
 
-		// Give one tile to the player
-		histo_index_t randi = random_pop_histogram(&engine->wall);
-		add_tile_hand(&player->hand, randi);
+		if (!player->hand.has_claimed) {
+			// Give one tile to the player
+			histo_index_t randi = random_pop_histogram(&engine->wall);
+			add_tile_hand(&player->hand, randi);
 
-		// [SERVER] Send tile to client p
-		if (is_client) {
-			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
+			// [SERVER] Send tile to client p
+			if (is_client) {
+				pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
 
-			int s = send_data_to_client(server, player->net_id, &packet,
-			                            sizeof(pk_draw), TIMEOUT_SEND);
-			player->net_status = !s;
-			if (s) {
-				fprintf(stderr, "[ERROR][SERVER] Error while sending"
-				                " popped tile to player %d\n",
-				        p);
+				int s = send_data_to_client(server, player->net_id, &packet,
+				                            sizeof(pk_draw), TIMEOUT_SEND);
+				player->net_status = !s;
+				if (s) {
+					fprintf(stderr, "[ERROR][SERVER] Error while sending"
+					                " popped tile to player %d\n",
+					        p);
+				}
 			}
 		}
+		player->hand.has_claimed = 0;
 
 		// Calculate best discards (hints)
 		tilestodiscard(&player->hand, &engine->grouplist);
@@ -408,6 +411,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 			// Send infos if there is a claim
 			if (player_claim != -1) {
+				engine->players[player_claim].hand.has_claimed = 1;
+
 				// [SERVER] Send claim infos to all clients
 				pk_update packet = {
 					packet_type : PACKET_UPDATE,

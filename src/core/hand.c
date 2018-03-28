@@ -23,6 +23,7 @@ void init_hand(struct hand *hand) {
 	hand->nb_groups = 0;
 	hand->tenpai = 0;
 	hand->closed = 1;
+	hand->has_claimed = 0;
 	hand->riichi = NORIICHI;
 }
 

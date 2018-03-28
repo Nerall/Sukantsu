@@ -1,8 +1,8 @@
 #ifndef _HAND_H_
 #define _HAND_H_
 
-#include "histogram.h"
 #include "groups.h"
+#include "histogram.h"
 
 struct hand {
 	struct histogram histo;           // tiles in hand
@@ -18,6 +18,7 @@ struct hand {
 	unsigned char nb_groups : 3;         // number of groups revealed (<= 5)
 	unsigned char tenpai : 1;            // boolean, is waiting for winning
 	unsigned char closed : 1;            // boolean, are only hidden groups
+	unsigned char has_claimed : 1;       // boolean, tell if claimed this turn
 	enum riichi_state riichi;
 };
 
