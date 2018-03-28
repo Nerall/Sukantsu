@@ -57,8 +57,12 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 			return is_valid_hand(&player->hand, &engine->grouplist);
 		}
 
+		case ACTION_PASS: {
+			return 1;
+		}
+
 		default:
-			ASSERT_BACKTRACE(0 && "Action-Type not recognized");
+			fprintf(stderr, "Action-Type not recognized\n");
 			return 0;
 	}
 }
@@ -110,6 +114,10 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 			break;
 		}
 
+		case ACTION_PASS: {
+			return 0;
+		}
+
 		default:
 			ASSERT_BACKTRACE(0 && "Action not recognized");
 			break;
@@ -117,6 +125,9 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 	return 0;
 }
 
+////
+// TODO: People should claim even when not winning
+////
 static int verify_and_claim(struct riichi_engine *engine, int player_index,
                             struct action_input input) {
 	ASSERT_BACKTRACE(engine);
@@ -306,7 +317,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 				done = verify_action(engine, player, &input);
 			}
 
-			if (!done) {
+			if (!done || input.action == ACTION_PASS) {
 				input.action = ACTION_DISCARD;
 				input.tile = random_pop_histogram(&player->hand.histo);
 				player->hand.histo.cells[input.tile]++;
@@ -356,7 +367,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 			/////////////////
 			engine->phase = PHASE_CLAIM;
 
-			// [SERVER] Send claim infos to all clients
 			pk_update packet = {
 				packet_type : PACKET_UPDATE,
 				player_pos : player->player_pos,
@@ -364,7 +374,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 				victory : 0
 			};
 
+			// [SERVER] Send claim infos to all clients
 			for (int c = 0; c < NB_PLAYERS; ++c) {
+				if (c == p)
+					continue;
+
 				if (engine->players[c].player_type != PLAYER_CLIENT)
 					continue;
 
@@ -381,12 +395,18 @@ int play_riichi_game(struct riichi_engine *engine) {
 			}
 
 			// [SERVER] Potentially receive claim packets from clients
+			char has_passed[NB_PLAYERS];
+			for (int i = 0; i < NB_PLAYERS; ++i) {
+				has_passed[i] = engine->players[i].player_type != PLAYER_CLIENT;
+				has_passed[i] &= (i != p);
+			}
+
 			time_t t1 = time(NULL);
 			int player_claim = -1;
 			while (player_claim != -1 && time(NULL) - t1 < TIMEOUT_RECEIVE) {
 				for (int c = 0; player_claim == -1 && c < NB_PLAYERS; ++c) {
 					struct player *other_player = &engine->players[c];
-					if (other_player->player_type != PLAYER_CLIENT)
+					if (has_passed[c])
 						continue;
 
 					if (!other_player->net_status)
@@ -401,8 +421,16 @@ int play_riichi_game(struct riichi_engine *engine) {
 						continue;
 					}
 
+					if (packet.input.action == ACTION_PASS) {
+						has_passed[c] = 1;
+						continue;
+					}
+
 					// Claim received, verify the claim
-					player_claim = verify_and_claim(engine, c, input);
+					player_claim = verify_and_claim(engine, c, packet.input);
+					if (player_claim != -1) {
+						input = packet.input;
+					}
 				}
 			}
 

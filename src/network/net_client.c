@@ -53,17 +53,17 @@ int receive_from_server(struct net_client *client, void *buf, size_t buf_size) {
 		return 0;
 	}
 
+	fprintf(stderr, "Waiting for data\n");
+
 	size_t received;
 	sfSocketStatus s;
-	do {
-		s = sfTcpSocket_receive(client->socket, buf, buf_size, &received);
-		if (s == sfSocketError) {
-			fprintf(stderr, "Fail while receiving\n");
-			return 0;
-		}
-	} while (received > 0);
+	s = sfTcpSocket_receive(client->socket, buf, buf_size, &received);
+	if (s == sfSocketError) {
+		fprintf(stderr, "Fail while receiving\n");
+		return 0;
+	}
 
-	fprintf(stderr, "Data received\n");
+	fprintf(stderr, "Data received: %zu\n", received);
 	return 1;
 }
 
@@ -76,25 +76,3 @@ void disconnect_from_server(struct net_client *client) {
 
 	sfTcpSocket_destroy(client->socket);
 }
-
-/*
-void client_test() {
-    struct net_client *client = init_client_from_host_and_port("perdu.com", 80);
-    sfTime timeout = {microseconds : 60000000};
-    client->timeout = timeout;
-
-    if (!connect_to_server(client))
-        return;
-
-    const char *str = "GET http://perdu.com HTTP/1.0\n\r\n\r";
-    size_t n = strlen(str);
-    if (!send_to_server(client, str, n))
-        return;
-    char buf[256];
-    if (!receive_from_server(client, buf))
-        return;
-
-    disconnect_from_server(client);
-    client_buster(client);
-}
-*/
