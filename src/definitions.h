@@ -2,7 +2,7 @@
 #define _DEFINITIONS_H_
 
 // For AI debug and tests
-#define AI_MODE 1
+#define AI_MODE 0
 
 #define GROUPLIST_CAPACITY 32
 #define GROUP_NB_TILES 4
@@ -32,6 +32,7 @@ enum action {
 	ACTION_PON,
 	ACTION_KAN
 };
+
 enum game_phase {
 	PHASE_INIT,
 	PHASE_DRAW,
@@ -40,7 +41,6 @@ enum game_phase {
 	PHASE_WAIT,
 	PHASE_CLAIM
 };
-
 
 struct action_input {
 	enum action action;

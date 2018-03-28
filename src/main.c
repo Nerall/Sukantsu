@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 199309L
+#include "core/player.h"
 #include "core/riichi_engine.h"
 #include "core/riichi_engine_s.h"
 #include "network/net_client.h"

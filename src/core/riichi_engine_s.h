@@ -3,7 +3,7 @@
 
 #include "../network/net_server_s.h"
 #include "groups_s.h"
-#include "player.h"
+#include "histogram_s.h"
 #include "player_s.h"
 
 struct riichi_engine {

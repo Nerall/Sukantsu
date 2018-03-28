@@ -2,7 +2,6 @@
 #include "../debug.h"
 #include "net_client_s.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 int connect_to_server(struct net_client *client, const char *host,
                       unsigned short port) {

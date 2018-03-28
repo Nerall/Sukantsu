@@ -1,5 +1,4 @@
 #include "player.h"
-#include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
 #include "../network/net_client.h"
@@ -7,7 +6,6 @@
 #include "hand.h"
 #include "histogram.h"
 #include "player_s.h"
-#include <stdlib.h>
 #include <wchar.h>
 
 typedef struct net_packet_init pk_init;
