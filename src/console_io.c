@@ -268,7 +268,11 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 		}
 
 		case PHASE_DRAW: {
-			wprintf(L"--------------------------------\n\n");
+      
+      
+      
+      
+      wprintf(L"--------------------------------\n\n");
 			wprintf(L"Remaining tiles: %u\n\n", (engine->wall.nb_tiles - 14));
 
 			print_histo(&player_hand->histo, player_hand->last_tile);

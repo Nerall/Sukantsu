@@ -5,12 +5,13 @@
 #include "histogram_s.h"
 
 struct hand {
-	struct histogram histo;           // tiles in hand
-	struct histogram discarded_tiles; // each tiles discarded
-	struct histobit chiitiles;        // tiles waiting to create a sequence
-	struct histobit pontiles;         // tiles waiting to create a triplet
-	struct histobit kantiles;         // tiles waiting to create a quad
-	struct histobit wintiles;         // tiles waiting to win
+	struct histogram histo;         // tiles in hand
+	struct discardlist discardlist; // list of tiles in a discard
+	struct histobit chiitiles;      // tiles waiting to create a sequence
+	struct histobit pontiles;       // tiles waiting to create a triplet
+	struct histobit kantiles;       // tiles waiting to create a quad
+	struct histobit wintiles;       // tiles waiting to win
+	struct histobit furitentiles;   // tiles you already discarded
 	struct histobit riichitiles; // tiles you have to discard to be tenpai (hand
 	                             // > 13 tiles without considering quads)
 	struct group groups[HAND_NB_GROUPS]; // each revealed group

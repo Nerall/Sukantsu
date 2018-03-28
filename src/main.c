@@ -88,7 +88,8 @@ void host_main() {
 			;
 	} while (c != 'N');
 
-	wprintf(L"\nYou played %d game(s).\n", engine.nb_games);
+	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
+	        (engine.nb_games > 1) ? "s" : "");
 }
 
 void client_main() {

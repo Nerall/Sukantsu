@@ -4,6 +4,7 @@
 #include "../debug.h"
 #include "../network/net_packets.h"
 #include "../network/net_server.h"
+#include "groups.h"
 #include "hand.h"
 #include "histogram.h"
 #include "player.h"
@@ -75,7 +76,8 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 	switch (input->action) {
 		case ACTION_DISCARD: {
 			remove_tile_hand(player_hand, input->tile);
-			player_hand->discarded_tiles.cells[input->tile] += 1;
+			set_histobit(&player_hand->furitentiles, input->tile);
+			add_discard(&player_hand->discardlist, input->tile);
 			if (input->tile != player_hand->last_tile) {
 				tilestocall(player_hand, grouplist);
 				tenpailist(player_hand, grouplist);
@@ -85,7 +87,8 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 
 		case ACTION_RIICHI: {
 			remove_tile_hand(player_hand, input->tile);
-			player_hand->discarded_tiles.cells[input->tile] += 1;
+			set_histobit(&player_hand->furitentiles, input->tile);
+			add_discard(&player_hand->discardlist, input->tile);
 			tenpailist(player_hand, grouplist);
 
 			// Will be set at RIICHI next turn

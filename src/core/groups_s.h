@@ -14,4 +14,9 @@ struct grouplist {
 	unsigned char nb_groups;
 };
 
+struct discardlist {
+	histo_index_t discards[24]; // max number of discards
+	unsigned char nb_discards;
+};
+
 #endif // _GROUPS_S_H_
