@@ -1,18 +1,9 @@
 #ifndef _RIICHI_ENGINE_
 #define _RIICHI_ENGINE_
 
-#include "player.h"
-#include "../network/net_server.h"
+#include "../definitions.h"
 
-struct riichi_engine {
-	struct histogram wall;
-	struct player players[NB_PLAYERS];
-	struct grouplist grouplist;
-	struct net_server server;
-
-	unsigned nb_games;
-	enum game_phase phase;
-};
+struct riichi_engine;
 
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,

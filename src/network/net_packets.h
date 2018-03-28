@@ -1,9 +1,8 @@
 #ifndef _NET_PACKET_
 #define _NET_PACKET_
 
-#include "../core/histogram.h"
+#include "../core/histogram_s.h"
 #include "../definitions.h"
-//#include "../core/player.h"
 
 struct net_packet_init {
 	enum packet_type packet_type; // Keep this at this place

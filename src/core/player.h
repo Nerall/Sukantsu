@@ -1,18 +1,10 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "../network/net_client.h"
-#include "hand.h"
+#include "../definitions.h"
 
-struct player {
-	struct hand hand;
-	enum player_type player_type;
-	enum table_pos player_pos;
-
-	struct net_client client;
-	unsigned char net_id : 2;     // [0, 3]
-	unsigned char net_status : 1; // bool: 1 = OK
-};
+struct player;
+struct grouplist;
 
 void init_player(struct player *player, enum player_type player_type,
                  enum table_pos player_pos);

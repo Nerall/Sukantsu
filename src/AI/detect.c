@@ -1,5 +1,8 @@
 #include "detect.h"
 #include "../core/hand.h"
+#include "../core/hand_s.h"
+#include "../core/histogram.h"
+#include "../core/groups.h"
 #include "../debug.h"
 
 int ischiitoi(struct hand *hand) {

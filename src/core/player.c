@@ -1,8 +1,9 @@
 #include "player.h"
-#include "../network/net_packets.h"
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
+#include "../network/net_packets.h"
+#include "player_s.h"
 
 #include <stdlib.h>
 #include <wchar.h>

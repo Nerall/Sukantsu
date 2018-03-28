@@ -1,4 +1,5 @@
 #include "groups.h"
+#include "groups_s.h"
 #include "../debug.h"
 #include <string.h>
 

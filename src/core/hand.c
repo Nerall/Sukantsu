@@ -1,5 +1,8 @@
 #include "hand.h"
 #include "../debug.h"
+#include "groups.h"
+#include "hand_s.h"
+#include "histogram.h"
 #include <string.h>
 
 // Initialize an empty hand
