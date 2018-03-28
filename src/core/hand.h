@@ -1,7 +1,6 @@
 #ifndef _HAND_H_
 #define _HAND_H_
 
-#include "../definitions.h"
 #include "histogram.h"
 #include "groups.h"
 

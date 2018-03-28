@@ -1,7 +1,6 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "../definitions.h"
 #include "../network/net_client.h"
 #include "hand.h"
 

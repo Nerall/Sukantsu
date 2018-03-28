@@ -1,6 +1,6 @@
 #include "detect.h"
+#include "../core/hand.h"
 #include "../debug.h"
-#include <string.h>
 
 int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);

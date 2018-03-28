@@ -1,9 +1,6 @@
 #ifndef _RIICHI_ENGINE_
 #define _RIICHI_ENGINE_
 
-#include "../definitions.h"
-#include "groups.h"
-#include "histogram.h"
 #include "player.h"
 #include "../network/net_server.h"
 
