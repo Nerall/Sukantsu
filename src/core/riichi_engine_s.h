@@ -1,7 +1,7 @@
 #ifndef _RIICHI_ENGINE_S_H
 #define _RIICHI_ENGINE_S_H
 
-#include "../network/net_server.h"
+#include "../network/net_server_s.h"
 #include "groups_s.h"
 #include "player.h"
 #include "player_s.h"

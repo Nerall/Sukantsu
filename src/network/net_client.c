@@ -1,5 +1,6 @@
 #include "net_client.h"
 #include "../debug.h"
+#include "net_client_s.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,17 +11,17 @@ int connect_to_server(struct net_client *client, const char *host,
 	const sfTime timeout = {microseconds : 30000000};
 
 	client->socket = sfTcpSocket_create();
-	client->host = sfIpAddress_fromString(host);
-	client->port = port;
+	sfIpAddress address = sfIpAddress_fromString(host);
 
-	if (sfTcpSocket_connect(client->socket, client->host, client->port,
-	                        timeout) != sfSocketDone) {
-		fprintf(stderr, "Fail while connecting\n");
+	if (sfTcpSocket_connect(client->socket, address, port, timeout) !=
+	    sfSocketDone) {
+		char temp[16];
+		sfIpAddress_toString(address, temp);
+		fprintf(stderr, "Fail while connecting to %s\n", temp);
 		return 0;
 	}
 
-	fprintf(stderr, "Connected to %s:%hu\n", client->host.address,
-	        client->port);
+	fprintf(stderr, "Connected to %s:%hu\n", host, port);
 	return 1;
 }
 

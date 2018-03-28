@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 199309L
 #include "core/riichi_engine.h"
 #include "core/riichi_engine_s.h"
+#include "network/net_client.h"
+#include "network/net_server.h"
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,11 +95,13 @@ void client_main() {
 	init_player(&player, PLAYER_CLIENT, NORTH);
 
 	// TODO: Ask the player (human)
-	char *host = "127.0.0.1";
+	char *host = "localhost";
 	unsigned short port = 5000;
 
 	connect_to_server(&player.client, host, port);
 	client_main_loop(&player);
+
+	disconnect_from_server(&player.client);
 }
 
 int main() {

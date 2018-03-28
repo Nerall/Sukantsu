@@ -2,9 +2,11 @@
 #include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
+#include "../network/net_client.h"
 #include "../network/net_packets.h"
+#include "hand.h"
+#include "histogram.h"
 #include "player_s.h"
-
 #include <stdlib.h>
 #include <wchar.h>
 

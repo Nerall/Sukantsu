@@ -2,6 +2,7 @@
 #include "AI/detect.h"
 #include "core/groups_s.h"
 #include "core/hand_s.h"
+#include "core/histogram.h"
 #include "core/histogram_s.h"
 #include "core/riichi_engine_s.h"
 #include "debug.h"

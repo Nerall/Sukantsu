@@ -1,7 +1,7 @@
 #define _POSIX_C_SOURCE 199309L
 #include "net_server.h"
 #include "../debug.h"
-
+#include "net_server_s.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

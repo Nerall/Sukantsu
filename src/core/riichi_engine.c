@@ -3,8 +3,11 @@
 #include "../console_io.h"
 #include "../debug.h"
 #include "../network/net_packets.h"
+#include "hand.h"
+#include "histogram.h"
 #include "player.h"
 #include "riichi_engine_s.h"
+#include "../network/net_server.h"
 #include <stdio.h>
 #include <time.h>
 #include <wchar.h>

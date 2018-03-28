@@ -1,13 +1,9 @@
 #ifndef _NET_CLIENT_H_
 #define _NET_CLIENT_H_
 
-#include <SFML/Network.h>
+#include <stddef.h>
 
-struct net_client {
-	sfTcpSocket *socket;
-	sfIpAddress host;
-	unsigned short port;
-};
+struct net_client;
 
 int connect_to_server(struct net_client *client, const char *host,
                       unsigned short port);

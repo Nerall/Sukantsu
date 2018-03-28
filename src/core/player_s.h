@@ -1,7 +1,7 @@
-#ifndef _PLAYER_S_H
-#define _PLAYER_S_H
+#ifndef _PLAYER_S_H_
+#define _PLAYER_S_H_
 
-#include "../network/net_client.h"
+#include "../network/net_client_s.h"
 #include "hand_s.h"
 
 struct player {
@@ -14,4 +14,4 @@ struct player {
 	unsigned char net_status : 1; // bool: 1 = OK
 };
 
-#endif // _PLAYER_S_H
+#endif // _PLAYER_S_H_
