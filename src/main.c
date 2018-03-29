@@ -101,7 +101,7 @@ void client_main() {
 	do {
 		wprintf(L"Type a server to connect to\n> ");
 		fflush(stdout);
-		for (char *c = server; c < server + 127; ++c) {
+		for (char *c = server; c < server + 63; ++c) {
 			*c = getchar();
 			if (*c == '\n') {
 				*c = '\0';
@@ -111,7 +111,7 @@ void client_main() {
 
 		wprintf(L"Type a port to connect to\n> ");
 		fflush(stdout);
-		scanf("%hu", &port);
+		while (!scanf("%hu", &port));
 		while (getchar() != '\n');
 	} while (!connect_to_server(&player.client, server, port));
 

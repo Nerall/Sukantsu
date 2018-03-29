@@ -27,7 +27,7 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	init_player(&engine->players[0], t1, NORTH);
 	init_player(&engine->players[1], t2, EAST);
 	init_player(&engine->players[2], t3, SOUTH);
-	init_player(&engine->players[3], t4, EAST);
+	init_player(&engine->players[3], t4, WEST);
 
 	engine->nb_games = 0;
 }
@@ -267,8 +267,8 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 }
 
 // Get-Input phase of a riichi game
-struct action_input riichi_get_input_phase(struct riichi_engine *engine,
-                                           int player_index) {
+void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
+                            struct action_input *player_input) {
 	ASSERT_BACKTRACE(engine);
 
 	engine->phase = PHASE_GETINPUT;
@@ -277,11 +277,11 @@ struct action_input riichi_get_input_phase(struct riichi_engine *engine,
 
 	for (time_t t1 = time(NULL); time(NULL) - t1 < TIMEOUT_RECEIVE;) {
 		if (player->player_type != PLAYER_CLIENT) {
-			struct action_input player_input;
-			get_player_input(player, &player_input);
+			get_player_input(player, player_input);
 
-			if (verify_action(engine, player, &player_input)) {
-				return player_input;
+			if (verify_action(engine, player, player_input)) {
+				ASSERT_BACKTRACE(verify_action(engine, player, player_input));
+				return;
 			}
 		}
 
@@ -313,15 +313,16 @@ struct action_input riichi_get_input_phase(struct riichi_engine *engine,
 		}
 
 		if (verify_action(engine, player, &packet.input)) {
-			return packet.input;
+			*player_input = packet.input;
+			ASSERT_BACKTRACE(verify_action(engine, player, player_input));
+			return;
 		}
 	}
 
-	struct action_input player_input = {
-		tile : NO_TILE_INDEX,
-		action : ACTION_PASS
-	};
-	return player_input;
+	player_input->tile = NO_TILE_INDEX;
+	player_input->action = ACTION_PASS;
+	ASSERT_BACKTRACE(verify_action(engine, player, player_input));
+	return;
 }
 
 // Tsumo phase of a riichi game
@@ -516,16 +517,22 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		struct action_input player_input;
 		if (!win) {
-			player_input = riichi_get_input_phase(engine, player_index);
-		}
+			riichi_get_input_phase(engine, player_index, &player_input);
 
-		if (!win || player_input.action == ACTION_PASS) {
-			player_input.action = ACTION_DISCARD;
-			player_input.tile = random_pop_histogram(&player->hand.histo);
-			player->hand.histo.cells[player_input.tile]++;
+			if (player_input.action == ACTION_PASS) {
+				player_input.action = ACTION_DISCARD;
+				player_input.tile = random_pop_histogram(&player->hand.histo);
+				player->hand.histo.cells[player_input.tile]++;
+			}
+
 			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
+
 			win = apply_action(engine, player, &player_input);
 		}
+
+		// PHASE_GETINPUT
+		if (!AI_MODE)
+			display_riichi(engine, player_index);
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
@@ -536,11 +543,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 			riichi_claim_phase(engine, player_index, &player_input);
 		}
 
-		/////////////////////////////////////////////////////////////
-
-		////////////////
-		// WAIT PHASE //
-		////////////////
 		engine->phase = PHASE_WAIT;
 
 		// Calculate winning tiles
