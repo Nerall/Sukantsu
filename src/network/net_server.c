@@ -89,7 +89,7 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 	ASSERT_BACKTRACE(server);
 	ASSERT_BACKTRACE(server->clients[iclient]);
 
-	const struct timespec delay = {tv_sec : 0, tv_nsec : 25 * 1000000};
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 100 * 1000000};
 	sfTcpSocket *client = server->clients[iclient];
 	sfSocketStatus status;
 	time_t t1 = time(NULL);
@@ -129,7 +129,7 @@ int receive_data_from_client(struct net_server *server, int iclient, void *data,
 	ASSERT_BACKTRACE(server);
 	ASSERT_BACKTRACE(server->clients[iclient]);
 
-	const struct timespec delay = {tv_sec : 0, tv_nsec : 25 * 1000000};
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 50 * 1000000};
 	sfTcpSocket *client = server->clients[iclient];
 	sfSocketStatus status;
 	time_t t1 = time(NULL);

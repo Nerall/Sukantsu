@@ -125,9 +125,7 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 	return 0;
 }
 
-////
-// TODO: People should claim even when not winning
-////
+// TODO //
 static int verify_and_claim(struct riichi_engine *engine, int player_index,
                             struct action_input input) {
 	ASSERT_BACKTRACE(engine);
@@ -175,16 +173,12 @@ static int verify_and_claim(struct riichi_engine *engine, int player_index,
 	return -1;
 }
 
-// Play a riichi game and return the index of the player who has won
-// If noone has won, return -1
-int play_riichi_game(struct riichi_engine *engine) {
+// Init phase of a riichi game
+static void riichi_init_phase(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
 	struct net_server *server = &engine->server;
 
-	////////////////
-	// INIT PHASE //
-	////////////////
 	++engine->nb_games;
 	engine->phase = PHASE_INIT;
 
@@ -192,18 +186,19 @@ int play_riichi_game(struct riichi_engine *engine) {
 	init_histogram(&engine->wall, 4);
 
 	// Give 13 tiles to each player
-	for (int p = 0; p < NB_PLAYERS; ++p) {
+	for (int player_index = 0; player_index < NB_PLAYERS; ++player_index) {
 		// player_type has been initialized in init_riichi_engine
-		init_hand(&engine->players[p].hand);
+		init_hand(&engine->players[player_index].hand);
+
 		for (int i = 0; i < 13; ++i) {
 			histo_index_t r = random_pop_histogram(&engine->wall);
-			add_tile_hand(&engine->players[p].hand, r);
+			add_tile_hand(&engine->players[player_index].hand, r);
 		}
 	}
 
 	// [SERVER] Send tiles to all clients
-	for (int p = 0; p < NB_PLAYERS; ++p) {
-		struct player *player = &engine->players[p];
+	for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
+		struct player *player = &engine->players[client_index];
 
 		if (player->player_type != PLAYER_CLIENT)
 			continue;
@@ -221,111 +216,147 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (s) {
 			fprintf(stderr, "[ERROR][SERVER] Error while sending"
 			                " init data to player %d\n",
-			        p);
+			        client_index);
 		}
 	}
 
 	// To initialize the waits
-	for (int p = 0; p < NB_PLAYERS; ++p) {
-		tenpailist(&engine->players[p].hand, &engine->grouplist);
+	for (int player_index = 0; player_index < NB_PLAYERS; ++player_index) {
+		tenpailist(&engine->players[player_index].hand, &engine->grouplist);
 	}
 
 	// Display PHASE_INIT
 	display_riichi(engine, 0);
+}
+
+// Draw phase of a riichi game
+static void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
+	ASSERT_BACKTRACE(engine);
+
+	struct net_server *server = &engine->server;
+	struct player *player = &engine->players[player_index];
+	engine->phase = PHASE_DRAW;
+
+	// Do not draw if already claimed
+	if (!player->hand.has_claimed) {
+		// Give one tile to the player
+		histo_index_t randi = random_pop_histogram(&engine->wall);
+		add_tile_hand(&player->hand, randi);
+
+		// [SERVER] Send tile to client player_index
+		if (player->player_type == PLAYER_CLIENT) {
+			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
+
+			int s = send_data_to_client(server, player->net_id, &packet,
+			                            sizeof(pk_draw), TIMEOUT_SEND);
+			player->net_status = !s;
+			if (s) {
+				fprintf(stderr, "[ERROR][SERVER] Error while sending"
+				                " popped tile to player %d\n",
+				        player_index);
+			}
+		}
+	}
+	player->hand.has_claimed = 0;
+
+	// Calculate best discards (hints)
+	tilestodiscard(&player->hand, &engine->grouplist);
+
+	if (player->player_type == PLAYER_HOST)
+		display_riichi(engine, player_index);
+}
+
+// Get-Input phase of a riichi game
+static struct action_input riichi_get_input_phase(struct riichi_engine *engine,
+                                                  int player_index) {
+	ASSERT_BACKTRACE(engine);
+
+	engine->phase = PHASE_GETINPUT;
+	struct net_server *server = &engine->server;
+	struct player *player = &engine->players[player_index];
+
+	for (time_t t1 = time(NULL); time(NULL) - t1 < TIMEOUT_RECEIVE;) {
+		if (player->player_type != PLAYER_CLIENT) {
+			struct action_input player_input;
+			get_player_input(player, &player_input);
+
+			if (verify_action(engine, player, &player_input)) {
+				return player_input;
+			}
+		}
+
+		if (!player->net_status)
+			break;
+
+		pk_input packet = {packet_type : PACKET_INPUT};
+
+		// [SERVER] Ask client player_index to send input
+		int s = send_data_to_client(server, player->net_id, &packet,
+		                            sizeof(pk_input), TIMEOUT_SEND);
+		player->net_status = !s;
+		if (s) {
+			fprintf(stderr, "[ERROR][SERVER] Error while asking"
+			                " input to player %d\n",
+			        player_index);
+			break;
+		}
+
+		// [SERVER] Receive input from client player_index
+		receive_data_from_client(server, player->net_id, &packet,
+		                         sizeof(pk_input), TIMEOUT_RECEIVE);
+		player->net_status = !s;
+		if (s) {
+			fprintf(stderr, "[ERROR][SERVER] Error while"
+			                " receiving input from player %d\n",
+			        player_index);
+			break;
+		}
+
+		if (verify_action(engine, player, &packet.input)) {
+			return packet.input;
+		}
+	}
+
+	struct action_input player_input = {
+		tile : NO_TILE_INDEX,
+		action : ACTION_PASS
+	};
+	return player_input;
+}
+
+// Play a riichi game and return the index of the player who has won
+// If noone has won, return -1
+int play_riichi_game(struct riichi_engine *engine) {
+	ASSERT_BACKTRACE(engine);
+
+	struct net_server *server = &engine->server;
+	riichi_init_phase(engine);
 
 	// Main loop
 	for (int p = 0; engine->wall.nb_tiles > 14; p = (p + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[p];
-		int is_client = player->player_type == PLAYER_CLIENT;
 
-		////////////////
-		// DRAW PHASE //
-		////////////////
-		engine->phase = PHASE_DRAW;
+		riichi_draw_phase(engine, p);
 
-		if (!player->hand.has_claimed) {
-			// Give one tile to the player
-			histo_index_t randi = random_pop_histogram(&engine->wall);
-			add_tile_hand(&player->hand, randi);
+		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
-			// [SERVER] Send tile to client p
-			if (is_client) {
-				pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
-
-				int s = send_data_to_client(server, player->net_id, &packet,
-				                            sizeof(pk_draw), TIMEOUT_SEND);
-				player->net_status = !s;
-				if (s) {
-					fprintf(stderr, "[ERROR][SERVER] Error while sending"
-					                " popped tile to player %d\n",
-					        p);
-				}
-			}
-		}
-		player->hand.has_claimed = 0;
-
-		// Calculate best discards (hints)
-		tilestodiscard(&player->hand, &engine->grouplist);
-
-		if (player->player_type == PLAYER_HOST)
-			display_riichi(engine, p);
-
-		// GetInput Phase
-		engine->phase = PHASE_GETINPUT;
-		int win = 0;
-		if (is_valid_hand(&player->hand, &engine->grouplist))
-			win = 1;
-
-		struct action_input input;
+		struct action_input player_input;
 		if (!win) {
-			int done = 0;
-			time_t t1 = time(NULL);
-			while (time(NULL) - t1 < TIMEOUT_RECEIVE && !done) {
-				if (is_client) {
-					if (!player->net_status)
-						break;
-
-					pk_input packet = {packet_type : PACKET_INPUT};
-
-					// [SERVER] Ask client p to send input
-					int s = send_data_to_client(server, player->net_id, &packet,
-					                            sizeof(pk_input), TIMEOUT_SEND);
-					player->net_status = !s;
-					if (s) {
-						fprintf(stderr, "[ERROR][SERVER] Error while asking"
-						                " input to player %d\n",
-						        p);
-						break;
-					}
-
-					// [SERVER] Receive input from client p
-					receive_data_from_client(server, player->net_id, &packet,
-					                         sizeof(pk_input), TIMEOUT_RECEIVE);
-					player->net_status = !s;
-					if (s) {
-						fprintf(stderr, "[ERROR][SERVER] Error while"
-						                " receiving input from player %d\n",
-						        p);
-						break;
-					}
-
-					input = packet.input;
-				} else {
-					get_player_input(player, &input);
-				}
-
-				done = verify_action(engine, player, &input);
-			}
-
-			if (!done || input.action == ACTION_PASS) {
-				input.action = ACTION_DISCARD;
-				input.tile = random_pop_histogram(&player->hand.histo);
-				player->hand.histo.cells[input.tile]++;
-				ASSERT_BACKTRACE(verify_action(engine, player, &input));
-			}
-
-			win = apply_action(engine, player, &input);
+			player_input = riichi_get_input_phase(engine, p);
 		}
+
+		if (!win || player_input.action == ACTION_PASS) {
+			player_input.action = ACTION_DISCARD;
+			player_input.tile = random_pop_histogram(&player->hand.histo);
+			player->hand.histo.cells[player_input.tile]++;
+			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
+		}
+
+		win = apply_action(engine, player, &player_input);
+
+		/////////////////////////////////////////////////////////////
+
+		struct action_input input = player_input;
 
 		if (win) {
 			/////////////////
