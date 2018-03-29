@@ -2,10 +2,12 @@
 #define _CONSOLE_INPUT_H_
 
 #include "definitions.h"
-#include "core/histogram.h"
-#include "core/groups.h"
-#include "core/hand.h"
-#include "core/riichi_engine.h"
+
+struct hand;
+struct histogram;
+struct group;
+struct grouplist;
+struct riichi_engine;
 
 histo_index_t char_to_index(char family, char number);
 

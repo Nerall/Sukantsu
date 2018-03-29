@@ -1,140 +1,148 @@
 #include "player.h"
 #include "../console_io.h"
 #include "../debug.h"
-#include "../AI/detect.h"
+#include "../network/net_client.h"
+#include "../network/net_packets.h"
+#include "hand.h"
+#include "histogram.h"
+#include "player_s.h"
+#include <stdio.h>
+#include <wchar.h>
 
-void init_player(struct player *player, enum player_type player_type) {
+typedef struct net_packet_init pk_init;
+typedef struct net_packet_input pk_input;
+typedef struct net_packet_draw pk_draw;
+typedef struct net_packet_update pk_update;
+
+void init_player(struct player *player, enum player_type player_type,
+                 enum table_pos player_pos) {
 	ASSERT_BACKTRACE(player);
 
 	init_hand(&player->hand);
 	player->player_type = player_type;
+	player->player_pos = player_pos;
 }
 
-// Ask the player for an action until this one is correct
-// Applies the action after that
-// Return 1 if the player has won
-int player_turn(struct player *player, struct grouplist *grouplist,
-                       histo_index_t *index_rem) {
+static void input_console(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(input);
 
-	struct hand *player_hand = &player->hand;
-
-	if (is_valid_hand(player_hand, grouplist))
-		return 1;
-
-	for (;;) {
-		enum action action;
-		histo_index_t index = get_player_input(player, &action);
-		*index_rem = index;
-
-		switch (action) {
-			case ACTION_DISCARD: {
-				remove_tile_hand(player_hand, index);
-				set_histobit(&player_hand->furitentiles, index);
-				add_discard(&player_hand->discardlist, index);
-        if (index != player_hand->last_tile) {
-					tilestocall(player_hand, grouplist);
-					tenpailist(player_hand, grouplist);
-				}
-				return 0;
-			}
-
-			case ACTION_RIICHI: {
-				if (player_hand->riichi != NORIICHI || !player_hand->closed ||
-				    !get_histobit(&player_hand->riichitiles, index)) {
-					break;
-				}
-
-				remove_tile_hand(player_hand, index);
-				set_histobit(&player_hand->furitentiles, index);
-        add_discard(&player_hand->discardlist, index);
-				tenpailist(player_hand, grouplist);
-
-				// Will be set at RIICHI next turn
-				player_hand->riichi = IPPATSU;
-
-				// Init values that will be no more used later
-				init_histobit(&player_hand->riichitiles, 0);
-				init_histobit(&player_hand->chiitiles, 0);
-				init_histobit(&player_hand->pontiles, 0);
-				init_histobit(&player_hand->kantiles, 0);
-				return 0;
-			}
-
-			case ACTION_TSUMO: {
-				break;
-				/*
-				// if (!get_histobit(&hand->wintiles, index))
-				continue;
-
-				wprintf(L"TSUMO!\n\n");
-				makegroups(hand, grouplist);
-
-				print_victory(hand, grouplist);
-				continue;
-				return 1;
-				*/
-			}
-
-			case ACTION_KAN: {
-				break;
-			}
-
-			default:
-				ASSERT_BACKTRACE(0 && "Action not recognized");
-				break;
-		}
-	}
+	input->tile = get_input(&player->hand.histo, &input->action);
 }
 
-static histo_index_t input_AI(struct player *player, enum action *action) {
+static void input_AI(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
-	ASSERT_BACKTRACE(action);
+	ASSERT_BACKTRACE(input);
 
 	struct hand *player_hand = &player->hand;
-	*action = ACTION_DISCARD;
+	input->action = ACTION_DISCARD;
+	input->tile = NO_TILE_INDEX;
 
 	if (player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
-				return i - 1;
+				input->tile = i - 1;
+				return;
 			}
 		}
 
 		ASSERT_BACKTRACE(0 && "RiichiTiles Histobit is empty");
-		return NO_TILE_INDEX;
+		return;
 	}
 
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
-			return i - 1;
+			input->tile = i - 1;
+			return;
 		}
 	}
 
 	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
-	return NO_TILE_INDEX;
 }
 
-static histo_index_t input_console(struct player *player, enum action *action) {
-	return get_input(&player->hand.histo, action);
-}
-
-histo_index_t get_player_input(struct player *player, enum action *action) {
+void get_player_input(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
 	switch (player->player_type) {
-		case PLAYER_HUMAN:
-			return input_console(player, action);
+		case PLAYER_HOST:
+			input_console(player, input);
+			return;
 
 		case PLAYER_AI:
-			return input_AI(player, action);
+			input_AI(player, input);
+			return;
 
-		case PLAYER_AI_TEST:
-			ASSERT_BACKTRACE(0 && "No AI-Test set-up");
-			return NO_TILE_INDEX;
+		case PLAYER_CLIENT:
+			input_console(player, input);
+			return;
 
 		default:
-			ASSERT_BACKTRACE(0 && "Player-Type not recognized");
-			return NO_TILE_INDEX;
+			fprintf(stderr, "Player-Type not recognized");
+			return;
+	}
+}
+
+void client_main_loop(struct player *player) {
+	ASSERT_BACKTRACE(player);
+
+	char *pos[] = {"NORTH", "EAST", "SOUTH", "WEST"};
+
+	struct net_packet receiver;
+	while (receive_from_server(&player->client, &receiver,
+	                           sizeof(struct net_packet))) {
+		switch (receiver.packet_type) {
+			case PACKET_INIT: {
+				fprintf(stderr, "# packet init\n");
+				pk_init *init = (pk_init *)&receiver;
+				player->hand.histo = init->histo;
+				break;
+			}
+
+			case PACKET_DRAW: {
+				fprintf(stderr, "# packet draw\n");
+				pk_draw *draw = (pk_draw *)&receiver;
+				add_tile_hand(&player->hand, draw->tile);
+				break;
+			}
+
+			case PACKET_INPUT: {
+				fprintf(stderr, "# packet input\n");
+				pk_input *input = (pk_input *)&receiver;
+				get_player_input(player, &input->input);
+				send_to_server(&player->client, input, sizeof(pk_input));
+				break;
+			}
+
+			case PACKET_UPDATE: {
+				fprintf(stderr, "# packet update\n");
+				pk_update *update = (pk_update *)&receiver;
+				if (update->victory) {
+					wprintf(L"Player %s won the game!\n",
+					        pos[update->player_pos]);
+					break;
+				}
+
+				if (update->input.action == ACTION_DISCARD) {
+					wprintf(L"Player %s just discarded tile %d\n"
+					        "Do you claim?\n",
+					        pos[update->player_pos], update->input.tile);
+
+					pk_input input = {
+						packet_type : PACKET_INPUT,
+						input : {
+							action : ACTION_PASS,
+							tile : NO_TILE_INDEX,
+						},
+					};
+
+					send_to_server(&player->client, &input, sizeof(pk_input));
+				}
+				break;
+			}
+
+			default:
+				ASSERT_BACKTRACE(0 && "Packet-Type not recognized");
+				break;
+		}
 	}
 }

@@ -1,6 +1,9 @@
 #include "detect.h"
+#include "../core/hand.h"
+#include "../core/hand_s.h"
+#include "../core/histogram.h"
+#include "../core/groups.h"
 #include "../debug.h"
-#include <string.h>
 
 int ischiitoi(struct hand *hand) {
 	ASSERT_BACKTRACE(hand);

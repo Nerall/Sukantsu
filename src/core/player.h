@@ -2,18 +2,18 @@
 #define _PLAYER_H_
 
 #include "../definitions.h"
-#include "hand.h"
 
-struct player {
-	struct hand hand;
-	enum player_type player_type;
-};
+struct player;
+struct grouplist;
 
-void init_player(struct player *player, enum player_type player_type);
+void init_player(struct player *player, enum player_type player_type,
+                 enum table_pos player_pos);
 
 int player_turn(struct player *player, struct grouplist *grouplist,
-                       histo_index_t *index_rem);
+                histo_index_t *index_rem);
 
-histo_index_t get_player_input(struct player *player, enum action *action);
+void get_player_input(struct player *player, struct action_input *input);
+
+void client_main_loop(struct player *player);
 
 #endif // _PLAYER_H_

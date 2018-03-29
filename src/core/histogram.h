@@ -3,12 +3,11 @@
 
 #include "../definitions.h"
 
+struct histobit;
+struct histogram;
+
 // Suppose that index is unsigned
 #define is_valid_index(index) ((index) < HISTO_INDEX_MAX)
-
-struct histobit {
-	unsigned char cells[5];
-};
 
 void init_histobit(struct histobit *histo, unsigned char bool_value);
 
@@ -19,12 +18,6 @@ void clear_histobit(struct histobit *histo, histo_index_t index);
 int get_histobit(struct histobit *histo, histo_index_t index);
 
 void copy_histobit(struct histobit *histo, struct histobit *histocopy);
-
-
-struct histogram {
-	histo_cell_t cells[HISTO_INDEX_MAX];
-	unsigned char nb_tiles;
-};
 
 void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index);
 

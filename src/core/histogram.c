@@ -1,5 +1,6 @@
 #include "histogram.h"
 #include "../debug.h"
+#include "histogram_s.h"
 #include <stdlib.h>
 #include <string.h>
 

@@ -1,5 +1,7 @@
 #include "console_io.h"
 #include "AI/detect.h"
+#include "core/histogram.h"
+#include "core/riichi_engine_s.h"
 #include "debug.h"
 #include <stdio.h>
 #include <wchar.h>
@@ -257,7 +259,10 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 void display_riichi(struct riichi_engine *engine, int current_player) {
 	ASSERT_BACKTRACE(engine);
 
-	struct hand *player_hand = &engine->players[current_player].hand;
+	struct player *player = &engine->players[current_player];
+	struct hand *player_hand = &player->hand;
+
+	char *pos[] = {"NORTH", "EAST", "SOUTH", "WEST"};
 
 	switch (engine->phase) {
 		case PHASE_INIT: {
@@ -266,11 +271,7 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 		}
 
 		case PHASE_DRAW: {
-      
-      
-      
-      
-      wprintf(L"--------------------------------\n\n");
+			wprintf(L"--------------------------------\n\n");
 			wprintf(L"Remaining tiles: %u\n\n", (engine->wall.nb_tiles - 14));
 
 			print_histo(&player_hand->histo, player_hand->last_tile);
@@ -287,6 +288,14 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 				}
 				wprintf(L"\n");
 			}
+			break;
+		}
+
+		case PHASE_GETINPUT: {
+			char f, n;
+			index_to_char(player_hand->last_tile, &f, &n);
+			wprintf(L"Player %-5s has discarded: %c%c\n",
+			        pos[player->player_pos], n, f);
 			break;
 		}
 

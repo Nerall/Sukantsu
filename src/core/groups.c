@@ -1,5 +1,6 @@
 #include "groups.h"
 #include "../debug.h"
+#include "groups_s.h"
 #include <string.h>
 
 // Initialize an empty group
@@ -17,12 +18,6 @@ void init_grouplist(struct grouplist *grouplist) {
 	grouplist->nb_groups = 0;
 }
 
-void init_discardlist(struct discardlist *discardlist) {
-  ASSERT_BACKTRACE(discardlist);
-
-  discardlist->nb_discards = 0;
-}
-
 // Add a copy of group to the grouplist
 void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
 	ASSERT_BACKTRACE(grouplist);
@@ -33,9 +28,15 @@ void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
 	       HAND_NB_GROUPS * sizeof(struct group));
 }
 
-void add_discard(struct discardlist *discardlist, histo_index_t tile) {
-  ASSERT_BACKTRACE(discardlist);
+void init_discardlist(struct discardlist *discardlist) {
+	ASSERT_BACKTRACE(discardlist);
 
-  discardlist->discards[discardlist->nb_discards] = tile;
-  ++discardlist->nb_discards;
+	discardlist->nb_discards = 0;
+}
+
+void add_discard(struct discardlist *discardlist, histo_index_t tile) {
+	ASSERT_BACKTRACE(discardlist);
+
+	discardlist->discards[discardlist->nb_discards] = tile;
+	++discardlist->nb_discards;
 }

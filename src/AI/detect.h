@@ -1,9 +1,9 @@
 #ifndef _DETECT_H_
 #define _DETECT_H_
 
-#include "../core/hand.h"
-#include "../core/groups.h"
-#include "../core/histogram.h"
+struct hand;
+struct grouplist;
+struct histogram;
 
 int ischiitoi(struct hand *hand);
 

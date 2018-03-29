@@ -1,5 +1,8 @@
 #include "hand.h"
 #include "../debug.h"
+#include "groups.h"
+#include "hand_s.h"
+#include "histogram.h"
 #include <string.h>
 
 // Initialize an empty hand
@@ -23,6 +26,7 @@ void init_hand(struct hand *hand) {
 	hand->nb_groups = 0;
 	hand->tenpai = 0;
 	hand->closed = 1;
+	hand->has_claimed = 0;
 	hand->riichi = NORIICHI;
 }
 
