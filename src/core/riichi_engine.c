@@ -203,7 +203,8 @@ void riichi_init_phase(struct riichi_engine *engine) {
 		if (player->player_type != PLAYER_CLIENT)
 			continue;
 
-		sfTcpSocket_setBlocking(server->clients[player->net_id], sfFalse);
+		// Warning: sfTrue !
+		sfTcpSocket_setBlocking(server->clients[player->net_id], sfTrue);
 
 		pk_init packet = {
 			packet_type : PACKET_INIT,
@@ -246,7 +247,6 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		// [SERVER] Send tile to client player_index
 		if (player->player_type == PLAYER_CLIENT) {
 			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
-
 			int s = send_data_to_client(server, player->net_id, &packet,
 			                            sizeof(pk_draw), TIMEOUT_SEND);
 			player->net_status = !s;
@@ -530,7 +530,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 			win = apply_action(engine, player, &player_input);
 		}
 
-		// PHASE_GETINPUT
 		if (!AI_MODE)
 			display_riichi(engine, player_index);
 

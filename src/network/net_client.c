@@ -63,6 +63,11 @@ int receive_from_server(struct net_client *client, void *buf, size_t buf_size) {
 		return 0;
 	}
 
+	if (s == sfSocketDisconnected) {
+		fprintf(stderr, "Disconnected while receiving\n");
+		return 0;
+	}
+
 	fprintf(stderr, "Data received: %zu\n", received);
 	return 1;
 }

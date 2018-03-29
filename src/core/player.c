@@ -92,18 +92,21 @@ void client_main_loop(struct player *player) {
 	                           sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
+				fprintf(stderr, "# packet init\n");
 				pk_init *init = (pk_init *)&receiver;
 				player->hand.histo = init->histo;
 				break;
 			}
 
 			case PACKET_DRAW: {
+				fprintf(stderr, "# packet draw\n");
 				pk_draw *draw = (pk_draw *)&receiver;
 				add_tile_hand(&player->hand, draw->tile);
 				break;
 			}
 
 			case PACKET_INPUT: {
+				fprintf(stderr, "# packet input\n");
 				pk_input *input = (pk_input *)&receiver;
 				get_player_input(player, &input->input);
 				send_to_server(&player->client, input, sizeof(pk_input));
@@ -111,6 +114,7 @@ void client_main_loop(struct player *player) {
 			}
 
 			case PACKET_UPDATE: {
+				fprintf(stderr, "# packet update\n");
 				pk_update *update = (pk_update *)&receiver;
 				if (update->victory) {
 					wprintf(L"Player %s won the game!\n",
