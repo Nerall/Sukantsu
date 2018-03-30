@@ -208,6 +208,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 
 		pk_init packet = {
 			packet_type : PACKET_INIT,
+			player_pos: player->player_pos,
 			histo : player->hand.histo
 		};
 

@@ -5,6 +5,7 @@
 
 struct player;
 struct grouplist;
+struct net_client;
 
 void init_player(struct player *player, enum player_type player_type,
                  enum table_pos player_pos);
@@ -14,6 +15,6 @@ int player_turn(struct player *player, struct grouplist *grouplist,
 
 void get_player_input(struct player *player, struct action_input *input);
 
-void client_main_loop(struct player *player);
+void client_main_loop(struct net_client *client);
 
 #endif // _PLAYER_H_

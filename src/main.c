@@ -93,8 +93,7 @@ void host_main() {
 }
 
 void client_main() {
-	struct player player;
-	init_player(&player, PLAYER_CLIENT, NORTH);
+	struct net_client client;
 
 	char server[64];
 	unsigned short port;
@@ -113,11 +112,11 @@ void client_main() {
 		fflush(stdout);
 		while (!scanf("%hu", &port));
 		while (getchar() != '\n');
-	} while (!connect_to_server(&player.client, server, port));
+	} while (!connect_to_server(&client, server, port));
 
-	client_main_loop(&player);
+	client_main_loop(&client);
 
-	disconnect_from_server(&player.client);
+	disconnect_from_server(&client);
 }
 
 int main() {
