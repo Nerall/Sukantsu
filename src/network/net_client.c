@@ -39,7 +39,6 @@ int send_to_server(struct net_client *client, const void *data, size_t size) {
 		return 0;
 	}
 
-	fprintf(stderr, "Data sent\n");
 	return 1;
 }
 
@@ -47,13 +46,6 @@ int receive_from_server(struct net_client *client, void *buf, size_t buf_size) {
 	ASSERT_BACKTRACE(client);
 	ASSERT_BACKTRACE(buf);
 	ASSERT_BACKTRACE(buf_size > 0);
-
-	if (sfTcpSocket_getRemoteAddress(client->socket).address == 0) {
-		fprintf(stderr, "Socket not connected\n");
-		return 0;
-	}
-
-	fprintf(stderr, "Waiting for data\n");
 
 	size_t received;
 	sfSocketStatus s;
@@ -68,7 +60,6 @@ int receive_from_server(struct net_client *client, void *buf, size_t buf_size) {
 		return 0;
 	}
 
-	fprintf(stderr, "Data received: %zu\n", received);
 	return 1;
 }
 

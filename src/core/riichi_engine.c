@@ -69,7 +69,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 
 // Apply the action and return 1 if the player won
 int apply_action(struct riichi_engine *engine, struct player *player,
-                        struct action_input *input) {
+                 struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(player);
 	ASSERT_BACKTRACE(input);
@@ -248,7 +248,11 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 
 		// [SERVER] Send tile to client player_index
 		if (player->player_type == PLAYER_CLIENT) {
-			pk_draw packet = {packet_type : PACKET_DRAW, tile : randi};
+			pk_draw packet = {
+				packet_type : PACKET_DRAW,
+				nb_wall_tiles : engine->wall.nb_tiles,
+				tile : randi
+			};
 			int s = send_data_to_client(server, player->net_id, &packet,
 			                            sizeof(pk_draw), TIMEOUT_SEND);
 			player->net_status = !s;
@@ -287,7 +291,7 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			}
 		}
 
-		//if (!player->net_status)
+		// if (!player->net_status)
 		//	break;
 
 		pk_input packet = {packet_type : PACKET_INPUT};
@@ -313,8 +317,6 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			        player_index);
 			break;
 		}
-
-		fprintf(stderr, "=> %d %d\n", packet.input.action, packet.input.tile);
 
 		if (verify_action(engine, player, &packet.input)) {
 			*player_input = packet.input;
@@ -540,8 +542,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 			win = apply_action(engine, player, &player_input);
 		}
 
-		if (!AI_MODE)
+		if (!AI_MODE) {
+			engine->phase = PHASE_GETINPUT;
 			display_riichi(engine, player_index);
+		}
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);

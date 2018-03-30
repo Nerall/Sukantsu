@@ -15,6 +15,7 @@ struct net_packet_draw {
 	enum packet_type packet_type; // Keep this at this place
 
 	histo_index_t tile;
+	unsigned char nb_wall_tiles;
 };
 
 struct net_packet_input {
@@ -29,6 +30,13 @@ struct net_packet_update {
 	enum table_pos player_pos; // Player who made the action
 	struct action_input input;
 	char victory : 1;
+};
+
+struct net_packet_tsumo {
+	enum packet_type packet_type; // Keep this at this place
+
+	enum table_pos player_pos; // Player who won
+	struct histogram histo;    // Victory histogram of the player
 };
 
 #define MAX_PACKET_SIZE                                                        \

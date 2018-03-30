@@ -98,7 +98,6 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 		size_t sent;
 		switch (sfTcpSocket_sendPartial(client, data, data_size, &sent)) {
 			case sfSocketDone:
-				fprintf(stderr, "#SERVER - sent done\n");
 				return 0;
 
 			case sfSocketPartial: {

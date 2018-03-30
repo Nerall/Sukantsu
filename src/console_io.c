@@ -300,8 +300,14 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 		}
 
 		case PHASE_TSUMO: {
+			// engine->grouplist must contain the victory grouplist
 			wprintf(L"TSUMO!\n");
 			print_victory(player_hand, &engine->grouplist);
+			break;
+		}
+
+		case PHASE_CLAIM: {
+			wprintf(L"Do you want to claim? (todo)\n");
 			break;
 		}
 

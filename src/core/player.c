@@ -1,4 +1,5 @@
 #include "player.h"
+#include "../AI/detect.h"
 #include "../console_io.h"
 #include "../debug.h"
 #include "../network/net_client.h"
@@ -9,11 +10,13 @@
 #include "riichi_engine.h"
 #include "riichi_engine_s.h"
 #include <stdio.h>
+#include <string.h>
 #include <wchar.h>
 
 typedef struct net_packet_init pk_init;
 typedef struct net_packet_input pk_input;
 typedef struct net_packet_draw pk_draw;
+typedef struct net_packet_tsumo pk_tsumo;
 typedef struct net_packet_update pk_update;
 
 void init_player(struct player *player, enum player_type player_type,
@@ -88,16 +91,12 @@ void client_main_loop(struct net_client *client) {
 	ASSERT_BACKTRACE(client);
 
 	struct riichi_engine engine;
-	char *pos[] = {"NORTH", "EAST", "SOUTH", "WEST"};
-
 	struct net_packet receiver;
-	int iplayer;
 	struct player *player;
-	int nb_games = 0;
+	int iplayer, nb_games = 0;
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
-				fprintf(stderr, "# packet init\n");
 				pk_init *init = (pk_init *)&receiver;
 
 				enum player_type types[4];
@@ -121,9 +120,10 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_DRAW: {
-				fprintf(stderr, "# packet draw\n");
 				pk_draw *draw = (pk_draw *)&receiver;
 				add_tile_hand(&player->hand, draw->tile);
+
+				engine.wall.nb_tiles = draw->nb_wall_tiles;
 
 				engine.phase = PHASE_DRAW;
 				display_riichi(&engine, iplayer);
@@ -131,7 +131,6 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_INPUT: {
-				fprintf(stderr, "# packet input\n");
 				pk_input *input = (pk_input *)&receiver;
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));
@@ -142,33 +141,44 @@ void client_main_loop(struct net_client *client) {
 				break;
 			}
 
+			case PACKET_TSUMO: {
+				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
+
+				int itsumo = (int)tsumo->player_pos;
+				memcpy(&engine.players[itsumo].hand.histo, &tsumo->histo,
+				       sizeof(struct histogram));
+
+				makegroups(&engine.players[itsumo].hand, &engine.grouplist);
+
+				engine.phase = PHASE_TSUMO;
+				display_riichi(&engine, itsumo);
+				break;
+			}
+
 			case PACKET_UPDATE: {
-				// TODO: display (change display_riichi & possibly net_packets)
-				//       to add a net_packet_tsumo
-				fprintf(stderr, "# packet update\n");
 				pk_update *update = (pk_update *)&receiver;
-				if (update->victory) {
-					wprintf(L"Player %s won the game!\n",
-					        pos[update->player_pos]);
-					break;
-				}
+
+				engine.players[update->player_pos].hand.last_discard =
+				    update->input.tile;
+
+				engine.phase = PHASE_GETINPUT;
+				display_riichi(&engine, update->player_pos);
 
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
-					wprintf(L"Player %s just discarded tile %d\n"
-					        "Do you claim?\n",
-					        pos[update->player_pos], update->input.tile);
+					engine.phase = PHASE_CLAIM;
+					//display_riichi(&engine, update->player_pos);
 
 					/*pk_input input = {
-						packet_type : PACKET_INPUT,
-						input : {
-							action : ACTION_PASS,
-							tile : NO_TILE_INDEX,
-						},
+					    packet_type : PACKET_INPUT,
+					    input : {
+					        action : ACTION_PASS,
+					        tile : NO_TILE_INDEX,
+					    },
 					};*/
 
-					//fprintf(stderr, "sending...\n");
-					//send_to_server(client, &input, sizeof(pk_input));
+					// fprintf(stderr, "sending...\n");
+					// send_to_server(client, &input, sizeof(pk_input));
 				}
 				break;
 			}
