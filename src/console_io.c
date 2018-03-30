@@ -293,7 +293,7 @@ void display_riichi(struct riichi_engine *engine, int current_player) {
 
 		case PHASE_GETINPUT: {
 			char f, n;
-			index_to_char(player_hand->last_tile, &f, &n);
+			index_to_char(player_hand->last_discard, &f, &n);
 			wprintf(L"Player %-5s has discarded: %c%c\n",
 			        pos[player->player_pos], n, f);
 			break;

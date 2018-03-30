@@ -68,7 +68,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 }
 
 // Apply the action and return 1 if the player won
-static int apply_action(struct riichi_engine *engine, struct player *player,
+int apply_action(struct riichi_engine *engine, struct player *player,
                         struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(player);
@@ -82,6 +82,7 @@ static int apply_action(struct riichi_engine *engine, struct player *player,
 			remove_tile_hand(player_hand, input->tile);
 			set_histobit(&player_hand->furitentiles, input->tile);
 			add_discard(&player_hand->discardlist, input->tile);
+			player->hand.last_discard = input->tile;
 			if (input->tile != player_hand->last_tile) {
 				tilestocall(player_hand, grouplist);
 				tenpailist(player_hand, grouplist);
@@ -208,7 +209,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 
 		pk_init packet = {
 			packet_type : PACKET_INIT,
-			player_pos: player->player_pos,
+			player_pos : player->player_pos,
 			histo : player->hand.histo
 		};
 
@@ -286,8 +287,8 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			}
 		}
 
-		if (!player->net_status)
-			break;
+		//if (!player->net_status)
+		//	break;
 
 		pk_input packet = {packet_type : PACKET_INPUT};
 
@@ -312,6 +313,8 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			        player_index);
 			break;
 		}
+
+		fprintf(stderr, "=> %d %d\n", packet.input.action, packet.input.tile);
 
 		if (verify_action(engine, player, &packet.input)) {
 			*player_input = packet.input;
@@ -416,6 +419,9 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		time_t t1 = time(NULL);
 		int nb_pass;
 		do {
+			// TODO: DEBUG
+			break;
+
 			nb_pass = 0;
 			for (int iclient = 0; iclient < NB_PLAYERS; ++iclient) {
 				struct player *other_player = &engine->players[iclient];
@@ -485,6 +491,9 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			struct player *client = &engine->players[client_index];
 			if (client->player_type != PLAYER_CLIENT)
 				continue;
+
+			// TODO: DEBUG
+			break;
 
 			int s = send_data_to_client(server, client->net_id, &packet,
 			                            sizeof(pk_update), TIMEOUT_SEND);

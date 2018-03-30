@@ -93,6 +93,7 @@ void client_main_loop(struct net_client *client) {
 	struct net_packet receiver;
 	int iplayer;
 	struct player *player;
+	int nb_games = 0;
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
@@ -107,14 +108,12 @@ void client_main_loop(struct net_client *client) {
 
 				init_riichi_engine(&engine, types[0], types[1], types[2],
 				                   types[3]);
-				++engine.nb_games;
+				engine.nb_games = ++nb_games;
 
 				player = &engine.players[iplayer];
 
 				player->hand.histo = init->histo;
 				player->player_pos = init->player_pos;
-
-				fprintf(stderr, "# %s\n", pos[iplayer]);
 
 				engine.phase = PHASE_INIT;
 				display_riichi(&engine, iplayer);
@@ -137,6 +136,7 @@ void client_main_loop(struct net_client *client) {
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));
 
+				apply_action(&engine, player, &input->input);
 				engine.phase = PHASE_GETINPUT;
 				display_riichi(&engine, iplayer);
 				break;
@@ -159,15 +159,16 @@ void client_main_loop(struct net_client *client) {
 					        "Do you claim?\n",
 					        pos[update->player_pos], update->input.tile);
 
-					pk_input input = {
+					/*pk_input input = {
 						packet_type : PACKET_INPUT,
 						input : {
 							action : ACTION_PASS,
 							tile : NO_TILE_INDEX,
 						},
-					};
+					};*/
 
-					send_to_server(client, &input, sizeof(pk_input));
+					//fprintf(stderr, "sending...\n");
+					//send_to_server(client, &input, sizeof(pk_input));
 				}
 				break;
 			}
