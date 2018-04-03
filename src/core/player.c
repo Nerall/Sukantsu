@@ -43,7 +43,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 	input->action = ACTION_DISCARD;
 	input->tile = NO_TILE_INDEX;
 
-	if (player_hand->tenpai) {
+	if (0 && player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
 				input->tile = i - 1;
@@ -92,8 +92,8 @@ void client_main_loop(struct net_client *client) {
 
 	struct riichi_engine engine;
 	struct net_packet receiver;
-	struct player *player;
-	int iplayer, nb_games = 0;
+	struct player *player = NULL;
+	int iplayer = 0, nb_games = 0;
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
@@ -102,7 +102,11 @@ void client_main_loop(struct net_client *client) {
 				enum player_type types[4];
 				iplayer = (int)init->player_pos;
 				for (int i = 0; i < 4; ++i) {
-					types[i] = (i == iplayer ? PLAYER_HOST : PLAYER_CLIENT);
+					if (i != iplayer) {
+						types[i] = PLAYER_CLIENT;
+					} else {
+						types[i] = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+					}
 				}
 
 				init_riichi_engine(&engine, types[0], types[1], types[2],
@@ -131,6 +135,8 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_INPUT: {
+				makegroups(&player->hand, &engine.grouplist);
+
 				pk_input *input = (pk_input *)&receiver;
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));

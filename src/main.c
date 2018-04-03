@@ -58,8 +58,7 @@ void host_main() {
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
 	init_riichi_engine(&engine, ptype, PLAYER_AI, PLAYER_AI, PLAYER_AI);
 
-	if (!AI_MODE)
-		wait_for_players(&engine);
+	wait_for_players(&engine);
 
 	char c = 0;
 	do {
@@ -70,7 +69,7 @@ void host_main() {
 			wprintf(L"Result: Player %d has won!\n", index_win + 1);
 		}
 		if (AI_MODE) {
-			if (index_win == 0)
+			if (0 && index_win == 0)
 				break;
 			else
 				continue;
@@ -90,6 +89,8 @@ void host_main() {
 
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
 	        (engine.nb_games > 1) ? "s" : "");
+
+	clean_net_server(&engine.server);
 }
 
 void client_main() {

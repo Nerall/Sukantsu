@@ -30,6 +30,10 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	init_player(&engine->players[3], t4, WEST);
 
 	engine->nb_games = 0;
+	engine->server.listener = NULL;
+	for (int i = 0; i < NB_PLAYERS; ++i) {
+		engine->server.clients[i] = NULL;
+	}
 }
 
 // Verify if the action is valid and return 1 if it is
