@@ -55,11 +55,11 @@ static void input_AI(struct player *player, struct action_input *input) {
 		return;
 	}
 
-  struct histogram tiles_remaining;
-  init_histogram(&tiles_remaining, 4);
+	struct histogram tiles_remaining;
+	init_histogram(&tiles_remaining, 4);
 
-  struct histogram histocopy;
-  groups_to_histo(player_hand, &histocopy);
+	struct histogram histocopy;
+	groups_to_histo(player_hand, &histocopy);
 
   struct grouplist grouplist;
   init_grouplist(&grouplist);
@@ -210,7 +210,7 @@ void client_main_loop(struct net_client *client) {
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
 					engine.phase = PHASE_CLAIM;
-					//display_riichi(&engine, update->player_pos);
+					// display_riichi(&engine, update->player_pos);
 
 					/*pk_input input = {
 					    packet_type : PACKET_INPUT,
