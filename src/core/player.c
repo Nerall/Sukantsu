@@ -42,7 +42,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 	input->action = ACTION_DISCARD;
 	input->tile = NO_TILE_INDEX;
 
-	if (0 && player_hand->tenpai) {
+	if (player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
 				input->tile = i - 1;
@@ -54,20 +54,20 @@ static void input_AI(struct player *player, struct action_input *input) {
 		return;
 	}
 
-  struct histogram tiles_remaining;
-  init_histogram(&tiles_remaining, 4);
+	struct histogram tiles_remaining;
+	init_histogram(&tiles_remaining, 4);
 
-  struct histogram histocopy;
-  groups_to_histo(player_hand, &histocopy);
+	struct histogram histocopy;
+	groups_to_histo(player_hand, &histocopy);
 
-  for(histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
-    tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
-  }
+	for (histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
+		tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
+	}
 
-  for(histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
-    tiles_remaining.cells[i] -= histocopy.cells[i];
-  }
-  
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		tiles_remaining.cells[i] -= histocopy.cells[i];
+	}
+
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
 			input->tile = i - 1;
@@ -186,7 +186,7 @@ void client_main_loop(struct net_client *client) {
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
 					engine.phase = PHASE_CLAIM;
-					//display_riichi(&engine, update->player_pos);
+					// display_riichi(&engine, update->player_pos);
 
 					/*pk_input input = {
 					    packet_type : PACKET_INPUT,
