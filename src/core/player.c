@@ -30,7 +30,6 @@ void init_player(struct player *player, enum player_type player_type,
 
 static void input_console(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
-	ASSERT_BACKTRACE(input);
 
 	input->tile = get_input(&player->hand.histo, &input->action);
 }
@@ -55,6 +54,20 @@ static void input_AI(struct player *player, struct action_input *input) {
 		return;
 	}
 
+  struct histogram tiles_remaining;
+  init_histogram(&tiles_remaining, 4);
+
+  struct histogram histocopy;
+  groups_to_histo(player_hand, &histocopy);
+
+  for(histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
+    tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
+  }
+
+  for(histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+    tiles_remaining.cells[i] -= histocopy.cells[i];
+  }
+  
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
 			input->tile = i - 1;
