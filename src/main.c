@@ -20,7 +20,7 @@ static void wait_for_players(struct riichi_engine *engine) {
 		return;
 	}
 
-	wprintf(L"Wait for network players ? (Y/N)\n> ");
+	wprintf(L"Wait for network players ? (y/n)\n> ");
 	char c = getchar();
 	while (c == 'Y' || c == 'y') {
 		if (engine->server.nb_clients >= 3) {
@@ -44,7 +44,7 @@ static void wait_for_players(struct riichi_engine *engine) {
 			}
 			nanosleep(&delay, NULL);
 		} while (time(NULL) - t1 < timeout);
-		wprintf(L"Continue waiting for network players ? (Y/N)\n> ");
+		wprintf(L"Continue waiting for network players ? (y/n)\n> ");
 		while (getchar() != '\n')
 			;
 		c = getchar();
