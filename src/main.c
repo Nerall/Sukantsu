@@ -4,6 +4,7 @@
 #include "core/riichi_engine_s.h"
 #include "network/net_client.h"
 #include "network/net_server.h"
+#include <SFML/Graphics.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,6 +125,11 @@ int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
 
+	sfVideoMode mode = { 800, 600, 32 };
+	sfRenderWindow* window;
+	window = sfRenderWindow_create(mode, "SFML window", sfResize | sfClose, NULL);
+	if (!window)
+		return 0;
 	wprintf(L"Host or Client ? (h/c)\n> ");
 	fflush(stdout);
 	char c;
