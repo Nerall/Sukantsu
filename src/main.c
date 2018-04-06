@@ -70,7 +70,7 @@ void host_main() {
 			wprintf(L"Result: Player %d has won!\n", index_win + 1);
 		}
 		if (AI_MODE) {
-			if (0 && index_win == 0)
+			if (index_win == 0)
 				break;
 			else
 				continue;
