@@ -11,7 +11,7 @@ void init_group(struct group *group);
 
 void init_grouplist(struct grouplist *grouplist);
 
-void add_copy_grouplist(struct grouplist *grouplist, struct group *group);
+void add_copy_grouplist(struct grouplist *grouplist, const struct group *group);
 
 void init_discardlist(struct discardlist *discardlist);
 

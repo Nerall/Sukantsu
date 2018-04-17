@@ -16,8 +16,8 @@ void init_hand(struct hand *hand) {
 	init_histobit(&hand->kantiles, 0);
 	init_histobit(&hand->wintiles, 0);
 	init_histobit(&hand->furitentiles, 0);
-  init_histobit(&hand->riichitiles, 0);
-  init_discardlist(&hand->discardlist);
+	init_histobit(&hand->riichitiles, 0);
+	init_discardlist(&hand->discardlist);
 	for (int i = 0; i < HAND_NB_GROUPS; ++i) {
 		init_group(&hand->groups[i]);
 	}
@@ -120,7 +120,7 @@ void remove_tile_hand(struct hand *hand, histo_index_t tile) {
 
 // Do a deep-copy of hand to handcopy
 // The pointers needs to be allocated
-void copy_hand(struct hand *hand, struct hand *handcopy) {
+void copy_hand(const struct hand *hand, struct hand *handcopy) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(handcopy);
 

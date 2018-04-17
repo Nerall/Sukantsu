@@ -19,7 +19,8 @@ void init_grouplist(struct grouplist *grouplist) {
 }
 
 // Add a copy of group to the grouplist
-void add_copy_grouplist(struct grouplist *grouplist, struct group *group) {
+void add_copy_grouplist(struct grouplist *grouplist,
+                        const struct group *group) {
 	ASSERT_BACKTRACE(grouplist);
 	ASSERT_BACKTRACE(group);
 	ASSERT_BACKTRACE(grouplist->nb_groups < GROUPLIST_CAPACITY);

@@ -16,6 +16,6 @@ void add_tile_hand(struct hand *hand, histo_index_t tile);
 
 void remove_tile_hand(struct hand *hand, histo_index_t tile);
 
-void copy_hand(struct hand *hand, struct hand *handcopy);
+void copy_hand(const struct hand *hand, struct hand *handcopy);
 
 #endif // _HAND_H_

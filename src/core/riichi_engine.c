@@ -37,8 +37,9 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 }
 
 // Verify if the action is valid and return 1 if it is
-static int verify_action(struct riichi_engine *engine, struct player *player,
-                         struct action_input *input) {
+static int verify_action(struct riichi_engine *engine,
+                         struct player *player,
+                         const struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
@@ -73,7 +74,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 
 // Apply the action and return 1 if the player won
 int apply_action(struct riichi_engine *engine, struct player *player,
-                 struct action_input *input) {
+                 const struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(player);
 	ASSERT_BACKTRACE(input);

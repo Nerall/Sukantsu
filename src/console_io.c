@@ -55,21 +55,17 @@ void index_to_char(histo_index_t index, char *family, char *number) {
 }
 
 // Pretty print an histogram
-void print_histo(struct histogram *histo, histo_index_t last_tile) {
+void print_histo(const struct histogram *histo, histo_index_t last_tile) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(last_tile == NO_TILE_INDEX ||
 	                 (is_valid_index(last_tile) && histo->cells[last_tile]));
 
-	// "Remove" the last_tile to print at the side
-	if (last_tile != NO_TILE_INDEX)
-		histo->cells[last_tile]--;
-
 	for (int i = 0; i < 33; ++i) {
-		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+		for (histo_cell_t j = histo->cells[i] - (last_tile == i); j > 0; --j) {
 			wprintf(L"%lc ", tileslist[i]);
 		}
 	}
-	for (histo_cell_t j = histo->cells[33]; j > 0; --j) {
+	for (histo_cell_t j = histo->cells[33] - (last_tile == 33); j > 0; --j) {
 		wprintf(L"%lc", tileslist[33]);
 	}
 
@@ -93,15 +89,13 @@ void print_histo(struct histogram *histo, histo_index_t last_tile) {
 
 	if (last_tile != NO_TILE_INDEX) {
 		wprintf(L" %d%lc", 1 + last_tile % 9, L"psmz"[last_tile / 9]);
-		// "Re-Add" the last_tile
-		histo->cells[last_tile]++;
 	}
 
 	wprintf(L"\n\n");
 }
 
 // Print all possible groups
-void print_groups(struct group *groups) {
+void print_groups(const struct group *groups) {
 	ASSERT_BACKTRACE(groups);
 
 	char f, n;
@@ -137,7 +131,7 @@ void print_groups(struct group *groups) {
 }
 
 // TODO: histo[last_tile] == 0 sometimes
-void print_victory(struct hand *hand, struct grouplist *grouplist) {
+void print_victory(const struct hand *hand, const struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(grouplist);
 
 	struct histogram histo;
@@ -156,7 +150,7 @@ void print_victory(struct hand *hand, struct grouplist *grouplist) {
 
 // Get the next input
 // Overwrite action and return the corresponding tile index
-histo_index_t get_input(struct histogram *histo, enum action *action) {
+histo_index_t get_input(const struct histogram *histo, enum action *action) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(action);
 
@@ -256,11 +250,11 @@ histo_index_t get_input(struct histogram *histo, enum action *action) {
 // Display informations based on the structure
 // Current game phase can be obtained via the enum engine->phase
 // Current player should not be needed in the future (but still useful now)
-void display_riichi(struct riichi_engine *engine, int current_player) {
+void display_riichi(const struct riichi_engine *engine, int current_player) {
 	ASSERT_BACKTRACE(engine);
 
-	struct player *player = &engine->players[current_player];
-	struct hand *player_hand = &player->hand;
+	const struct player *player = &engine->players[current_player];
+	const struct hand *player_hand = &player->hand;
 
 	char *pos[] = {"NORTH", "EAST", "SOUTH", "WEST"};
 

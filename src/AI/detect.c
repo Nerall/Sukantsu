@@ -5,7 +5,7 @@
 #include "../core/groups.h"
 #include "../debug.h"
 
-int ischiitoi(struct hand *hand) {
+int ischiitoi(const struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int pair = 0;
@@ -19,7 +19,7 @@ int ischiitoi(struct hand *hand) {
 	return 0;
 }
 
-int iskokushi(struct hand *hand) {
+int iskokushi(const struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
 
 	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
@@ -166,7 +166,7 @@ void tilestocall(struct hand *hand, struct grouplist *grouplist) {
 }
 
 // Copy all tile of hand (histo + groups) to histocopy
-void groups_to_histo(struct hand *hand, struct histogram *histocopy) {
+void groups_to_histo(const struct hand *hand, struct histogram *histocopy) {
 	ASSERT_BACKTRACE(hand);
 	ASSERT_BACKTRACE(histocopy);
 

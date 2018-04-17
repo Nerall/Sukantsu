@@ -4,12 +4,12 @@
 #include "../debug.h"
 #include "../network/net_client.h"
 #include "../network/net_packets.h"
+#include "groups.h"
 #include "hand.h"
 #include "histogram.h"
 #include "player_s.h"
 #include "riichi_engine.h"
 #include "riichi_engine_s.h"
-#include "groups.h"
 #include <stdio.h>
 #include <string.h>
 #include <wchar.h>
@@ -29,7 +29,8 @@ void init_player(struct player *player, enum player_type player_type,
 	player->player_pos = player_pos;
 }
 
-static void input_console(struct player *player, struct action_input *input) {
+static void input_console(const struct player *player,
+                          struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
 	input->tile = get_input(&player->hand.histo, &input->action);
@@ -61,44 +62,44 @@ static void input_AI(struct player *player, struct action_input *input) {
 	struct histogram histocopy;
 	groups_to_histo(player_hand, &histocopy);
 
-  struct grouplist grouplist;
-  init_grouplist(&grouplist);
+	struct grouplist grouplist;
+	init_grouplist(&grouplist);
 
-  for (histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
-    tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
-  }
+	for (histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
+		tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
+	}
 
-  for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
-    tiles_remaining.cells[i] -= histocopy.cells[i];
-  }
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		tiles_remaining.cells[i] -= histocopy.cells[i];
+	}
 
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
-    if (player_hand->histo.cells[i - 1]) {
-      remove_tile_hand(player_hand, i - 1);
-      for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j){
-        if (tiles_remaining.cells[j]) {
-          add_tile_hand(player_hand, j);
-          tenpailist(player_hand, &grouplist);
-    			if (player_hand->tenpai) {
-            input->tile = i - 1;
-            remove_tile_hand(player_hand, j);
-            add_tile_hand(player_hand, i - 1);
-            return;
-          }
-          remove_tile_hand(player_hand, j);
-        }
-      }
-      add_tile_hand(player_hand, i - 1);
-    }
-  }
-  tenpailist(player_hand, &grouplist);
-  for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
-    if (player_hand->histo.cells[i - 1]) {
+		if (player_hand->histo.cells[i - 1]) {
+			remove_tile_hand(player_hand, i - 1);
+			for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
+				if (tiles_remaining.cells[j]) {
+					add_tile_hand(player_hand, j);
+					tenpailist(player_hand, &grouplist);
+					if (player_hand->tenpai) {
+						input->tile = i - 1;
+						remove_tile_hand(player_hand, j);
+						add_tile_hand(player_hand, i - 1);
+						return;
+					}
+					remove_tile_hand(player_hand, j);
+				}
+			}
+			add_tile_hand(player_hand, i - 1);
+		}
+	}
+	tenpailist(player_hand, &grouplist);
+	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
+		if (player_hand->histo.cells[i - 1]) {
 			input->tile = i - 1;
 			return;
-    }
+		}
 	}
-  ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
+	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
 }
 
 

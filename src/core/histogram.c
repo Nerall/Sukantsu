@@ -38,7 +38,7 @@ void clear_histobit(struct histobit *histo, histo_index_t index) {
 
 // Get the given index value (0 or 1)
 // The pointer's data must be accessible
-int get_histobit(struct histobit *histo, histo_index_t index) {
+int get_histobit(const struct histobit *histo, histo_index_t index) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(is_valid_index(index));
 
@@ -47,7 +47,7 @@ int get_histobit(struct histobit *histo, histo_index_t index) {
 
 // Do a deep-copy of histo to histocopy
 // The pointers needs to be allocated
-void copy_histobit(struct histobit *histo, struct histobit *histocopy) {
+void copy_histobit(const struct histobit *histo, struct histobit *histocopy) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(histocopy);
 
@@ -111,7 +111,8 @@ histo_index_t random_pop_histogram(struct histogram *histo) {
 
 // Do a deep-copy of histo to histocopy
 // The pointers needs to be allocated
-void copy_histogram(struct histogram *histo, struct histogram *histocopy) {
+void copy_histogram(const struct histogram *histo,
+                    struct histogram *histocopy) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(histocopy);
 
