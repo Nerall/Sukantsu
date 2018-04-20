@@ -11,7 +11,7 @@ int iskokushi(const struct hand *hand);
 
 int is_valid_hand(struct hand *hand, struct grouplist *grouplist);
 
-void makegroups(struct hand *hand, struct grouplist *grouplist);
+int makegroups(struct hand *hand, struct grouplist *grouplist);
 
 void tenpailist(struct hand *hand, struct grouplist *grouplist);
 

@@ -1,8 +1,8 @@
 #include "detect.h"
+#include "../core/groups.h"
 #include "../core/hand.h"
 #include "../core/hand_s.h"
 #include "../core/histogram.h"
-#include "../core/groups.h"
 #include "../debug.h"
 
 int ischiitoi(const struct hand *hand) {
@@ -43,11 +43,13 @@ int is_valid_hand(struct hand *hand, struct grouplist *grouplist) {
 
 // Recursive function of makegroups
 static void makegroups_rec(struct hand *hand, histo_index_t index,
-                           struct grouplist *grouplist, int pair) {
+                           struct grouplist *grouplist, int pair,
+                           int *max_groups) {
 	ASSERT_BACKTRACE(hand);
 
 	if (hand->nb_groups >= 5) {
 		add_copy_grouplist(grouplist, hand->groups);
+		*max_groups = 5;
 		return;
 	}
 
@@ -60,7 +62,10 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 		// Check sequence group
 		if (index % 9 < 7 && index < 25 && *(cur_cell + 1) && *(cur_cell + 2)) {
 			add_group_hand(hand, 1, SEQUENCE, index);
-			makegroups_rec(hand, index, grouplist, pair);
+			makegroups_rec(hand, index, grouplist, pair, max_groups);
+			if (hand->nb_groups > *max_groups) {
+				*max_groups = hand->nb_groups;
+			}
 			pop_last_group(hand);
 		}
 
@@ -68,14 +73,20 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 			// Check pair group
 			if (!pair) {
 				add_group_hand(hand, 1, PAIR, index);
-				makegroups_rec(hand, index + 1, grouplist, 1);
+				makegroups_rec(hand, index + 1, grouplist, 1, max_groups);
+				if (hand->nb_groups > *max_groups) {
+					*max_groups = hand->nb_groups;
+				}
 				pop_last_group(hand);
 			}
 
 			// Check triplet group
 			if (*cur_cell >= 3) {
 				add_group_hand(hand, 1, TRIPLET, index);
-				makegroups_rec(hand, index + 1, grouplist, pair);
+				makegroups_rec(hand, index + 1, grouplist, pair, max_groups);
+				if (hand->nb_groups > *max_groups) {
+					*max_groups = hand->nb_groups;
+				}
 				pop_last_group(hand);
 			}
 		}
@@ -84,21 +95,29 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 
 // Overwrite grouplist with all possible groups from hand
 // Will not modify hand
-void makegroups(struct hand *hand, struct grouplist *grouplist) {
+// Return the max number of groups obtained
+int makegroups(struct hand *hand, struct grouplist *grouplist) {
 	histo_index_t last_tile = hand->last_tile;
 	init_grouplist(grouplist);
-	makegroups_rec(hand, 0, grouplist, 0);
+	int max_groups;
+	makegroups_rec(hand, 0, grouplist, 0, &max_groups);
 	hand->last_tile = last_tile;
+	return max_groups;
 }
 
 void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(hand);
 
+	init_histobit(&hand->wintiles, 0);
+	hand->tenpai = 0;
+
+	int max_groups = makegroups(hand, grouplist);
+	if (max_groups != 4)
+		return;
+
 	struct histogram histofull;
 	groups_to_histo(hand, &histofull);
 
-	init_histobit(&hand->wintiles, 0);
-	hand->tenpai = 0;
 	histo_index_t last_tile = hand->last_tile;
 	for (histo_index_t j = 0; j < 34; ++j) {
 		if (histofull.cells[j] < 4) {

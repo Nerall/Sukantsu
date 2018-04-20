@@ -44,6 +44,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 	input->action = ACTION_DISCARD;
 	input->tile = NO_TILE_INDEX;
 
+	// Take "win" tile
 	if (player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
@@ -73,25 +74,30 @@ static void input_AI(struct player *player, struct action_input *input) {
 		tiles_remaining.cells[i] -= histocopy.cells[i];
 	}
 
+	// Take "best" tile
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
-		if (player_hand->histo.cells[i - 1]) {
-			remove_tile_hand(player_hand, i - 1);
-			for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
-				if (tiles_remaining.cells[j]) {
-					add_tile_hand(player_hand, j);
-					tenpailist(player_hand, &grouplist);
-					if (player_hand->tenpai) {
-						input->tile = i - 1;
-						remove_tile_hand(player_hand, j);
-						add_tile_hand(player_hand, i - 1);
-						return;
-					}
-					remove_tile_hand(player_hand, j);
-				}
+		if (player_hand->histo.cells[i - 1] == 0)
+			continue;
+
+		remove_tile_hand(player_hand, i - 1);
+		for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
+			if (tiles_remaining.cells[j] == 0)
+				continue;
+
+			add_tile_hand(player_hand, j);
+			tenpailist(player_hand, &grouplist);
+			if (player_hand->tenpai) {
+				input->tile = i - 1;
+				remove_tile_hand(player_hand, j);
+				add_tile_hand(player_hand, i - 1);
+				return;
 			}
-			add_tile_hand(player_hand, i - 1);
+			remove_tile_hand(player_hand, j);
 		}
+		add_tile_hand(player_hand, i - 1);
 	}
+
+	// Take last tile
 	tenpailist(player_hand, &grouplist);
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
@@ -99,6 +105,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 			return;
 		}
 	}
+
 	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
 }
 
@@ -173,7 +180,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_INPUT: {
-				makegroups(&player->hand, &engine.grouplist);
+				//makegroups(&player->hand, &engine.grouplist);
 
 				pk_input *input = (pk_input *)&receiver;
 				get_player_input(player, &input->input);

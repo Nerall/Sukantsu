@@ -60,9 +60,10 @@ void init_histogram(struct histogram *histo, histo_cell_t nb_tiles_index) {
 	ASSERT_BACKTRACE(histo);
 	ASSERT_BACKTRACE(nb_tiles_index <= 4);
 
-	for (histo_index_t i = 0; i < HISTO_INDEX_MAX;
-	     histo->cells[i++] = nb_tiles_index)
-		;
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		histo->cells[i] = nb_tiles_index;
+	}
+
 	histo->nb_tiles = nb_tiles_index * HISTO_INDEX_MAX;
 }
 

@@ -125,16 +125,6 @@ int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
 
-	/*sfVideoMode mode = { 850, 604, 32 };
-	sfRenderWindow* window;
-	sfTexture* texture;
-	window = sfRenderWindow_create(mode, "SFML window", sfResize | sfClose, NULL);
-	if (!window)
-		return 0;
-	texture = sfTexture_createFromFile("image.jpg", NULL);
-	if (!texture)
-		return 0;
-  */
 	wprintf(L"Host or Client ? (h/c)\n> ");
 	fflush(stdout);
 	char c;

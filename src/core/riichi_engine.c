@@ -140,6 +140,7 @@ int verify_and_claim(struct riichi_engine *engine, int player_index,
 	struct player *player = &engine->players[player_index];
 	struct net_server *server = &engine->server;
 
+	tenpailist(&player->hand, &engine->grouplist);
 	if (get_histobit(&player->hand.wintiles, input.tile)) {
 		// Claim the tile
 		add_tile_hand(&player->hand, input.tile);
