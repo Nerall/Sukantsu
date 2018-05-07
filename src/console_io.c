@@ -301,7 +301,7 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 		}
 
 		case PHASE_CLAIM: {
-			wprintf(L"Do you want to claim? (todo)\n");
+			//wprintf(L"Do you want to claim? (todo)\n");
 			break;
 		}
 

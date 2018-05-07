@@ -19,6 +19,27 @@ typedef struct net_packet_draw pk_draw;
 typedef struct net_packet_input pk_input;
 typedef struct net_packet_update pk_update;
 
+void send_to_all_clients(struct riichi_engine *engine, void *packet,
+                         size_t size, int index_to_ignore) {
+	struct net_server *server = &engine->server;
+	for (int c = 0; c < NB_PLAYERS; ++c) {
+		if (engine->players[c].player_type != PLAYER_CLIENT)
+			continue;
+
+		if (c == index_to_ignore)
+			continue;
+
+		int net_id = engine->players[c].net_id;
+		int s = send_data_to_client(server, net_id, packet, size, TIMEOUT_SEND);
+		engine->players[c].net_status = !s;
+		if (s) {
+			fprintf(stderr,
+			        "[ERROR][SERVER] Error while sending packet to player %d\n",
+			        c);
+		}
+	}
+}
+
 void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t2, enum player_type t3,
                         enum player_type t4) {
@@ -37,38 +58,37 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 }
 
 // Verify if the action is valid and return 1 if it is
-static int verify_action(struct riichi_engine *engine,
-                         struct player *player,
+static int verify_action(struct riichi_engine *engine, struct player *player,
                          const struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
 	switch (input->action) {
-		case ACTION_DISCARD: {
-			return player->hand.histo.cells[input->tile] != 0;
-		}
+	case ACTION_DISCARD: {
+		return player->hand.histo.cells[input->tile] != 0;
+	}
 
-		case ACTION_RIICHI: {
-			return player->hand.riichi == NORIICHI && player->hand.closed &&
-			       get_histobit(&player->hand.riichitiles, input->tile);
-		}
+	case ACTION_RIICHI: {
+		return player->hand.riichi == NORIICHI && player->hand.closed &&
+		       get_histobit(&player->hand.riichitiles, input->tile);
+	}
 
-		case ACTION_KAN: {
-			// TODO: Kan action
-			return 0;
-		}
+	case ACTION_KAN: {
+		// TODO: Kan action
+		return 0;
+	}
 
-		case ACTION_TSUMO: {
-			return is_valid_hand(&player->hand, &engine->grouplist);
-		}
+	case ACTION_TSUMO: {
+		return is_valid_hand(&player->hand, &engine->grouplist);
+	}
 
-		case ACTION_PASS: {
-			return 1;
-		}
+	case ACTION_PASS: {
+		return 1;
+	}
 
-		default:
-			fprintf(stderr, "Action-Type not recognized\n");
-			return 0;
+	default:
+		fprintf(stderr, "Action-Type not recognized\n");
+		return 0;
 	}
 }
 
@@ -83,50 +103,50 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 	struct grouplist *grouplist = &engine->grouplist;
 
 	switch (input->action) {
-		case ACTION_DISCARD: {
-			remove_tile_hand(player_hand, input->tile);
-			set_histobit(&player_hand->furitentiles, input->tile);
-			add_discard(&player_hand->discardlist, input->tile);
-			player->hand.last_discard = input->tile;
-			if (input->tile != player_hand->last_tile) {
-				tilestocall(player_hand, grouplist);
-				tenpailist(player_hand, grouplist);
-			}
-			return 0;
-		}
-
-		case ACTION_RIICHI: {
-			remove_tile_hand(player_hand, input->tile);
-			set_histobit(&player_hand->furitentiles, input->tile);
-			add_discard(&player_hand->discardlist, input->tile);
+	case ACTION_DISCARD: {
+		remove_tile_hand(player_hand, input->tile);
+		set_histobit(&player_hand->furitentiles, input->tile);
+		add_discard(&player_hand->discardlist, input->tile);
+		player->hand.last_discard = input->tile;
+		if (input->tile != player_hand->last_tile) {
+			tilestocall(player_hand, grouplist);
 			tenpailist(player_hand, grouplist);
-
-			// Will be set at RIICHI next turn
-			player_hand->riichi = IPPATSU;
-
-			// Init values that will be no more used later
-			init_histobit(&player_hand->riichitiles, 0);
-			init_histobit(&player_hand->chiitiles, 0);
-			init_histobit(&player_hand->pontiles, 0);
-			init_histobit(&player_hand->kantiles, 0);
-			return 0;
 		}
+		return 0;
+	}
 
-		case ACTION_TSUMO: {
-			return 1;
-		}
+	case ACTION_RIICHI: {
+		remove_tile_hand(player_hand, input->tile);
+		set_histobit(&player_hand->furitentiles, input->tile);
+		add_discard(&player_hand->discardlist, input->tile);
+		tenpailist(player_hand, grouplist);
 
-		case ACTION_KAN: {
-			break;
-		}
+		// Will be set at RIICHI next turn
+		player_hand->riichi = IPPATSU;
 
-		case ACTION_PASS: {
-			return 0;
-		}
+		// Init values that will be no more used later
+		init_histobit(&player_hand->riichitiles, 0);
+		init_histobit(&player_hand->chiitiles, 0);
+		init_histobit(&player_hand->pontiles, 0);
+		init_histobit(&player_hand->kantiles, 0);
+		return 0;
+	}
 
-		default:
-			ASSERT_BACKTRACE(0 && "Action not recognized");
-			break;
+	case ACTION_TSUMO: {
+		return 1;
+	}
+
+	case ACTION_KAN: {
+		break;
+	}
+
+	case ACTION_PASS: {
+		return 0;
+	}
+
+	default:
+		ASSERT_BACKTRACE(0 && "Action not recognized");
+		break;
 	}
 	return 0;
 }
@@ -138,7 +158,6 @@ int verify_and_claim(struct riichi_engine *engine, int player_index,
 	ASSERT_BACKTRACE(player_index >= 0 && player_index < NB_PLAYERS);
 
 	struct player *player = &engine->players[player_index];
-	struct net_server *server = &engine->server;
 
 	tenpailist(&player->hand, &engine->grouplist);
 	if (get_histobit(&player->hand.wintiles, input.tile)) {
@@ -159,20 +178,7 @@ int verify_and_claim(struct riichi_engine *engine, int player_index,
 			victory : 1
 		};
 
-		for (int c = 0; c < NB_PLAYERS; ++c) {
-			if (engine->players[c].player_type != PLAYER_CLIENT)
-				continue;
-
-			int net_id = engine->players[c].net_id;
-			int s = send_data_to_client(server, net_id, &v_packet,
-			                            sizeof(pk_update), TIMEOUT_SEND);
-			engine->players[c].net_status = !s;
-			if (s) {
-				fprintf(stderr, "[ERROR][SERVER] Error while sending"
-				                " victory packet to player %d\n",
-				        c);
-			}
-		}
+		send_to_all_clients(engine, &v_packet, sizeof(v_packet), -1);
 
 		return player_index;
 	}
@@ -223,8 +229,9 @@ void riichi_init_phase(struct riichi_engine *engine) {
 		                            sizeof(pk_init), TIMEOUT_SEND);
 		player->net_status = !s;
 		if (s) {
-			fprintf(stderr, "[ERROR][SERVER] Error while sending"
-			                " init data to player %d\n",
+			fprintf(stderr,
+			        "[ERROR][SERVER] Error while sending"
+			        " init data to player %d\n",
 			        client_index);
 		}
 	}
@@ -252,6 +259,12 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		histo_index_t randi = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, randi);
 
+		// DO NOT DELETE THIS !!!
+		player->player_type = player->player_type;
+		// It should do nothing, but without it,
+		// player->player_type value is not really correct (?!?)
+		// By using its value just before, it gives the correct value
+
 		// [SERVER] Send tile to client player_index
 		if (player->player_type == PLAYER_CLIENT) {
 			pk_draw packet = {
@@ -263,8 +276,9 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 			                            sizeof(pk_draw), TIMEOUT_SEND);
 			player->net_status = !s;
 			if (s) {
-				fprintf(stderr, "[ERROR][SERVER] Error while sending"
-				                " popped tile to player %d\n",
+				fprintf(stderr,
+				        "[ERROR][SERVER] Error while sending"
+				        " popped tile to player %d\n",
 				        player_index);
 			}
 		}
@@ -297,9 +311,6 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			}
 		}
 
-		// if (!player->net_status)
-		//	break;
-
 		pk_input packet = {packet_type : PACKET_INPUT};
 
 		// [SERVER] Ask client player_index to send input
@@ -307,8 +318,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 		                            sizeof(pk_input), TIMEOUT_SEND);
 		player->net_status = !s;
 		if (s) {
-			fprintf(stderr, "[ERROR][SERVER] Error while asking"
-			                " input to player %d\n",
+			fprintf(stderr,
+			        "[ERROR][SERVER] Error while asking"
+			        " input to player %d\n",
 			        player_index);
 			break;
 		}
@@ -318,8 +330,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 		                         sizeof(pk_input), TIMEOUT_RECEIVE);
 		player->net_status = !s;
 		if (s) {
-			fprintf(stderr, "[ERROR][SERVER] Error while"
-			                " receiving input from player %d\n",
+			fprintf(stderr,
+			        "[ERROR][SERVER] Error while"
+			        " receiving input from player %d\n",
 			        player_index);
 			break;
 		}
@@ -347,7 +360,6 @@ void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
 	display_riichi(engine, player_index);
 
 	struct player *player = &engine->players[player_index];
-	struct net_server *server = &engine->server;
 
 	// [SERVER] Send victory infos to all clients
 	pk_update packet = {
@@ -357,21 +369,7 @@ void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
 		victory : 1
 	};
 
-	for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
-		if (engine->players[client_index].player_type != PLAYER_CLIENT)
-			continue;
-
-		int net_id = engine->players[client_index].net_id;
-
-		int s = send_data_to_client(server, net_id, &packet, sizeof(pk_update),
-		                            TIMEOUT_SEND);
-		engine->players[client_index].net_status = !s;
-		if (s) {
-			fprintf(stderr, "[ERROR][SERVER] Error while sending"
-			                " victory packet to player %d\n",
-			        client_index);
-		}
-	}
+	send_to_all_clients(engine, &packet, sizeof(pk_update), -1);
 }
 
 // Claim phase of a riichi game
@@ -387,31 +385,15 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 	struct net_server *server = &engine->server;
 
 	// [SERVER] Send claim infos to all clients
-	{
-		pk_update packet = {
-			packet_type : PACKET_UPDATE,
-			player_pos : player->player_pos,
-			input : *input,
-			victory : 0
-		};
+	pk_update update_packet = {
+		packet_type : PACKET_UPDATE,
+		player_pos : player->player_pos,
+		input : *input,
+		victory : 0
+	};
 
-		for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
-			struct player *client = &engine->players[client_index];
-
-			if (client_index == player_index ||
-			    client->player_type != PLAYER_CLIENT)
-				continue;
-
-			int s = send_data_to_client(server, client->net_id, &packet,
-			                            sizeof(pk_update), TIMEOUT_SEND);
-			client->net_status = !s;
-			if (s) {
-				fprintf(stderr, "[ERROR][SERVER] Error while sending"
-				                " update packet to player %d\n",
-				        client_index);
-			}
-		}
-	}
+	send_to_all_clients(engine, &update_packet, sizeof(pk_update),
+	                    player_index);
 
 	char has_passed[NB_PLAYERS];
 	for (int i = 0; i < NB_PLAYERS; ++i) {
@@ -427,7 +409,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		time_t t1 = time(NULL);
 		int nb_pass;
 		do {
-			// TODO: DEBUG
+			// Don't really work for now
 			break;
 
 			nb_pass = 0;
@@ -495,23 +477,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		};
 
 		// [SERVER] Send claim infos to all clients
-		for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
-			struct player *client = &engine->players[client_index];
-			if (client->player_type != PLAYER_CLIENT)
-				continue;
-
-			// TODO: DEBUG
-			break;
-
-			int s = send_data_to_client(server, client->net_id, &packet,
-			                            sizeof(pk_update), TIMEOUT_SEND);
-			engine->players[client_index].net_status = !s;
-			if (s) {
-				fprintf(stderr, "[ERROR][SERVER] Error while sending"
-				                " update claim packet to player %d\n",
-				        client_index);
-			}
-		}
+		send_to_all_clients(engine, &packet, sizeof(pk_update), -1);
 	}
 
 	return -1;
