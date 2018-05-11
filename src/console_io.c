@@ -346,24 +346,18 @@ void display(const struct riichi_engine *engine, int current_player) {
 		sfEvent event;
 		sfVector2i mouseposition;
 		while (sfRenderWindow_pollEvent(window, &event)) {
-			switch (event.type) {
-				case sfEvtClosed:
+				if (event.type == sfEvtClosed) {
 					sfRenderWindow_close(window);
-					break;
-
-				case sfEvtMouseButtonReleased:
+				}
+				/*case sfEvtMouseButtonReleased:
 					mouseposition = sfMouse_getPositionRenderWindow(window);
 					if (mouseposition.y > 500) {
 						sfRenderWindow_close(window);
 					}
 					break;
-
-				case sfEvtKeyPressed:
+*/
+				if (event.type == sfEvtKeyPressed) {
 					sfRenderWindow_close(window);
-					break;
-					
-				default:
-					break;
 				}
 		}
 		// Add color
