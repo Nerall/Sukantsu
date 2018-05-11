@@ -2,6 +2,7 @@
 #include "AI/detect.h"
 #include "core/histogram.h"
 #include "core/riichi_engine_s.h"
+#include "core/hand.h"
 #include "debug.h"
 #include <stdio.h>
 #include <wchar.h>
@@ -326,9 +327,12 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 	}
 }
 
-void display(const struct riichi_engine *engine) {
+void display(const struct riichi_engine *engine, int current_player) {
+	// Init window
 	sfRenderWindow* window;
 	sfVideoMode mode = {800, 600, 32};
+
+	// Init Textures
 	sfTexture* textureslist[34];
 	for (int i = 0; i < 34; ++i) {
 		char path[20];
@@ -336,10 +340,7 @@ void display(const struct riichi_engine *engine) {
 		textureslist[i] = sfTexture_createFromFile(path, NULL);
 	}
 
-	sfSprite* sprite;
-	sprite = sfSprite_create();
-	sfSprite_setTexture(sprite, textureslist[engine->wall.nb_tiles % 34], 1);
-
+	// Create window + main loop
 	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
   while (sfRenderWindow_isOpen(window)) {
 		sfEvent event;
@@ -347,8 +348,53 @@ void display(const struct riichi_engine *engine) {
 			if (event.type == sfEvtClosed)
 				sfRenderWindow_close(window);
 		}
-		sfRenderWindow_clear(window, sfBlack);
-		sfRenderWindow_drawSprite(window, sprite, NULL);
+		sfColor background;
+		background = sfColor_fromRGB(0, 128, 255);
+		sfRenderWindow_clear(window, background);
+
+		// Display hands...
+
+		struct hand handcopy;
+		copy_hand(&engine->players[current_player].hand, &handcopy);
+		sfSprite* spriteslist[14];
+		// Position of each tile
+		for (int i = 0; i < 14; ++i) {
+				sfVector2f position;
+				position.x = 50 + 47 * i + (i == 13) * 9;
+				position.y = 500;
+				sfVector2f scale;
+				scale.x = 0.20;
+				scale.y = 0.20;
+				sfVector2f bordersize;
+				bordersize.x = 45;
+				bordersize.y = 62;
+				sfRectangleShape* border;
+
+				border = sfRectangleShape_create();
+				sfRectangleShape_setFillColor(border, sfTransparent);
+				sfRectangleShape_setOutlineColor(border, sfBlack);
+				sfRectangleShape_setOutlineThickness(border, 1.0);
+				sfRectangleShape_setPosition(border, position);
+				sfRectangleShape_setSize(border, bordersize);
+				sfRenderWindow_drawRectangleShape(window, border, NULL);
+
+				spriteslist[i] = sfSprite_create();
+				for (histo_cell_t j = 0; j < 34; ++j) {
+					if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
+						--handcopy.histo.cells[j];
+						sfSprite_setTexture(spriteslist[i], textureslist[j], 1);
+						break;
+					}
+				}
+				if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
+					--handcopy.histo.cells[handcopy.last_tile];
+					sfSprite_setTexture(spriteslist[i], textureslist[handcopy.last_tile], 1);
+				}
+				sfSprite_setPosition(spriteslist[i], position);
+				sfSprite_setScale(spriteslist[i], scale);
+				sfRenderWindow_drawSprite(window, spriteslist[i], NULL);
+			}
+
 		sfRenderWindow_display(window);
 	}
 }
