@@ -23,4 +23,6 @@ histo_index_t get_input(const struct histogram *histo, enum action *action);
 
 void display_riichi(const struct riichi_engine *engine, int current_player);
 
+void display(const struct riichi_engine *engine);
+
 #endif // _CONSOLE_INPUT_H_

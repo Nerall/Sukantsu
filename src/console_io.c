@@ -5,6 +5,7 @@
 #include "debug.h"
 #include <stdio.h>
 #include <wchar.h>
+#include <SFML/Graphics.h>
 
 static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
 
@@ -322,5 +323,32 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 
 		default:
 			ASSERT_BACKTRACE(0 && "Phase not recognized");
+	}
+}
+
+void display(const struct riichi_engine *engine) {
+	sfRenderWindow* window;
+	sfVideoMode mode = {800, 600, 32};
+	sfTexture* textureslist[34];
+	for (int i = 0; i < 34; ++i) {
+		char path[20];
+		sprintf(path, "src/tiles/%d.png", i);
+		textureslist[i] = sfTexture_createFromFile(path, NULL);
+	}
+
+	sfSprite* sprite;
+	sprite = sfSprite_create();
+	sfSprite_setTexture(sprite, textureslist[engine->wall.nb_tiles % 34], 1);
+
+	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
+  while (sfRenderWindow_isOpen(window)) {
+		sfEvent event;
+		while (sfRenderWindow_pollEvent(window, &event)) {
+			if (event.type == sfEvtClosed)
+				sfRenderWindow_close(window);
+		}
+		sfRenderWindow_clear(window, sfBlack);
+		sfRenderWindow_drawSprite(window, sprite, NULL);
+		sfRenderWindow_display(window);
 	}
 }

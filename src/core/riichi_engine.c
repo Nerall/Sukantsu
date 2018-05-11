@@ -484,7 +484,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 }
 
 // Play a riichi game and return the index of the player who has won
-// If noone has won, return -1
+// If no one has won, return -1
 int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
@@ -498,6 +498,12 @@ int play_riichi_game(struct riichi_engine *engine) {
 		riichi_draw_phase(engine, player_index);
 
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
+
+
+    //Using GUI
+    display(engine);
+
+
 
 		struct action_input player_input;
 		if (!win) {
