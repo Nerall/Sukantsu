@@ -125,6 +125,37 @@ int main() {
 	setlocale(LC_ALL, "");
 	srand(time(NULL));
 
+	sfRenderWindow* window;
+	sfVideoMode mode = {800, 600, 32};
+	sfCircleShape* shape;
+	sfColor color = sfGreen;
+	sfColor color2 = sfBlue;
+  sfVector2f scale;
+	sfVector2f origin;
+	scale.x = 1;
+	scale.y = 0.5;
+	origin.x = -150;
+	origin.y = -150;
+
+	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
+  shape = sfCircleShape_create();
+	sfCircleShape_setScale(shape, scale);
+	sfCircleShape_setOrigin(shape, origin);
+	sfCircleShape_setRadius(shape, 100);
+	sfCircleShape_setFillColor(shape, color);
+	sfCircleShape_setOutlineColor(shape, color2);
+	sfCircleShape_setOutlineThickness(shape, 5.0);
+	while (sfRenderWindow_isOpen(window)) {
+		sfEvent event;
+		while (sfRenderWindow_pollEvent(window, &event)) {
+			if (event.type == sfEvtClosed)
+				sfRenderWindow_close(window);
+		}
+		sfRenderWindow_clear(window, sfBlack);
+		sfRenderWindow_drawCircleShape(window, shape, NULL);
+		sfRenderWindow_display(window);
+	}
+
 	wprintf(L"Host or Client ? (h/c)\n> ");
 	fflush(stdout);
 	char c;
