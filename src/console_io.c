@@ -340,14 +340,33 @@ void display(const struct riichi_engine *engine, int current_player) {
 		textureslist[i] = sfTexture_createFromFile(path, NULL);
 	}
 
-	// Create window + main loop
+	// Create window
 	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
   while (sfRenderWindow_isOpen(window)) {
 		sfEvent event;
+		sfVector2i mouseposition;
 		while (sfRenderWindow_pollEvent(window, &event)) {
-			if (event.type == sfEvtClosed)
-				sfRenderWindow_close(window);
+			switch (event.type) {
+				case sfEvtClosed:
+					sfRenderWindow_close(window);
+					break;
+
+				case sfEvtMouseButtonReleased:
+					mouseposition = sfMouse_getPositionRenderWindow(window);
+					if (mouseposition.y > 500) {
+						sfRenderWindow_close(window);
+					}
+					break;
+
+				case sfEvtKeyPressed:
+					sfRenderWindow_close(window);
+					break;
+					
+				default:
+					break;
+				}
 		}
+		// Add color
 		sfColor background;
 		background = sfColor_fromRGB(0, 128, 255);
 		sfRenderWindow_clear(window, background);
@@ -359,9 +378,9 @@ void display(const struct riichi_engine *engine, int current_player) {
 		sfSprite* spriteslist[14];
 		// Position of each tile
 		for (int i = 0; i < 14; ++i) {
-				sfVector2f position;
-				position.x = 50 + 47 * i + (i == 13) * 9;
-				position.y = 500;
+				sfVector2f tileposition;
+				tileposition.x = 50 + 47 * i + (i == 13) * 9;
+				tileposition.y = 500;
 				sfVector2f scale;
 				scale.x = 0.20;
 				scale.y = 0.20;
@@ -374,7 +393,7 @@ void display(const struct riichi_engine *engine, int current_player) {
 				sfRectangleShape_setFillColor(border, sfTransparent);
 				sfRectangleShape_setOutlineColor(border, sfBlack);
 				sfRectangleShape_setOutlineThickness(border, 1.0);
-				sfRectangleShape_setPosition(border, position);
+				sfRectangleShape_setPosition(border, tileposition);
 				sfRectangleShape_setSize(border, bordersize);
 				sfRenderWindow_drawRectangleShape(window, border, NULL);
 
@@ -388,9 +407,10 @@ void display(const struct riichi_engine *engine, int current_player) {
 				}
 				if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 					--handcopy.histo.cells[handcopy.last_tile];
-					sfSprite_setTexture(spriteslist[i], textureslist[handcopy.last_tile], 1);
+					sfSprite_setTexture(spriteslist[i],
+						textureslist[handcopy.last_tile], 1);
 				}
-				sfSprite_setPosition(spriteslist[i], position);
+				sfSprite_setPosition(spriteslist[i], tileposition);
 				sfSprite_setScale(spriteslist[i], scale);
 				sfRenderWindow_drawSprite(window, spriteslist[i], NULL);
 			}
