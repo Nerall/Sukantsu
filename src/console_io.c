@@ -333,8 +333,8 @@ void display(const struct riichi_engine *engine, int current_player) {
 	sfVideoMode mode = {800, 600, 32};
 
 	// Init Textures
-	sfTexture* textureslist[34];
-	for (int i = 0; i < 34; ++i) {
+	sfTexture* textureslist[35];
+	for (int i = 0; i < 35; ++i) {
 		char path[20];
 		sprintf(path, "src/tiles/%d.png", i);
 		textureslist[i] = sfTexture_createFromFile(path, NULL);
@@ -346,9 +346,9 @@ void display(const struct riichi_engine *engine, int current_player) {
 		sfEvent event;
 		sfVector2i mouseposition;
 		while (sfRenderWindow_pollEvent(window, &event)) {
-				if (event.type == sfEvtClosed) {
+				/*if (event.type == sfEvtClosed) {
 					sfRenderWindow_close(window);
-				}
+				}*/
 				/*case sfEvtMouseButtonReleased:
 					mouseposition = sfMouse_getPositionRenderWindow(window);
 					if (mouseposition.y > 500) {
@@ -357,7 +357,12 @@ void display(const struct riichi_engine *engine, int current_player) {
 					break;
 */
 				if (event.type == sfEvtKeyPressed) {
+					for (int i = 0; i < 35; ++i) {
+						sfTexture_destroy(textureslist[i]);
+					}
 					sfRenderWindow_close(window);
+					sfRenderWindow_destroy(window);
+					return ;
 				}
 		}
 		// Add color
@@ -365,23 +370,22 @@ void display(const struct riichi_engine *engine, int current_player) {
 		background = sfColor_fromRGB(0, 128, 255);
 		sfRenderWindow_clear(window, background);
 
-		// Display hands...
-
+		// Display hand
 		struct hand handcopy;
 		copy_hand(&engine->players[current_player].hand, &handcopy);
 		sfSprite* spriteslist[14];
 		// Position of each tile
+		sfVector2f scale;
+		scale.x = 0.20;
+		scale.y = 0.20;
+		sfVector2f bordersize;
+		sfRectangleShape* border;
+		bordersize.x = 45;
+		bordersize.y = 61;
 		for (int i = 0; i < 14; ++i) {
 				sfVector2f tileposition;
-				tileposition.x = 50 + 47 * i + (i == 13) * 9;
+				tileposition.x = 50 + 46 * i + (i == 13) * 9;
 				tileposition.y = 500;
-				sfVector2f scale;
-				scale.x = 0.20;
-				scale.y = 0.20;
-				sfVector2f bordersize;
-				bordersize.x = 45;
-				bordersize.y = 62;
-				sfRectangleShape* border;
 
 				border = sfRectangleShape_create();
 				sfRectangleShape_setFillColor(border, sfTransparent);
@@ -390,6 +394,7 @@ void display(const struct riichi_engine *engine, int current_player) {
 				sfRectangleShape_setPosition(border, tileposition);
 				sfRectangleShape_setSize(border, bordersize);
 				sfRenderWindow_drawRectangleShape(window, border, NULL);
+				sfRectangleShape_destroy(border);
 
 				spriteslist[i] = sfSprite_create();
 				for (histo_cell_t j = 0; j < 34; ++j) {
@@ -407,7 +412,161 @@ void display(const struct riichi_engine *engine, int current_player) {
 				sfSprite_setPosition(spriteslist[i], tileposition);
 				sfSprite_setScale(spriteslist[i], scale);
 				sfRenderWindow_drawSprite(window, spriteslist[i], NULL);
+				sfSprite_destroy(spriteslist[i]);
 			}
+
+		// Display center
+		sfRectangleShape* center;
+		sfVector2f centerposition;
+		centerposition.x = 320;
+		centerposition.y = 220;
+		sfVector2f centersize;
+		centersize.x = 160;
+		centersize.y = 160;
+		center = sfRectangleShape_create();
+		sfRectangleShape_setFillColor(center, sfGreen);
+		sfRectangleShape_setOutlineColor(center, sfBlack);
+		sfRectangleShape_setOutlineThickness(center, 1.0);
+		sfRectangleShape_setPosition(center, centerposition);
+		sfRectangleShape_setSize(center, centersize);
+		sfRenderWindow_drawRectangleShape(window, center, NULL);
+		sfRectangleShape_destroy(center);
+
+		// Display discards player 1
+		scale.x = 0.11;
+		scale.y = 0.11;
+		bordersize.x = 25;
+		bordersize.y = 34;
+		sfSprite* spritediscard1[handcopy.discardlist.nb_discards];
+		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+			sfVector2f tileposition;
+			if (i < 18) {
+			tileposition.x = 322 + 26 * (i % 6);
+			tileposition.y = 381 + 35 * (i / 6);
+			}
+			else {
+				tileposition.x = 322 + 26 * i;
+				tileposition.y = 451;
+			}
+			spritediscard1[i] = sfSprite_create();
+			sfSprite_setTexture(spritediscard1[i],
+				textureslist[handcopy.discardlist.discards[i]], 1);
+			sfSprite_setPosition(spritediscard1[i], tileposition);
+			sfSprite_setScale(spritediscard1[i], scale);
+			sfRenderWindow_drawSprite(window, spritediscard1[i], NULL);
+			sfSprite_destroy(spritediscard1[i]);
+			border = sfRectangleShape_create();
+
+			sfRectangleShape_setFillColor(border, sfTransparent);
+			sfRectangleShape_setOutlineColor(border, sfBlack);
+			sfRectangleShape_setOutlineThickness(border, 1.0);
+			sfRectangleShape_setPosition(border, tileposition);
+			sfRectangleShape_setSize(border, bordersize);
+			sfRenderWindow_drawRectangleShape(window, border, NULL);
+			sfRectangleShape_destroy(border);
+		}
+
+		// Display discards player 2 (code duplicated)
+		copy_hand(&engine->players[(current_player + 1) % 4].hand, &handcopy);
+
+		sfSprite* spritediscard2[handcopy.discardlist.nb_discards];
+		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+			sfVector2f tileposition;
+			if (i < 18) {
+			tileposition.x = 481 + 35 * (i / 6);
+			tileposition.y = 378 - 26 * (i % 6);
+			}
+			else {
+				tileposition.x = 551;
+				tileposition.y = 378 - 26 * i;
+			}
+			spritediscard2[i] = sfSprite_create();
+			sfSprite_setTexture(spritediscard2[i],
+				textureslist[handcopy.discardlist.discards[i]], 1);
+			sfSprite_setPosition(spritediscard2[i], tileposition);
+			sfSprite_setRotation(spritediscard2[i], 270);
+			sfSprite_setScale(spritediscard2[i], scale);
+			sfRenderWindow_drawSprite(window, spritediscard2[i], NULL);
+			sfSprite_destroy(spritediscard2[i]);
+			border = sfRectangleShape_create();
+
+			sfRectangleShape_setFillColor(border, sfTransparent);
+			sfRectangleShape_setOutlineColor(border, sfBlack);
+			sfRectangleShape_setOutlineThickness(border, 1.0);
+			sfRectangleShape_setPosition(border, tileposition);
+			sfRectangleShape_setRotation(border, 270);
+			sfRectangleShape_setSize(border, bordersize);
+			sfRenderWindow_drawRectangleShape(window, border, NULL);
+			sfRectangleShape_destroy(border);
+		}
+
+		// Display discards player 3 (code duplicated)
+		copy_hand(&engine->players[(current_player + 2) % 4].hand, &handcopy);
+
+		sfSprite* spritediscard3[handcopy.discardlist.nb_discards];
+		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+			sfVector2f tileposition;
+			if (i < 18) {
+			tileposition.x = 478 - 26 * (i % 6);
+			tileposition.y = 219 - 35 * (i / 6);
+			}
+			else {
+				tileposition.x = 478 - 26 * i;
+				tileposition.y = 149;
+			}
+			spritediscard3[i] = sfSprite_create();
+			sfSprite_setTexture(spritediscard3[i],
+				textureslist[handcopy.discardlist.discards[i]], 1);
+			sfSprite_setPosition(spritediscard3[i], tileposition);
+			sfSprite_setRotation(spritediscard3[i], 180);
+			sfSprite_setScale(spritediscard3[i], scale);
+			sfRenderWindow_drawSprite(window, spritediscard3[i], NULL);
+			sfSprite_destroy(spritediscard3[i]);
+			border = sfRectangleShape_create();
+
+			sfRectangleShape_setFillColor(border, sfTransparent);
+			sfRectangleShape_setOutlineColor(border, sfBlack);
+			sfRectangleShape_setOutlineThickness(border, 1.0);
+			sfRectangleShape_setPosition(border, tileposition);
+			sfRectangleShape_setRotation(border, 180);
+			sfRectangleShape_setSize(border, bordersize);
+			sfRenderWindow_drawRectangleShape(window, border, NULL);
+			sfRectangleShape_destroy(border);
+		}
+
+		// Display discards player 4 (code duplicated)
+		copy_hand(&engine->players[(current_player + 3) % 4].hand, &handcopy);
+
+		sfSprite* spritediscard4[handcopy.discardlist.nb_discards];
+		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+			sfVector2f tileposition;
+			if (i < 18) {
+			tileposition.x = 319 - 35 * (i / 6);
+			tileposition.y = 222 + 26 * (i % 6);
+			}
+			else {
+				tileposition.x = 478 - 26 * i;
+				tileposition.y = 149;
+			}
+			spritediscard4[i] = sfSprite_create();
+			sfSprite_setTexture(spritediscard4[i],
+				textureslist[handcopy.discardlist.discards[i]], 1);
+			sfSprite_setPosition(spritediscard4[i], tileposition);
+			sfSprite_setRotation(spritediscard4[i], 90);
+			sfSprite_setScale(spritediscard4[i], scale);
+			sfRenderWindow_drawSprite(window, spritediscard4[i], NULL);
+			sfSprite_destroy(spritediscard4[i]);
+			border = sfRectangleShape_create();
+
+			sfRectangleShape_setFillColor(border, sfTransparent);
+			sfRectangleShape_setOutlineColor(border, sfBlack);
+			sfRectangleShape_setOutlineThickness(border, 1.0);
+			sfRectangleShape_setPosition(border, tileposition);
+			sfRectangleShape_setRotation(border, 90);
+			sfRectangleShape_setSize(border, bordersize);
+			sfRenderWindow_drawRectangleShape(window, border, NULL);
+			sfRectangleShape_destroy(border);
+		}
 
 		sfRenderWindow_display(window);
 	}
