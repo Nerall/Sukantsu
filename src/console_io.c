@@ -834,5 +834,7 @@ void display_GUI(struct riichi_engine *engine) {
 		char path[20];
 		sprintf(path, "src/tiles/%d.png", i);
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
+		sfTexture_destroy(gameGUI->textureslist[i]);
 	}
+	sfRenderWindow_destroy(gameGUI->window);
 }

@@ -504,7 +504,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		// Using GUI
 		if (player_index == 0)
-			display(engine, player_index);
+			display_GUI(engine);
 		struct gameGUI gameGUI;
 		init_gameGUI(&gameGUI);
 
