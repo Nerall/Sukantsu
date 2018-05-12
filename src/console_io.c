@@ -6,7 +6,6 @@
 #include "debug.h"
 #include <stdio.h>
 #include <wchar.h>
-#include <SFML/Graphics.h>
 
 static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
 
@@ -570,4 +569,157 @@ void display(const struct riichi_engine *engine, int current_player) {
 
 		sfRenderWindow_display(window);
 	}
+}
+
+void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_player) {
+	ASSERT_BACKTRACE(tilesGUI);
+	tilesGUI->rotation = 360 - 90 * (typeGUI + 1);
+	tilesGUI->typeGUI = typeGUI;
+	sfVector2f scale;
+	sfVector2f tileposition;
+	sfVector2f tileincrement;
+	sfVector2f bordersize;
+	switch (typeGUI) {
+		case PLAYERHAND:
+			scale.x = 0.2;
+			scale.y = 0.2;
+			bordersize.x = 45;
+			bordersize.y = 61;
+			switch (current_player) {
+				case 0:
+					tileposition.x = 50;
+					tileposition.y = 500;
+					tileincrement.x = 46;
+					tileincrement.y = 0;
+					break;/*
+				case 1:
+					break;
+				case 2:
+					break;
+				case 3:
+					break;*/
+				default:
+					tileposition.x = 0;
+					tileposition.y = 0;
+					tileincrement.x = 0;
+					tileincrement.y = 0;
+					break;
+			}
+			break;
+		case PLAYERHANDOPEN:
+			scale.x = 0.11;
+			scale.y = 0.11;
+			bordersize.x = 25;
+			bordersize.y = 34;
+			switch (current_player) {/*
+				case 0:
+					break;
+				case 1:
+					break;
+				case 2:
+					break;
+				case 3:
+					break;*/
+				default:
+					tileposition.x = 0;
+					tileposition.y = 0;
+					tileincrement.x = 0;
+					tileincrement.y = 0;
+					break;
+			}
+			break;
+		case PLAYERDISCARDS:
+			scale.x = 0.11;
+			scale.y = 0.11;
+			bordersize.x = 25;
+			bordersize.y = 34;
+			switch (current_player) {
+				case 0:
+					tileposition.x = 322;
+					tileposition.y = 381;
+					tileincrement.x = 26;
+					tileincrement.y = 35;
+					break;
+				case 1:
+					tileposition.x = 481;
+					tileposition.y = 378;
+					tileincrement.x = 35;
+					tileincrement.y = -26;
+					break;
+				case 2:
+					tileposition.x = 478;
+					tileposition.y = 219;
+					tileincrement.x = -26;
+					tileincrement.y = -35;
+					break;
+				case 3:
+					tileposition.x = 319;
+					tileposition.y = 222;
+					tileincrement.x = -35;
+					tileincrement.y = 26;
+					break;
+				default:
+					tileposition.x = 0;
+					tileposition.y = 0;
+					tileincrement.x = 0;
+					tileincrement.y = 0;
+					break;
+			}
+			break;
+		case DORAS:
+			scale.x = 0.11;
+			scale.y = 0.11;
+			bordersize.x = 25;
+			bordersize.y = 34;
+			tileposition.x = 0;
+			tileposition.y = 0;
+			tileincrement.x = 0;
+			tileincrement.y = 0;
+			break;
+		default:
+			scale.x = 0.15;
+			scale.y = 0.15;
+			bordersize.x = 0;
+			bordersize.y = 0;
+			tileposition.x = 0;
+			tileposition.y = 0;
+			break;
+	}
+	tilesGUI->scale = scale;
+	tilesGUI->tileposition = tileposition;
+	tilesGUI->tileincrement = tileincrement;
+	tilesGUI->border = 0;
+	tilesGUI->bordersize = bordersize;
+}
+
+void init_gameGUI(struct gameGUI *gameGUI) {
+	ASSERT_BACKTRACE(gameGUI);
+	gameGUI->window = NULL;
+	sfVideoMode mode = {800, 600, 32};
+	gameGUI->mode = mode;
+	sfColor background;
+	background = sfColor_fromRGB(0, 128, 255);
+	gameGUI->background = background;
+	init_tilesGUI(&gameGUI->player1hand, PLAYERHAND, 0);
+	init_tilesGUI(&gameGUI->player2hand, PLAYERHAND, 1);
+	init_tilesGUI(&gameGUI->player3hand, PLAYERHAND, 2);
+	init_tilesGUI(&gameGUI->player4hand, PLAYERHAND, 3);
+	init_tilesGUI(&gameGUI->player1handopen, PLAYERHANDOPEN, 0);
+	init_tilesGUI(&gameGUI->player2handopen, PLAYERHANDOPEN, 1);
+	init_tilesGUI(&gameGUI->player3handopen, PLAYERHANDOPEN, 2);
+	init_tilesGUI(&gameGUI->player4handopen, PLAYERHANDOPEN, 3);
+	init_tilesGUI(&gameGUI->player1discards, PLAYERDISCARDS, 0);
+	init_tilesGUI(&gameGUI->player2discards, PLAYERDISCARDS, 1);
+	init_tilesGUI(&gameGUI->player3discards, PLAYERDISCARDS, 2);
+	init_tilesGUI(&gameGUI->player4discards, PLAYERDISCARDS, 3);
+	init_tilesGUI(&gameGUI->doras, DORAS, 0);
+	gameGUI->center = NULL;
+	sfVector2f centerposition;
+	centerposition.x = 320;
+	centerposition.y = 220;
+	gameGUI->centerposition = centerposition;
+	sfVector2f centersize;
+	centersize.x = 160;
+	centersize.y = 160;
+	gameGUI->centersize = centersize;
 }

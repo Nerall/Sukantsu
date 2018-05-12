@@ -10,6 +10,7 @@
 #include "player.h"
 #include "riichi_engine_s.h"
 #include <stdio.h>
+#include <SFML/Graphics.h>
 
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
@@ -499,12 +500,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
-
-    //Using GUI
-    if (player_index == 0)
-      display(engine, player_index);
-
-
+    // Using GUI
+    // if (player_index == 0)
+      // display(engine, player_index);
+    struct gameGUI gameGUI;
+    init_gameGUI(&gameGUI);
 
 		struct action_input player_input;
 		if (!win) {
