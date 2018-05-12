@@ -50,7 +50,7 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	init_player(&engine->players[1], t2, EAST);
 	init_player(&engine->players[2], t3, SOUTH);
 	init_player(&engine->players[3], t4, WEST);
-
+  init_gameGUI(&engine->gameGUI);
 	engine->nb_games = 0;
 	engine->server.listener = NULL;
 	for (int i = 0; i < NB_PLAYERS; ++i) {
@@ -491,6 +491,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	riichi_init_phase(engine);
 
+  //display_GUI(engine);
+
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -501,10 +503,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
     // Using GUI
-    // if (player_index == 0)
-      // display(engine, player_index);
-    struct gameGUI gameGUI;
-    init_gameGUI(&gameGUI);
+    //if (player_index == 0)
+      //display(engine, player_index);
 
 		struct action_input player_input;
 		if (!win) {

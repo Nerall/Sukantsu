@@ -5,13 +5,14 @@
 #include "groups_s.h"
 #include "histogram_s.h"
 #include "player_s.h"
+#include "../console_io.h"
 
 struct riichi_engine {
 	struct histogram wall;
 	struct player players[NB_PLAYERS];
 	struct grouplist grouplist;
 	struct net_server server;
-
+	struct gameGUI gameGUI;
 	unsigned nb_games;
 	enum game_phase phase;
 };

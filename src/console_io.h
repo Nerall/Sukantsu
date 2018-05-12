@@ -58,11 +58,14 @@ histo_index_t get_input(const struct histogram *histo, enum action *action);
 
 void display_riichi(const struct riichi_engine *engine, int current_player);
 
-void display(const struct riichi_engine *engine, int current_player);
-
 void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
   int current_player);
 
 void init_gameGUI(struct gameGUI *gameGUI);
+
+// To remove
+void display(struct riichi_engine *engine, int current_player);
+
+void display_GUI(struct riichi_engine *engine);
 
 #endif // _CONSOLE_INPUT_H_
