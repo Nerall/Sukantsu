@@ -479,6 +479,60 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	gameGUI->centersize = centersize;
 }
 
+static sfVector2f get_tile_position(int iplayer, int idiscard) {
+	sfVector2f tileposition;
+	switch (iplayer) {
+		case 0: {
+			if (idiscard < 18) {
+				tileposition.x = 322 + 26 * (idiscard % 6);
+				tileposition.y = 381 + 35 * (idiscard / 6);
+			} else {
+				tileposition.x = 322 + 26 * idiscard;
+				tileposition.y = 451;
+			}
+			break;
+		}
+
+		case 1: {
+			if (idiscard < 18) {
+				tileposition.x = 481 + 35 * (idiscard / 6);
+				tileposition.y = 378 - 26 * (idiscard % 6);
+			} else {
+				tileposition.x = 551;
+				tileposition.y = 378 - 26 * idiscard;
+			}
+			break;
+		}
+
+		case 2: {
+			if (idiscard < 18) {
+				tileposition.x = 478 - 26 * (idiscard % 6);
+				tileposition.y = 219 - 35 * (idiscard / 6);
+			} else {
+				tileposition.x = 478 - 26 * idiscard;
+				tileposition.y = 149;
+			}
+			break;
+		}
+
+		case 3: {
+			if (idiscard < 18) {
+				tileposition.x = 319 - 35 * (idiscard / 6);
+				tileposition.y = 222 + 26 * (idiscard % 6);
+			} else {
+				tileposition.x = 478 - 26 * idiscard;
+				tileposition.y = 149;
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return tileposition;
+}
+
 // To remove
 void display(struct riichi_engine *engine, int current_player) {
 	// Init window
@@ -771,7 +825,6 @@ void display(struct riichi_engine *engine, int current_player) {
 	}
 }
 
-<<<<<<< HEAD
 void display_GUI(struct riichi_engine *engine) {
 	struct gameGUI* gameGUI = &engine->gameGUI;
 	gameGUI->window = sfRenderWindow_create(gameGUI->mode, "Sukantsu",
@@ -781,121 +834,5 @@ void display_GUI(struct riichi_engine *engine) {
 		char path[20];
 		sprintf(path, "src/tiles/%d.png", i);
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
-=======
-void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
-                   int current_player) {
-	ASSERT_BACKTRACE(tilesGUI);
-	tilesGUI->rotation = 360 - 90 * (typeGUI + 1);
-	tilesGUI->typeGUI = typeGUI;
-	sfVector2f scale;
-	sfVector2f tileposition;
-	sfVector2f tileincrement;
-	sfVector2f bordersize;
-	switch (typeGUI) {
-		case PLAYERHAND:
-			scale.x = 0.2;
-			scale.y = 0.2;
-			bordersize.x = 45;
-			bordersize.y = 61;
-			switch (current_player) {
-				case 0:
-					tileposition.x = 50;
-					tileposition.y = 500;
-					tileincrement.x = 46;
-					tileincrement.y = 0;
-					break; /*
-				 case 1:
-					 break;
-				 case 2:
-					 break;
-				 case 3:
-					 break;*/
-				default:
-					tileposition.x = 0;
-					tileposition.y = 0;
-					tileincrement.x = 0;
-					tileincrement.y = 0;
-					break;
-			}
-			break;
-		case PLAYERHANDOPEN:
-			scale.x = 0.11;
-			scale.y = 0.11;
-			bordersize.x = 25;
-			bordersize.y = 34;
-			switch (current_player) { /*
-				 case 0:
-				     break;
-				 case 1:
-				     break;
-				 case 2:
-				     break;
-				 case 3:
-				     break;*/
-				default:
-					tileposition.x = 0;
-					tileposition.y = 0;
-					tileincrement.x = 0;
-					tileincrement.y = 0;
-					break;
-			}
-			break;
-		case PLAYERDISCARDS:
-			scale.x = 0.11;
-			scale.y = 0.11;
-			bordersize.x = 25;
-			bordersize.y = 34;
-			switch (current_player) {
-				case 0:
-					tileposition.x = 322;
-					tileposition.y = 381;
-					tileincrement.x = 26;
-					tileincrement.y = 35;
-					break;
-				case 1:
-					tileposition.x = 481;
-					tileposition.y = 378;
-					tileincrement.x = 35;
-					tileincrement.y = -26;
-					break;
-				case 2:
-					tileposition.x = 478;
-					tileposition.y = 219;
-					tileincrement.x = -26;
-					tileincrement.y = -35;
-					break;
-				case 3:
-					tileposition.x = 319;
-					tileposition.y = 222;
-					tileincrement.x = -35;
-					tileincrement.y = 26;
-					break;
-				default:
-					tileposition.x = 0;
-					tileposition.y = 0;
-					tileincrement.x = 0;
-					tileincrement.y = 0;
-					break;
-			}
-			break;
-		case DORAS:
-			scale.x = 0.11;
-			scale.y = 0.11;
-			bordersize.x = 25;
-			bordersize.y = 34;
-			tileposition.x = 0;
-			tileposition.y = 0;
-			tileincrement.x = 0;
-			tileincrement.y = 0;
-			break;
-		default:
-			scale.x = 0.15;
-			scale.y = 0.15;
-			bordersize.x = 0;
-			bordersize.y = 0;
-			tileposition.x = 0;
-			tileposition.y = 0;
-			break;
->>>>>>> 9566c0e2b55f8b0d92612ba28e79b1d5927133da
 	}
 }

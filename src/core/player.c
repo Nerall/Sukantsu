@@ -174,16 +174,16 @@ void client_main_loop(struct net_client *client) {
 
 			engine.phase = PHASE_DRAW;
 			display_riichi(&engine, iplayer);
-			break;
-		}
-
-		case PACKET_INPUT: {
-			// makegroups(&player->hand, &engine.grouplist);
 
 			// Using GUI
 			display(&engine, 0);
 			struct gameGUI gameGUI;
 			init_gameGUI(&gameGUI);
+			break;
+		}
+
+		case PACKET_INPUT: {
+			// makegroups(&player->hand, &engine.grouplist);
 
 			pk_input *input = (pk_input *)&receiver;
 			get_player_input(player, &input->input);
