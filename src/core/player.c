@@ -180,6 +180,11 @@ void client_main_loop(struct net_client *client) {
 		case PACKET_INPUT: {
 			// makegroups(&player->hand, &engine.grouplist);
 
+			// Using GUI
+			display(&engine, 0);
+			struct gameGUI gameGUI;
+			init_gameGUI(&gameGUI);
+
 			pk_input *input = (pk_input *)&receiver;
 			get_player_input(player, &input->input);
 			send_to_server(client, input, sizeof(pk_input));
@@ -206,9 +211,10 @@ void client_main_loop(struct net_client *client) {
 
 		case PACKET_UPDATE: {
 			pk_update *update = (pk_update *)&receiver;
+			struct hand *update_hand = &engine.players[update->player_pos].hand;
 
-			engine.players[update->player_pos].hand.last_discard =
-			    update->input.tile;
+			add_discard(&update_hand->discardlist, update->input.tile);
+			update_hand->last_discard = update->input.tile;
 
 			engine.phase = PHASE_GETINPUT;
 			display_riichi(&engine, update->player_pos);

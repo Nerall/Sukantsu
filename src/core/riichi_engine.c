@@ -9,8 +9,8 @@
 #include "histogram.h"
 #include "player.h"
 #include "riichi_engine_s.h"
-#include <stdio.h>
 #include <SFML/Graphics.h>
+#include <stdio.h>
 
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
@@ -65,31 +65,31 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 	ASSERT_BACKTRACE(input);
 
 	switch (input->action) {
-	case ACTION_DISCARD: {
-		return player->hand.histo.cells[input->tile] != 0;
-	}
+		case ACTION_DISCARD: {
+			return player->hand.histo.cells[input->tile] != 0;
+		}
 
-	case ACTION_RIICHI: {
-		return player->hand.riichi == NORIICHI && player->hand.closed &&
-		       get_histobit(&player->hand.riichitiles, input->tile);
-	}
+		case ACTION_RIICHI: {
+			return player->hand.riichi == NORIICHI && player->hand.closed &&
+			       get_histobit(&player->hand.riichitiles, input->tile);
+		}
 
-	case ACTION_KAN: {
-		// TODO: Kan action
-		return 0;
-	}
+		case ACTION_KAN: {
+			// TODO: Kan action
+			return 0;
+		}
 
-	case ACTION_TSUMO: {
-		return is_valid_hand(&player->hand, &engine->grouplist);
-	}
+		case ACTION_TSUMO: {
+			return is_valid_hand(&player->hand, &engine->grouplist);
+		}
 
-	case ACTION_PASS: {
-		return 1;
-	}
+		case ACTION_PASS: {
+			return 1;
+		}
 
-	default:
-		fprintf(stderr, "Action-Type not recognized\n");
-		return 0;
+		default:
+			fprintf(stderr, "Action-Type not recognized\n");
+			return 0;
 	}
 }
 
@@ -104,50 +104,50 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 	struct grouplist *grouplist = &engine->grouplist;
 
 	switch (input->action) {
-	case ACTION_DISCARD: {
-		remove_tile_hand(player_hand, input->tile);
-		set_histobit(&player_hand->furitentiles, input->tile);
-		add_discard(&player_hand->discardlist, input->tile);
-		player->hand.last_discard = input->tile;
-		if (input->tile != player_hand->last_tile) {
-			tilestocall(player_hand, grouplist);
-			tenpailist(player_hand, grouplist);
+		case ACTION_DISCARD: {
+			remove_tile_hand(player_hand, input->tile);
+			set_histobit(&player_hand->furitentiles, input->tile);
+			add_discard(&player_hand->discardlist, input->tile);
+			player->hand.last_discard = input->tile;
+			if (input->tile != player_hand->last_tile) {
+				tilestocall(player_hand, grouplist);
+				tenpailist(player_hand, grouplist);
+			}
+			return 0;
 		}
-		return 0;
-	}
 
-	case ACTION_RIICHI: {
-		remove_tile_hand(player_hand, input->tile);
-		set_histobit(&player_hand->furitentiles, input->tile);
-		add_discard(&player_hand->discardlist, input->tile);
-		tenpailist(player_hand, grouplist);
+		case ACTION_RIICHI: {
+			remove_tile_hand(player_hand, input->tile);
+			set_histobit(&player_hand->furitentiles, input->tile);
+			add_discard(&player_hand->discardlist, input->tile);
+			tenpailist(player_hand, grouplist);
 
-		// Will be set at RIICHI next turn
-		player_hand->riichi = IPPATSU;
+			// Will be set at RIICHI next turn
+			player_hand->riichi = IPPATSU;
 
-		// Init values that will be no more used later
-		init_histobit(&player_hand->riichitiles, 0);
-		init_histobit(&player_hand->chiitiles, 0);
-		init_histobit(&player_hand->pontiles, 0);
-		init_histobit(&player_hand->kantiles, 0);
-		return 0;
-	}
+			// Init values that will be no more used later
+			init_histobit(&player_hand->riichitiles, 0);
+			init_histobit(&player_hand->chiitiles, 0);
+			init_histobit(&player_hand->pontiles, 0);
+			init_histobit(&player_hand->kantiles, 0);
+			return 0;
+		}
 
-	case ACTION_TSUMO: {
-		return 1;
-	}
+		case ACTION_TSUMO: {
+			return 1;
+		}
 
-	case ACTION_KAN: {
-		break;
-	}
+		case ACTION_KAN: {
+			break;
+		}
 
-	case ACTION_PASS: {
-		return 0;
-	}
+		case ACTION_PASS: {
+			return 0;
+		}
 
-	default:
-		ASSERT_BACKTRACE(0 && "Action not recognized");
-		break;
+		default:
+			ASSERT_BACKTRACE(0 && "Action not recognized");
+			break;
 	}
 	return 0;
 }
@@ -502,9 +502,17 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
+<<<<<<< HEAD
     // Using GUI
     //if (player_index == 0)
       //display(engine, player_index);
+=======
+		// Using GUI
+		if (player_index == 0)
+			display(engine, player_index);
+		struct gameGUI gameGUI;
+		init_gameGUI(&gameGUI);
+>>>>>>> 9566c0e2b55f8b0d92612ba28e79b1d5927133da
 
 		struct action_input player_input;
 		if (!win) {
