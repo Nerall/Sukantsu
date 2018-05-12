@@ -61,6 +61,9 @@ void host_main() {
 
 	wait_for_players(&engine);
 
+	engine.gameGUI.window = sfRenderWindow_create(
+	    engine.gameGUI.mode, "Sukantsu", sfResize | sfClose, NULL);
+
 	char c = 0;
 	do {
 		int index_win = play_riichi_game(&engine);
@@ -91,6 +94,8 @@ void host_main() {
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
 	        (engine.nb_games > 1) ? "s" : "");
 
+	sfRenderWindow_destroy(engine.gameGUI.window);
+
 	clean_net_server(&engine.server);
 }
 
@@ -112,8 +117,10 @@ void client_main() {
 
 		wprintf(L"Type a port to connect to\n> ");
 		fflush(stdout);
-		while (!scanf("%hu", &port));
-		while (getchar() != '\n');
+		while (!scanf("%hu", &port))
+			;
+		while (getchar() != '\n')
+			;
 	} while (!connect_to_server(&client, server, port));
 
 	client_main_loop(&client);

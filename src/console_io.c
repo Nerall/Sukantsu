@@ -827,8 +827,6 @@ void display(struct riichi_engine *engine, int current_player) {
 
 void display_GUI(struct riichi_engine *engine) {
 	struct gameGUI* gameGUI = &engine->gameGUI;
-	gameGUI->window = sfRenderWindow_create(gameGUI->mode, "Sukantsu",
-		sfResize | sfClose, NULL);
 	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
 	for (int i = 0; i < 35; ++i) {
 		char path[20];
@@ -836,5 +834,5 @@ void display_GUI(struct riichi_engine *engine) {
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
 		sfTexture_destroy(gameGUI->textureslist[i]);
 	}
-	sfRenderWindow_destroy(gameGUI->window);
+	sfRenderWindow_display(gameGUI->window);
 }
