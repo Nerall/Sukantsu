@@ -58,7 +58,8 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	}
 }
 
-// Verify if the action is valid and return 1 if it is
+// Verify if the action is valid
+// Returns 1 if the action is valid, else 0
 static int verify_action(struct riichi_engine *engine, struct player *player,
                          const struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
@@ -74,13 +75,24 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 			       get_histobit(&player->hand.riichitiles, input->tile);
 		}
 
-		case ACTION_KAN: {
-			// TODO: Kan action
-			return 0;
-		}
-
 		case ACTION_TSUMO: {
 			return is_valid_hand(&player->hand, &engine->grouplist);
+		}
+
+		case ACTION_CHII: {
+			return get_histobit(&player->hand.chiitiles, called_tile);
+		}
+
+		case ACTION_PON: {
+			return get_histobit(&player->hand.pontiles, called_tile);
+		}
+
+		case ACTION_KAN: {
+			return get_histobit(&player->hand.kantiles, called_tile);
+		}
+
+		case ACTION_RON: {
+			return get_histobit(&player->hand.rontiles, called_tile);
 		}
 
 		case ACTION_PASS: {
@@ -94,6 +106,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 }
 
 // Apply the action and return 1 if the player won
+// Suppose that the action is allowed
 int apply_action(struct riichi_engine *engine, struct player *player,
                  const struct action_input *input) {
 	ASSERT_BACKTRACE(engine);
@@ -137,8 +150,24 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			return 1;
 		}
 
+		case ACTION_CHII: {
+			apply_call(player, input->tile, CALL_CHII);
+			return 0;
+		}
+
+		case ACTION_PON: {
+			apply_call(player, input->tile, CALL_PON);
+			return 0;
+		}
+
 		case ACTION_KAN: {
-			break;
+			apply_call(player, input->tile, CALL_KAN);
+			return 0;
+		}
+
+		case ACTION_RON: {
+			apply_call(player, input->tile, CALL_RON);
+			return 1;
 		}
 
 		case ACTION_PASS: {

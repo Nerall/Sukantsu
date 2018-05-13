@@ -141,8 +141,8 @@ void apply_call(struct player *player, histo_index_t called_tile,
 				add_group_hand(hand, 0, QUAD, called_tile);
 			} else {
 				// Find & modify triplet group to quad
-				int triplet_found = 0
-				for (int g = 0; g < hand->nb_groups; ++g) {
+				int triplet_found =
+				    0 for (int g = 0; g < hand->nb_groups; ++g) {
 					if (hand->groups[g].tile == called_tile) {
 						ASSERT_BACKTRACE(and->groups[g].type == TRIPLET);
 						hand->groups[g].type = QUAD;
@@ -157,7 +157,7 @@ void apply_call(struct player *player, histo_index_t called_tile,
 
 				ASSERT_BACKTRACE(triplet_found);
 			}
-			
+
 			break;
 		}
 
