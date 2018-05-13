@@ -109,6 +109,66 @@ static void input_AI(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(0 && "Hand Histogram is empty");
 }
 
+// Work in Progress
+void apply_call(struct player *player, histo_index_t called_tile,
+                enum call_type call_type) {
+	ASSERT_BACKTRACE(player);
+
+	struct hand *hand = &player->hand;
+	add_tile_hand(hand, called_tile);
+	switch (call_type) {
+		case CALL_CHII: {
+			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, called_tile));
+			// Find 1st tile of sequence & add group
+			// NEED REVISION: Since there can be multiple groups
+			// that can be done, we need to choose one (or ask the player)
+			ASSERT_BACKTRACE(0 && "Call-Chii is not ready");
+			break;
+		}
+
+		case CALL_PON: {
+			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, called_tile));
+			// Add triplet group
+			add_group_hand(hand, 0, TRIPLET, called_tile);
+			break;
+		}
+
+		case CALL_KAN: {
+			ASSERT_BACKTRACE(get_histobit(&hand->kantiles, called_tile));
+			// Find if already triplet, else add quad group
+			if (hand->histo[called_tile] == 4) {
+				// If no triplet group
+				add_group_hand(hand, 0, QUAD, called_tile);
+			} else {
+				// Find & modify triplet group to quad
+				int triplet_found = 0
+				for (int g = 0; g < hand->nb_groups; ++g) {
+					if (hand->groups[g].tile == called_tile) {
+						ASSERT_BACKTRACE(and->groups[g].type == TRIPLET);
+						hand->groups[g].type = QUAD;
+
+						// We need to remove the tile because
+						// we manually changed the group
+						remove_tile_hand(hand, called_tile);
+						triplet_found = 1;
+						break;
+					}
+				}
+
+				ASSERT_BACKTRACE(triplet_found);
+			}
+			
+			break;
+		}
+
+		case CALL_RON: {
+			ASSERT_BACKTRACE(get_histobit(&hand->wintiles, called_tile));
+			// Do nothing more, function's caller will handle victory
+			break;
+		}
+	}
+}
+
 void get_player_input(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
@@ -141,7 +201,7 @@ void client_main_loop(struct net_client *client) {
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
-				//fprintf(stderr, "Received: pk_init\n");
+				// fprintf(stderr, "Received: pk_init\n");
 				pk_init *init = (pk_init *)&receiver;
 
 				enum player_type types[4];
@@ -169,7 +229,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_DRAW: {
-				//fprintf(stderr, "Received: pk_draw\n");
+				// fprintf(stderr, "Received: pk_draw\n");
 				pk_draw *draw = (pk_draw *)&receiver;
 				add_tile_hand(&player->hand, draw->tile);
 
@@ -186,7 +246,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_INPUT: {
-				//fprintf(stderr, "Received: pk_input\n");
+				// fprintf(stderr, "Received: pk_input\n");
 				// makegroups(&player->hand, &engine.grouplist);
 
 				pk_input *input = (pk_input *)&receiver;
@@ -200,7 +260,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_TSUMO: {
-				//fprintf(stderr, "Received: pk_tsumo\n");
+				// fprintf(stderr, "Received: pk_tsumo\n");
 				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
 
 				int itsumo = (int)tsumo->player_pos;
@@ -215,7 +275,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_UPDATE: {
-				//fprintf(stderr, "Received: pk_update\n");
+				// fprintf(stderr, "Received: pk_update\n");
 				pk_update *update = (pk_update *)&receiver;
 				struct hand *update_hand =
 				    &engine.players[update->player_pos].hand;
