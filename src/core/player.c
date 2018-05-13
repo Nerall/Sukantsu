@@ -136,15 +136,15 @@ void apply_call(struct player *player, histo_index_t called_tile,
 		case CALL_KAN: {
 			ASSERT_BACKTRACE(get_histobit(&hand->kantiles, called_tile));
 			// Find if already triplet, else add quad group
-			if (hand->histo[called_tile] == 4) {
+			if (hand->histo.cells[called_tile] == 4) {
 				// If no triplet group
 				add_group_hand(hand, 0, QUAD, called_tile);
 			} else {
 				// Find & modify triplet group to quad
-				int triplet_found =
-				    0 for (int g = 0; g < hand->nb_groups; ++g) {
+				int triplet_found = 0;
+				for (int g = 0; g < hand->nb_groups; ++g) {
 					if (hand->groups[g].tile == called_tile) {
-						ASSERT_BACKTRACE(and->groups[g].type == TRIPLET);
+						ASSERT_BACKTRACE(hand->groups[g].type == TRIPLET);
 						hand->groups[g].type = QUAD;
 
 						// We need to remove the tile because

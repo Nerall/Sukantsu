@@ -39,6 +39,13 @@ struct net_packet_tsumo {
 	struct histogram histo;    // Victory histogram of the player
 };
 
+struct net_packet_claim {
+	enum packet_type packet_type; // Keep this at this place
+
+	enum call_type call_type;
+	// Add group for chii?
+};
+
 #define MAX_PACKET_SIZE                                                        \
 	(sizeof(struct net_packet_update) > sizeof(struct net_packet_init)         \
 	     ? sizeof(struct net_packet_update)                                    \

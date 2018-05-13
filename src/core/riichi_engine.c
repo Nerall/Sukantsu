@@ -80,19 +80,19 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_CHII: {
-			return get_histobit(&player->hand.chiitiles, called_tile);
+			return get_histobit(&player->hand.chiitiles, input->tile);
 		}
 
 		case ACTION_PON: {
-			return get_histobit(&player->hand.pontiles, called_tile);
+			return get_histobit(&player->hand.pontiles, input->tile);
 		}
 
 		case ACTION_KAN: {
-			return get_histobit(&player->hand.kantiles, called_tile);
+			return get_histobit(&player->hand.kantiles, input->tile);
 		}
 
 		case ACTION_RON: {
-			return get_histobit(&player->hand.rontiles, called_tile);
+			return get_histobit(&player->hand.wintiles, input->tile);
 		}
 
 		case ACTION_PASS: {

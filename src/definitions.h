@@ -38,8 +38,9 @@ enum packet_type {
 	PACKET_INIT,
 	PACKET_DRAW,
 	PACKET_INPUT,
+	PACKET_UPDATE,
 	PACKET_TSUMO,
-	PACKET_UPDATE
+	PACKET_CLAIM,
 };
 
 enum game_phase {
@@ -48,7 +49,7 @@ enum game_phase {
 	PHASE_GETINPUT,
 	PHASE_TSUMO,
 	PHASE_WAIT,
-	PHASE_CLAIM
+	PHASE_CLAIM,
 };
 
 struct action_input {
