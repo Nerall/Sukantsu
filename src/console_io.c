@@ -551,7 +551,7 @@ void display(struct riichi_engine *engine, int current_player) {
 	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
 	while (sfRenderWindow_isOpen(window)) {
 		sfEvent event;
-		sfVector2i mouseposition;
+		//sfVector2i mouseposition;
 		while (sfRenderWindow_pollEvent(window, &event)) {
 			/*if (event.type == sfEvtClosed) {
 			    sfRenderWindow_close(window);

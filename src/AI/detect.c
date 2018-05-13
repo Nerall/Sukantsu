@@ -105,6 +105,7 @@ int makegroups(struct hand *hand, struct grouplist *grouplist) {
 	return max_groups;
 }
 
+// Set hand->wintiles
 void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(hand);
 
@@ -133,6 +134,7 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	hand->last_tile = last_tile;
 }
 
+// Set hand->riichitiles (& hand->wintiles)
 void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(hand);
 
@@ -154,7 +156,12 @@ void tilestodiscard(struct hand *hand, struct grouplist *grouplist) {
 	tenpailist(hand, grouplist);
 }
 
-void tilestocall(struct hand *hand, struct grouplist *grouplist) {
+// Set:
+// - hand->chiitiles
+// - hand->pontiles
+// - hand->kantiles
+// Suppose that grouplist is already filled via makegroups
+void tilestocall(struct hand *hand, const struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(hand);
 
 	init_histobit(&hand->chiitiles, 0);
@@ -181,6 +188,22 @@ void tilestocall(struct hand *hand, struct grouplist *grouplist) {
 					set_histobit(&hand->chiitiles, i + 2);
 			}
 		}
+	}
+}
+
+// Set all hand histobits:
+// - hand->wintiles
+// - hand->riichitiles
+// - hand->chiitiles
+// - hand->pontiles
+// - hand->kantiles
+void set_hand_histobits(struct hand *hand, struct grouplist *grouplist) {
+	if (hand->riichi == NORIICHI) {
+		tilestodiscard(hand, grouplist);
+		tilestocall(hand, grouplist);
+	} else {
+		// In riichi, we only need to update hand->wintiles
+		tenpailist(hand, grouplist);
 	}
 }
 

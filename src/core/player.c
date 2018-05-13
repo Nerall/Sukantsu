@@ -116,6 +116,7 @@ void apply_call(struct player *player, histo_index_t called_tile,
 
 	struct hand *hand = &player->hand;
 	add_tile_hand(hand, called_tile);
+	hand->has_claimed = 1;
 	switch (call_type) {
 		case CALL_CHII: {
 			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, called_tile));

@@ -114,7 +114,6 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 	ASSERT_BACKTRACE(input);
 
 	struct hand *player_hand = &player->hand;
-	struct grouplist *grouplist = &engine->grouplist;
 
 	switch (input->action) {
 		case ACTION_DISCARD: {
@@ -122,10 +121,12 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			set_histobit(&player_hand->furitentiles, input->tile);
 			add_discard(&player_hand->discardlist, input->tile);
 			player->hand.last_discard = input->tile;
+			/*
 			if (input->tile != player_hand->last_tile) {
 				tilestocall(player_hand, grouplist);
 				tenpailist(player_hand, grouplist);
 			}
+			*/
 			return 0;
 		}
 
@@ -133,7 +134,7 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			remove_tile_hand(player_hand, input->tile);
 			set_histobit(&player_hand->furitentiles, input->tile);
 			add_discard(&player_hand->discardlist, input->tile);
-			tenpailist(player_hand, grouplist);
+			// tenpailist(player_hand, grouplist);
 
 			// Will be set at RIICHI next turn
 			player_hand->riichi = IPPATSU;
@@ -289,12 +290,6 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		histo_index_t randi = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, randi);
 
-		// DO NOT DELETE THIS !!!
-		// player->player_type = player->player_type;
-		// It should do nothing, but without it,
-		// player->player_type value is not really correct (?!?)
-		// By using its value just before, it gives the correct value
-
 		// [SERVER] Send tile to client player_index
 		if (player->player_type == PLAYER_CLIENT) {
 			pk_draw packet = {
@@ -314,9 +309,6 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		}
 	}
 	player->hand.has_claimed = 0;
-
-	// Calculate best discards (hints)
-	tilestodiscard(&player->hand, &engine->grouplist);
 
 	if (player->player_type == PLAYER_HOST)
 		display_riichi(engine, player_index);
@@ -529,6 +521,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		riichi_draw_phase(engine, player_index);
 
+		// Hand has changed => set histobits
+		set_hand_histobits(&player->hand, &engine->grouplist);
+
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
 		// Using GUI
@@ -539,10 +534,21 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		struct action_input player_input;
 		if (!win) {
+			if (player->hand.riichi != NORIICHI) {
+				// A player can't play when he declared riichi
+				// So we discard its drawn tile
+				player_input.action = ACTION_DISCARD;
+				player_input.tile = player->hand.last_tile;
+				ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
+				apply_action(engine, player, &player_input);
+				continue;
+			}
+
 			riichi_get_input_phase(engine, player_index, &player_input);
 
 			if (player_input.action == ACTION_PASS) {
 				player_input.action = ACTION_DISCARD;
+				// We're not modifying hand here (put it back the line after)
 				player_input.tile = random_pop_histogram(&player->hand.histo);
 				player->hand.histo.cells[player_input.tile]++;
 			}
@@ -550,6 +556,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
 
 			win = apply_action(engine, player, &player_input);
+
+			// Hand *may* have changed => set histobits
+			set_hand_histobits(&player->hand, &engine->grouplist);
 		}
 
 		if (!AI_MODE) {
@@ -568,8 +577,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		engine->phase = PHASE_WAIT;
 
-		// Calculate winning tiles
-		tenpailist(&player->hand, &engine->grouplist);
+		// Hand has changed => set histobits
+		set_hand_histobits(&player->hand, &engine->grouplist);
 
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);

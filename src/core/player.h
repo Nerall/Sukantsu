@@ -13,6 +13,9 @@ void init_player(struct player *player, enum player_type player_type,
 int player_turn(struct player *player, struct grouplist *grouplist,
                 histo_index_t *index_rem);
 
+void apply_call(struct player *player, histo_index_t called_tile,
+                enum call_type call_type);
+
 void get_player_input(struct player *player, struct action_input *input);
 
 void client_main_loop(struct net_client *client);
