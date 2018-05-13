@@ -31,9 +31,9 @@ void send_to_all_clients(struct riichi_engine *engine, void *packet,
 			continue;
 
 		int net_id = engine->players[c].net_id;
-		int s = send_data_to_client(server, net_id, packet, size, TIMEOUT_SEND);
-		engine->players[c].net_status = !s;
-		if (s) {
+		int s = send_data_to_client(server, net_id, packet, size);
+		engine->players[c].net_status = s;
+		if (!s) {
 			fprintf(stderr,
 			        "[ERROR][SERVER] Error while sending packet to player %d\n",
 			        c);
@@ -179,7 +179,7 @@ int verify_and_claim(struct riichi_engine *engine, int player_index,
 			victory : 1
 		};
 
-		send_to_all_clients(engine, &v_packet, sizeof(v_packet), -1);
+		send_to_all_clients(engine, &v_packet, sizeof(pk_update), -1);
 
 		return player_index;
 	}
@@ -227,7 +227,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 		};
 
 		int s = send_data_to_client(server, player->net_id, &packet,
-		                            sizeof(pk_init), TIMEOUT_SEND);
+		                            sizeof(pk_init));
 		player->net_status = !s;
 		if (s) {
 			fprintf(stderr,
@@ -261,7 +261,7 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		add_tile_hand(&player->hand, randi);
 
 		// DO NOT DELETE THIS !!!
-		player->player_type = player->player_type;
+		// player->player_type = player->player_type;
 		// It should do nothing, but without it,
 		// player->player_type value is not really correct (?!?)
 		// By using its value just before, it gives the correct value
@@ -274,9 +274,9 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 				tile : randi
 			};
 			int s = send_data_to_client(server, player->net_id, &packet,
-			                            sizeof(pk_draw), TIMEOUT_SEND);
-			player->net_status = !s;
-			if (s) {
+			                            sizeof(pk_draw));
+			player->net_status = s;
+			if (!s) {
 				fprintf(stderr,
 				        "[ERROR][SERVER] Error while sending"
 				        " popped tile to player %d\n",
@@ -316,9 +316,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 
 		// [SERVER] Ask client player_index to send input
 		int s = send_data_to_client(server, player->net_id, &packet,
-		                            sizeof(pk_input), TIMEOUT_SEND);
-		player->net_status = !s;
-		if (s) {
+		                            sizeof(pk_input));
+		player->net_status = s;
+		if (!s) {
 			fprintf(stderr,
 			        "[ERROR][SERVER] Error while asking"
 			        " input to player %d\n",
@@ -328,9 +328,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 
 		// [SERVER] Receive input from client player_index
 		receive_data_from_client(server, player->net_id, &packet,
-		                         sizeof(pk_input), TIMEOUT_RECEIVE);
-		player->net_status = !s;
-		if (s) {
+		                         sizeof(pk_input));
+		player->net_status = s;
+		if (!s) {
 			fprintf(stderr,
 			        "[ERROR][SERVER] Error while"
 			        " receiving input from player %d\n",
@@ -423,8 +423,8 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 
 				pk_input packet;
 
-				if (receive_data_from_client(server, player->net_id, &packet,
-				                             sizeof(pk_input), 0)) {
+				if (!receive_data_from_client(server, player->net_id, &packet,
+				                              sizeof(pk_input))) {
 					// If no claim, continue with next player
 					continue;
 				}

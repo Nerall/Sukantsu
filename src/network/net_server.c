@@ -81,80 +81,34 @@ void clean_net_server(struct net_server *server) {
 }
 
 // Send data to the client
-// If operation takes more than timeout or an error occured, return 1
-// If data has been sent without problem, return 0
-// The timeout argument is expressed in seconds
+// If operation is successful, returns 1, else 0
 int send_data_to_client(struct net_server *server, int iclient, void *data,
-                        size_t data_size, time_t timeout_s) {
+                        size_t data_size) {
 	ASSERT_BACKTRACE(server);
 	ASSERT_BACKTRACE(server->clients[iclient]);
 
-	const struct timespec delay = {tv_sec : 0, tv_nsec : 100 * 1000000};
 	sfTcpSocket *client = server->clients[iclient];
-	sfSocketStatus status;
-	time_t t1 = time(NULL);
+	sfSocketStatus status = sfTcpSocket_send(client, data, data_size);
 
-	do {
-		size_t sent;
-		switch (sfTcpSocket_sendPartial(client, data, data_size, &sent)) {
-			case sfSocketDone:
-				return 0;
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 10 * 1000000};
+	nanosleep(&delay, NULL);
 
-			case sfSocketPartial: {
-				// Shift based on the number of byte sent
-				data += sent;
-				data_size -= sent;
-				break;
-			}
-
-			default:
-				return 1;
-		}
-
-		nanosleep(&delay, NULL);
-	} while (time(NULL) - t1 < timeout_s);
-
-	status = sfTcpSocket_send(client, data, data_size);
-
-	return status != sfSocketDone;
+	return status == sfSocketDone;
 }
 
 // Receive data from the client
-// If operation takes more than timeout or an error occured, return 1
-// If data has been received without problem, return 0
-// The timeout argument is expressed in seconds
-// The data argument may still be modified when the function returns 1
+// If operation is successful, returns 1, else 0
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
-                             size_t data_size, time_t timeout_s) {
+                             size_t data_size) {
 	ASSERT_BACKTRACE(server);
 	ASSERT_BACKTRACE(server->clients[iclient]);
 
-	const struct timespec delay = {tv_sec : 0, tv_nsec : 50 * 1000000};
+	size_t rec;
 	sfTcpSocket *client = server->clients[iclient];
-	sfSocketStatus status;
-	time_t t1 = time(NULL);
-	size_t obt;
+	sfSocketStatus status = sfTcpSocket_receive(client, data, data_size, &rec);
 
-	do {
-		switch (sfTcpSocket_receive(client, data, data_size, &obt)) {
-			case sfSocketDone:
-				return 0;
+	const struct timespec delay = {tv_sec : 0, tv_nsec : 10 * 1000000};
+	nanosleep(&delay, NULL);
 
-			case sfSocketPartial: {
-				// Shift based on the number of byte received
-				data += obt;
-				data_size -= obt;
-				break;
-			}
-
-			default:
-				return 1;
-		}
-
-		nanosleep(&delay, NULL);
-	} while (time(NULL) - t1 < timeout_s);
-
-	status = sfTcpSocket_receive(client, data, data_size, &obt);
-
-	return status != sfSocketDone;
+	return status == sfSocketDone;
 }

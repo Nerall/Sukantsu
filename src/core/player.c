@@ -113,21 +113,21 @@ void get_player_input(struct player *player, struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
 	switch (player->player_type) {
-	case PLAYER_HOST:
-		input_console(player, input);
-		return;
+		case PLAYER_HOST:
+			input_console(player, input);
+			return;
 
-	case PLAYER_AI:
-		input_AI(player, input);
-		return;
+		case PLAYER_AI:
+			input_AI(player, input);
+			return;
 
-	case PLAYER_CLIENT:
-		input_console(player, input);
-		return;
+		case PLAYER_CLIENT:
+			input_console(player, input);
+			return;
 
-	default:
-		fprintf(stderr, "Player-Type not recognized");
-		return;
+		default:
+			fprintf(stderr, "Player-Type not recognized");
+			return;
 	}
 }
 
@@ -140,108 +140,115 @@ void client_main_loop(struct net_client *client) {
 	int iplayer = 0, nb_games = 0;
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
-		case PACKET_INIT: {
-			pk_init *init = (pk_init *)&receiver;
+			case PACKET_INIT: {
+				//fprintf(stderr, "Received: pk_init\n");
+				pk_init *init = (pk_init *)&receiver;
 
-			enum player_type types[4];
-			iplayer = (int)init->player_pos;
-			for (int i = 0; i < 4; ++i) {
-				if (i != iplayer) {
-					types[i] = PLAYER_CLIENT;
-				} else {
-					types[i] = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+				enum player_type types[4];
+				iplayer = (int)init->player_pos;
+				for (int i = 0; i < 4; ++i) {
+					if (i != iplayer) {
+						types[i] = PLAYER_CLIENT;
+					} else {
+						types[i] = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+					}
 				}
+
+				init_riichi_engine(&engine, types[0], types[1], types[2],
+				                   types[3]);
+				engine.nb_games = ++nb_games;
+
+				player = &engine.players[iplayer];
+
+				player->hand.histo = init->histo;
+				player->player_pos = init->player_pos;
+
+				engine.phase = PHASE_INIT;
+				display_riichi(&engine, iplayer);
+				break;
 			}
 
-			init_riichi_engine(&engine, types[0], types[1], types[2], types[3]);
-			engine.nb_games = ++nb_games;
+			case PACKET_DRAW: {
+				//fprintf(stderr, "Received: pk_draw\n");
+				pk_draw *draw = (pk_draw *)&receiver;
+				add_tile_hand(&player->hand, draw->tile);
 
-			player = &engine.players[iplayer];
+				engine.wall.nb_tiles = draw->nb_wall_tiles;
 
-			player->hand.histo = init->histo;
-			player->player_pos = init->player_pos;
+				engine.phase = PHASE_DRAW;
+				display_riichi(&engine, iplayer);
 
-			engine.phase = PHASE_INIT;
-			display_riichi(&engine, iplayer);
-			break;
-		}
+				// Using GUI
+				display(&engine, 0);
+				struct gameGUI gameGUI;
+				init_gameGUI(&gameGUI);
+				break;
+			}
 
-		case PACKET_DRAW: {
-			pk_draw *draw = (pk_draw *)&receiver;
-			add_tile_hand(&player->hand, draw->tile);
+			case PACKET_INPUT: {
+				//fprintf(stderr, "Received: pk_input\n");
+				// makegroups(&player->hand, &engine.grouplist);
 
-			engine.wall.nb_tiles = draw->nb_wall_tiles;
+				pk_input *input = (pk_input *)&receiver;
+				get_player_input(player, &input->input);
+				send_to_server(client, input, sizeof(pk_input));
 
-			engine.phase = PHASE_DRAW;
-			display_riichi(&engine, iplayer);
+				apply_action(&engine, player, &input->input);
+				engine.phase = PHASE_GETINPUT;
+				display_riichi(&engine, iplayer);
+				break;
+			}
 
-			// Using GUI
-			display(&engine, 0);
-			struct gameGUI gameGUI;
-			init_gameGUI(&gameGUI);
-			break;
-		}
+			case PACKET_TSUMO: {
+				//fprintf(stderr, "Received: pk_tsumo\n");
+				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
 
-		case PACKET_INPUT: {
-			// makegroups(&player->hand, &engine.grouplist);
+				int itsumo = (int)tsumo->player_pos;
+				memcpy(&engine.players[itsumo].hand.histo, &tsumo->histo,
+				       sizeof(struct histogram));
 
-			pk_input *input = (pk_input *)&receiver;
-			get_player_input(player, &input->input);
-			send_to_server(client, input, sizeof(pk_input));
+				makegroups(&engine.players[itsumo].hand, &engine.grouplist);
 
-			apply_action(&engine, player, &input->input);
-			engine.phase = PHASE_GETINPUT;
-			display_riichi(&engine, iplayer);
-			break;
-		}
+				engine.phase = PHASE_TSUMO;
+				display_riichi(&engine, itsumo);
+				break;
+			}
 
-		case PACKET_TSUMO: {
-			pk_tsumo *tsumo = (pk_tsumo *)&receiver;
+			case PACKET_UPDATE: {
+				//fprintf(stderr, "Received: pk_update\n");
+				pk_update *update = (pk_update *)&receiver;
+				struct hand *update_hand =
+				    &engine.players[update->player_pos].hand;
 
-			int itsumo = (int)tsumo->player_pos;
-			memcpy(&engine.players[itsumo].hand.histo, &tsumo->histo,
-			       sizeof(struct histogram));
+				add_discard(&update_hand->discardlist, update->input.tile);
+				update_hand->last_discard = update->input.tile;
 
-			makegroups(&engine.players[itsumo].hand, &engine.grouplist);
-
-			engine.phase = PHASE_TSUMO;
-			display_riichi(&engine, itsumo);
-			break;
-		}
-
-		case PACKET_UPDATE: {
-			pk_update *update = (pk_update *)&receiver;
-			struct hand *update_hand = &engine.players[update->player_pos].hand;
-
-			add_discard(&update_hand->discardlist, update->input.tile);
-			update_hand->last_discard = update->input.tile;
-
-			engine.phase = PHASE_GETINPUT;
-			display_riichi(&engine, update->player_pos);
-
-			if (update->input.action == ACTION_DISCARD &&
-			    update->player_pos != player->player_pos) {
-				engine.phase = PHASE_CLAIM;
+				engine.phase = PHASE_GETINPUT;
 				display_riichi(&engine, update->player_pos);
 
-				/*
-				pk_input input = {
-				    packet_type : PACKET_INPUT,
-				    input : {
-				        action : ACTION_PASS,
-				        tile : NO_TILE_INDEX,
-				    },
-				};
+				if (update->input.action == ACTION_DISCARD &&
+				    update->player_pos != player->player_pos) {
+					engine.phase = PHASE_CLAIM;
+					display_riichi(&engine, update->player_pos);
 
-				send_to_server(client, &input, sizeof(pk_input));
-				*/
+					/*
+					pk_input input = {
+					    packet_type : PACKET_INPUT,
+					    input : {
+					        action : ACTION_PASS,
+					        tile : NO_TILE_INDEX,
+					    },
+					};
+
+					send_to_server(client, &input, sizeof(pk_input));
+					*/
+				}
+				break;
 			}
-			break;
-		}
 
-		default:
-			ASSERT_BACKTRACE(0 && "Packet-Type not recognized");
-			break;
+			default:
+				ASSERT_BACKTRACE(0 && "Packet-Type not recognized");
+				break;
 		}
 	}
 }

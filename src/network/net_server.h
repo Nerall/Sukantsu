@@ -15,9 +15,9 @@ int check_new_connection_net_server(struct net_server *server);
 void clean_net_server(struct net_server *server);
 
 int send_data_to_client(struct net_server *server, int iclient, void *data,
-                        size_t data_size, time_t timeout_s);
+                        size_t data_size);
 
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
-                             size_t data_size, time_t timeout_s);
+                             size_t data_size);
 
 #endif // _NET_SERVER_H_
