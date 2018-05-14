@@ -112,6 +112,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 // Work in Progress
 void apply_call(struct player *player, const struct action_input *input) {
 	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(input->tile > 0 && input->tile < NO_TILE_INDEX);
 
 	struct hand *hand = &player->hand;
 	add_tile_hand(hand, input->tile);
@@ -137,6 +138,7 @@ void apply_call(struct player *player, const struct action_input *input) {
 
 		case ACTION_PON: {
 			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, input->tile));
+			ASSERT_BACKTRACE(hand->histo.cells[input->tile] >= 3);
 			// Add triplet group
 			add_group_hand(hand, 0, TRIPLET, input->tile);
 			break;

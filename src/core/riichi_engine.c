@@ -66,6 +66,10 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
+	// Kinda innefficient, but at least, we're sure
+	// Try to change that later if possible
+	set_hand_histobits(&player->hand, &engine->grouplist);
+
 	switch (input->action) {
 		case ACTION_DISCARD: {
 			return player->hand.histo.cells[input->tile] != 0;
@@ -506,7 +510,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 				break;
 		}
 
-		fprintf(stderr, "%s claim from player %d!\n", str, player_claim);
+		fprintf(stderr, "%s claim from player %d!\n", str, player_claim + 1);
 
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
 			riichi_tsumo_phase(engine, player_index, &claim_input);
