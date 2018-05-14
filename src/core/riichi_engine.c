@@ -540,6 +540,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	// display_GUI(engine);
 
+	// Init GUI
+	struct gameGUI gameGUI;
+	init_gameGUI(&gameGUI);
+
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -553,8 +557,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
 		// Using GUI
-		struct gameGUI gameGUI;
-		init_gameGUI(&gameGUI);
 		if (player_index == 0)
 			display_GUI(engine);
 
@@ -611,6 +613,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
+
+	// Destroy GUI
+	destroy_gameGUI(&gameGUI);
 
 	return -1;
 }

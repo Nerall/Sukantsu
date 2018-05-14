@@ -326,7 +326,8 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 	}
 }
 
-void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_player) {
+void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
+                   int current_player) {
 	ASSERT_BACKTRACE(tilesGUI);
 	tilesGUI->rotation = 360 - 90 * (typeGUI + 1);
 	tilesGUI->typeGUI = typeGUI;
@@ -346,13 +347,13 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_
 					tileposition.y = 500;
 					tileincrement.x = 46;
 					tileincrement.y = 0;
-					break;/*
-				case 1:
-					break;
-				case 2:
-					break;
-				case 3:
-					break;*/
+					break; /*
+				 case 1:
+					 break;
+				 case 2:
+					 break;
+				 case 3:
+					 break;*/
 				default:
 					tileposition.x = 0;
 					tileposition.y = 0;
@@ -366,15 +367,15 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_
 			scale.y = 0.11;
 			bordersize.x = 25;
 			bordersize.y = 34;
-			switch (current_player) {/*
-				case 0:
-					break;
-				case 1:
-					break;
-				case 2:
-					break;
-				case 3:
-					break;*/
+			switch (current_player) { /*
+				 case 0:
+				     break;
+				 case 1:
+				     break;
+				 case 2:
+				     break;
+				 case 3:
+				     break;*/
 				default:
 					tileposition.x = 0;
 					tileposition.y = 0;
@@ -443,7 +444,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_
 	tilesGUI->scale = scale;
 	sfSprite *tilesprite[24];
 	for (int i = 0; i < 24; ++i) {
-	tilesGUI->tilesprite[i] = tilesprite[i];
+		tilesGUI->tilesprite[i] = tilesprite[i];
 	}
 	tilesGUI->tileposition = tileposition;
 	tilesGUI->tileincrement = tileincrement;
@@ -453,12 +454,14 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_
 
 void init_gameGUI(struct gameGUI *gameGUI) {
 	ASSERT_BACKTRACE(gameGUI);
+
 	gameGUI->window = NULL;
 	sfVideoMode mode = {800, 600, 32};
 	gameGUI->mode = mode;
 	sfColor background;
 	background = sfColor_fromRGB(0, 128, 255);
 	gameGUI->background = background;
+
 	init_tilesGUI(&gameGUI->player1hand, PLAYERHAND, 0);
 	init_tilesGUI(&gameGUI->player2hand, PLAYERHAND, 1);
 	init_tilesGUI(&gameGUI->player3hand, PLAYERHAND, 2);
@@ -472,6 +475,7 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	init_tilesGUI(&gameGUI->player3discards, PLAYERDISCARDS, 2);
 	init_tilesGUI(&gameGUI->player4discards, PLAYERDISCARDS, 3);
 	init_tilesGUI(&gameGUI->doras, DORAS, 0);
+
 	gameGUI->center = NULL;
 	sfVector2f centerposition;
 	centerposition.x = 320;
@@ -482,6 +486,33 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	centersize.x = 160;
 	centersize.y = 160;
 	gameGUI->centersize = centersize;
+
+	// Moved from display_GUI
+	for (int i = 0; i < 35; ++i) {
+		char path[20];
+		sprintf(path, "src/tiles/%d.png", i);
+		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
+	}
+
+	gameGUI->player1hand.border = sfRectangleShape_create();
+	gameGUI->center = sfRectangleShape_create();
+	for (int i = 0; i < 14; ++i) {
+		gameGUI->player1hand.tilesprite[i] = sfSprite_create();
+	}
+}
+
+void destroy_gameGUI(struct gameGUI *gameGUI) {
+	ASSERT_BACKTRACE(gameGUI);
+
+	for (int i = 0; i < 35; ++i) {
+		sfTexture_destroy(gameGUI->textureslist[i]);
+	}
+
+	sfRectangleShape_destroy(gameGUI->player1hand.border);
+	sfRectangleShape_destroy(gameGUI->center);
+	for (int i = 0; i < 14; ++i) {
+		sfSprite_destroy(gameGUI->player1hand.tilesprite[i]);
+	}
 }
 
 static sfVector2f get_tile_position(int iplayer, int idiscard) {
@@ -556,7 +587,7 @@ void display(struct riichi_engine *engine, int current_player) {
 	window = sfRenderWindow_create(mode, "Sukantsu", sfResize | sfClose, NULL);
 	while (sfRenderWindow_isOpen(window)) {
 		sfEvent event;
-		//sfVector2i mouseposition;
+		// sfVector2i mouseposition;
 		while (sfRenderWindow_pollEvent(window, &event)) {
 			/*if (event.type == sfEvtClosed) {
 			    sfRenderWindow_close(window);
@@ -696,31 +727,31 @@ void display(struct riichi_engine *engine, int current_player) {
 		bordersize.y = 34;
 		sfSprite *spritediscard1[handcopy.discardlist.nb_discards];
 		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-			sfVector2f tileposition;
-			if (i < 18) {
-				tileposition.x = 322 + 26 * (i % 6);
-				tileposition.y = 381 + 35 * (i / 6);
-			} else {
-				tileposition.x = 322 + 26 * i;
-				tileposition.y = 451;
-			}
-			spritediscard1[i] = sfSprite_create();
-			sfSprite_setTexture(spritediscard1[i],
-			                    textureslist[handcopy.discardlist.discards[i]],
-			                    1);
-			sfSprite_setPosition(spritediscard1[i], tileposition);
-			sfSprite_setScale(spritediscard1[i], scale);
-			sfRenderWindow_drawSprite(window, spritediscard1[i], NULL);
-			sfSprite_destroy(spritediscard1[i]);
-			border = sfRectangleShape_create();
+		    sfVector2f tileposition;
+		    if (i < 18) {
+		        tileposition.x = 322 + 26 * (i % 6);
+		        tileposition.y = 381 + 35 * (i / 6);
+		    } else {
+		        tileposition.x = 322 + 26 * i;
+		        tileposition.y = 451;
+		    }
+		    spritediscard1[i] = sfSprite_create();
+		    sfSprite_setTexture(spritediscard1[i],
+		                        textureslist[handcopy.discardlist.discards[i]],
+		                        1);
+		    sfSprite_setPosition(spritediscard1[i], tileposition);
+		    sfSprite_setScale(spritediscard1[i], scale);
+		    sfRenderWindow_drawSprite(window, spritediscard1[i], NULL);
+		    sfSprite_destroy(spritediscard1[i]);
+		    border = sfRectangleShape_create();
 
-			sfRectangleShape_setFillColor(border, sfTransparent);
-			sfRectangleShape_setOutlineColor(border, sfBlack);
-			sfRectangleShape_setOutlineThickness(border, 1.0);
-			sfRectangleShape_setPosition(border, tileposition);
-			sfRectangleShape_setSize(border, bordersize);
-			sfRenderWindow_drawRectangleShape(window, border, NULL);
-			sfRectangleShape_destroy(border);
+		    sfRectangleShape_setFillColor(border, sfTransparent);
+		    sfRectangleShape_setOutlineColor(border, sfBlack);
+		    sfRectangleShape_setOutlineThickness(border, 1.0);
+		    sfRectangleShape_setPosition(border, tileposition);
+		    sfRectangleShape_setSize(border, bordersize);
+		    sfRenderWindow_drawRectangleShape(window, border, NULL);
+		    sfRectangleShape_destroy(border);
 		}
 
 		// Display discards player 2 (code duplicated)
@@ -728,33 +759,33 @@ void display(struct riichi_engine *engine, int current_player) {
 
 		sfSprite *spritediscard2[handcopy.discardlist.nb_discards];
 		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-			sfVector2f tileposition;
-			if (i < 18) {
-				tileposition.x = 481 + 35 * (i / 6);
-				tileposition.y = 378 - 26 * (i % 6);
-			} else {
-				tileposition.x = 551;
-				tileposition.y = 378 - 26 * i;
-			}
-			spritediscard2[i] = sfSprite_create();
-			sfSprite_setTexture(spritediscard2[i],
-			                    textureslist[handcopy.discardlist.discards[i]],
-			                    1);
-			sfSprite_setPosition(spritediscard2[i], tileposition);
-			sfSprite_setRotation(spritediscard2[i], 270);
-			sfSprite_setScale(spritediscard2[i], scale);
-			sfRenderWindow_drawSprite(window, spritediscard2[i], NULL);
-			sfSprite_destroy(spritediscard2[i]);
-			border = sfRectangleShape_create();
+		    sfVector2f tileposition;
+		    if (i < 18) {
+		        tileposition.x = 481 + 35 * (i / 6);
+		        tileposition.y = 378 - 26 * (i % 6);
+		    } else {
+		        tileposition.x = 551;
+		        tileposition.y = 378 - 26 * i;
+		    }
+		    spritediscard2[i] = sfSprite_create();
+		    sfSprite_setTexture(spritediscard2[i],
+		                        textureslist[handcopy.discardlist.discards[i]],
+		                        1);
+		    sfSprite_setPosition(spritediscard2[i], tileposition);
+		    sfSprite_setRotation(spritediscard2[i], 270);
+		    sfSprite_setScale(spritediscard2[i], scale);
+		    sfRenderWindow_drawSprite(window, spritediscard2[i], NULL);
+		    sfSprite_destroy(spritediscard2[i]);
+		    border = sfRectangleShape_create();
 
-			sfRectangleShape_setFillColor(border, sfTransparent);
-			sfRectangleShape_setOutlineColor(border, sfBlack);
-			sfRectangleShape_setOutlineThickness(border, 1.0);
-			sfRectangleShape_setPosition(border, tileposition);
-			sfRectangleShape_setRotation(border, 270);
-			sfRectangleShape_setSize(border, bordersize);
-			sfRenderWindow_drawRectangleShape(window, border, NULL);
-			sfRectangleShape_destroy(border);
+		    sfRectangleShape_setFillColor(border, sfTransparent);
+		    sfRectangleShape_setOutlineColor(border, sfBlack);
+		    sfRectangleShape_setOutlineThickness(border, 1.0);
+		    sfRectangleShape_setPosition(border, tileposition);
+		    sfRectangleShape_setRotation(border, 270);
+		    sfRectangleShape_setSize(border, bordersize);
+		    sfRenderWindow_drawRectangleShape(window, border, NULL);
+		    sfRectangleShape_destroy(border);
 		}
 
 		// Display discards player 3 (code duplicated)
@@ -762,33 +793,33 @@ void display(struct riichi_engine *engine, int current_player) {
 
 		sfSprite *spritediscard3[handcopy.discardlist.nb_discards];
 		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-			sfVector2f tileposition;
-			if (i < 18) {
-				tileposition.x = 478 - 26 * (i % 6);
-				tileposition.y = 219 - 35 * (i / 6);
-			} else {
-				tileposition.x = 478 - 26 * i;
-				tileposition.y = 149;
-			}
-			spritediscard3[i] = sfSprite_create();
-			sfSprite_setTexture(spritediscard3[i],
-			                    textureslist[handcopy.discardlist.discards[i]],
-			                    1);
-			sfSprite_setPosition(spritediscard3[i], tileposition);
-			sfSprite_setRotation(spritediscard3[i], 180);
-			sfSprite_setScale(spritediscard3[i], scale);
-			sfRenderWindow_drawSprite(window, spritediscard3[i], NULL);
-			sfSprite_destroy(spritediscard3[i]);
-			border = sfRectangleShape_create();
+		    sfVector2f tileposition;
+		    if (i < 18) {
+		        tileposition.x = 478 - 26 * (i % 6);
+		        tileposition.y = 219 - 35 * (i / 6);
+		    } else {
+		        tileposition.x = 478 - 26 * i;
+		        tileposition.y = 149;
+		    }
+		    spritediscard3[i] = sfSprite_create();
+		    sfSprite_setTexture(spritediscard3[i],
+		                        textureslist[handcopy.discardlist.discards[i]],
+		                        1);
+		    sfSprite_setPosition(spritediscard3[i], tileposition);
+		    sfSprite_setRotation(spritediscard3[i], 180);
+		    sfSprite_setScale(spritediscard3[i], scale);
+		    sfRenderWindow_drawSprite(window, spritediscard3[i], NULL);
+		    sfSprite_destroy(spritediscard3[i]);
+		    border = sfRectangleShape_create();
 
-			sfRectangleShape_setFillColor(border, sfTransparent);
-			sfRectangleShape_setOutlineColor(border, sfBlack);
-			sfRectangleShape_setOutlineThickness(border, 1.0);
-			sfRectangleShape_setPosition(border, tileposition);
-			sfRectangleShape_setRotation(border, 180);
-			sfRectangleShape_setSize(border, bordersize);
-			sfRenderWindow_drawRectangleShape(window, border, NULL);
-			sfRectangleShape_destroy(border);
+		    sfRectangleShape_setFillColor(border, sfTransparent);
+		    sfRectangleShape_setOutlineColor(border, sfBlack);
+		    sfRectangleShape_setOutlineThickness(border, 1.0);
+		    sfRectangleShape_setPosition(border, tileposition);
+		    sfRectangleShape_setRotation(border, 180);
+		    sfRectangleShape_setSize(border, bordersize);
+		    sfRenderWindow_drawRectangleShape(window, border, NULL);
+		    sfRectangleShape_destroy(border);
 		}
 
 		// Display discards player 4 (code duplicated)
@@ -796,33 +827,33 @@ void display(struct riichi_engine *engine, int current_player) {
 
 		sfSprite *spritediscard4[handcopy.discardlist.nb_discards];
 		for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-			sfVector2f tileposition;
-			if (i < 18) {
-				tileposition.x = 319 - 35 * (i / 6);
-				tileposition.y = 222 + 26 * (i % 6);
-			} else {
-				tileposition.x = 478 - 26 * i;
-				tileposition.y = 149;
-			}
-			spritediscard4[i] = sfSprite_create();
-			sfSprite_setTexture(spritediscard4[i],
-			                    textureslist[handcopy.discardlist.discards[i]],
-			                    1);
-			sfSprite_setPosition(spritediscard4[i], tileposition);
-			sfSprite_setRotation(spritediscard4[i], 90);
-			sfSprite_setScale(spritediscard4[i], scale);
-			sfRenderWindow_drawSprite(window, spritediscard4[i], NULL);
-			sfSprite_destroy(spritediscard4[i]);
-			border = sfRectangleShape_create();
+		    sfVector2f tileposition;
+		    if (i < 18) {
+		        tileposition.x = 319 - 35 * (i / 6);
+		        tileposition.y = 222 + 26 * (i % 6);
+		    } else {
+		        tileposition.x = 478 - 26 * i;
+		        tileposition.y = 149;
+		    }
+		    spritediscard4[i] = sfSprite_create();
+		    sfSprite_setTexture(spritediscard4[i],
+		                        textureslist[handcopy.discardlist.discards[i]],
+		                        1);
+		    sfSprite_setPosition(spritediscard4[i], tileposition);
+		    sfSprite_setRotation(spritediscard4[i], 90);
+		    sfSprite_setScale(spritediscard4[i], scale);
+		    sfRenderWindow_drawSprite(window, spritediscard4[i], NULL);
+		    sfSprite_destroy(spritediscard4[i]);
+		    border = sfRectangleShape_create();
 
-			sfRectangleShape_setFillColor(border, sfTransparent);
-			sfRectangleShape_setOutlineColor(border, sfBlack);
-			sfRectangleShape_setOutlineThickness(border, 1.0);
-			sfRectangleShape_setPosition(border, tileposition);
-			sfRectangleShape_setRotation(border, 90);
-			sfRectangleShape_setSize(border, bordersize);
-			sfRenderWindow_drawRectangleShape(window, border, NULL);
-			sfRectangleShape_destroy(border);
+		    sfRectangleShape_setFillColor(border, sfTransparent);
+		    sfRectangleShape_setOutlineColor(border, sfBlack);
+		    sfRectangleShape_setOutlineThickness(border, 1.0);
+		    sfRectangleShape_setPosition(border, tileposition);
+		    sfRectangleShape_setRotation(border, 90);
+		    sfRectangleShape_setSize(border, bordersize);
+		    sfRenderWindow_drawRectangleShape(window, border, NULL);
+		    sfRectangleShape_destroy(border);
 		}
 
 		sfRenderWindow_display(window);
@@ -831,21 +862,32 @@ void display(struct riichi_engine *engine, int current_player) {
 }
 
 void display_GUI(struct riichi_engine *engine) {
-	struct gameGUI* gameGUI = &engine->gameGUI;
-	struct tilesGUI* P1 = &gameGUI->player1hand;
+	struct gameGUI *gameGUI = &engine->gameGUI;
+	struct tilesGUI *P1 = &gameGUI->player1hand;
 	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
+
+	/////////////////////////////////////////////////////////////////
+	// Notice from Nico:                                           //
+	// All that have been commented has been moved to init_gameGUI //
+	// Creating a lot of things each time without destroying them  //
+	//   is not so great for my computer's memory ;)               //
+	/////////////////////////////////////////////////////////////////
+
+	/*
 	for (int i = 0; i < 35; ++i) {
 		char path[20];
 		sprintf(path, "src/tiles/%d.png", i);
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
 	}
+	*/
+
 	struct hand handcopy;
 	copy_hand(&engine->players[engine->nb_rounds % NB_PLAYERS].hand, &handcopy);
-	P1->border = sfRectangleShape_create();
+	//P1->border = sfRectangleShape_create();
 	for (int i = 0; i < 14; ++i) {
 		sfVector2f position;
-		position.x = P1->tileposition.x + P1->tileincrement.x * (i) +
-			(i == 13) * 9;
+		position.x =
+		    P1->tileposition.x + P1->tileincrement.x * (i) + (i == 13) * 9;
 		position.y = P1->tileposition.y;
 		sfRectangleShape_setFillColor(P1->border, sfTransparent);
 		sfRectangleShape_setOutlineColor(P1->border, sfBlack);
@@ -853,30 +895,32 @@ void display_GUI(struct riichi_engine *engine) {
 		sfRectangleShape_setPosition(P1->border, position);
 		sfRectangleShape_setSize(P1->border, P1->bordersize);
 		sfRenderWindow_drawRectangleShape(gameGUI->window, P1->border, NULL);
-		P1->tilesprite[i] = sfSprite_create();
+		//P1->tilesprite[i] = sfSprite_create();
 		for (histo_cell_t j = 0; j < 34; ++j) {
 			if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
 				--handcopy.histo.cells[j];
-				sfSprite_setTexture(P1->tilesprite[i], gameGUI->textureslist[j], 1);
+				sfSprite_setTexture(P1->tilesprite[i], gameGUI->textureslist[j],
+				                    1);
 				break;
 			}
 		}
 		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 			--handcopy.histo.cells[handcopy.last_tile];
 			sfSprite_setTexture(P1->tilesprite[i],
-													gameGUI->textureslist[handcopy.last_tile], 1);
+			                    gameGUI->textureslist[handcopy.last_tile], 1);
 		}
 		sfSprite_setPosition(P1->tilesprite[i], position);
 		sfSprite_setScale(P1->tilesprite[i], P1->scale);
 		sfRenderWindow_drawSprite(gameGUI->window, P1->tilesprite[i], NULL);
 
-		gameGUI->center = sfRectangleShape_create();
+		//gameGUI->center = sfRectangleShape_create();
 		sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
 		sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
 		sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
 		sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
 		sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
+		                                  NULL);
 	}
 	sfRenderWindow_display(gameGUI->window);
 }
