@@ -474,6 +474,27 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 	if (player_claim != -1) {
 		engine->players[player_claim].hand.has_claimed = 1;
 
+		char *str;
+		switch (claim_input.action) {
+			case ACTION_CHII:
+				str = "CHII";
+				break;
+			case ACTION_PON:
+				str = "PON";
+				break;
+			case ACTION_KAN:
+				str = "KAN";
+				break;
+			case ACTION_RON:
+				str = "RON";
+				break;
+			default:
+				str = "ERR";
+				break;
+		}
+
+		fprintf(stderr, "%s claim from player %d!\n", str, player_claim);
+
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
 			riichi_tsumo_phase(engine, player_index, &claim_input);
 			return player_index;
