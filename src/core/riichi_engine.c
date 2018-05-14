@@ -81,8 +81,10 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_CHII: {
-			return 0; // TODO: Call-Chii is not ready!
-			// return get_histobit(&player->hand.chiitiles, input->tile);
+			return input->chii_first_tile > 0 &&
+			       input->chii_first_tile % 9 < 7 &&
+			       input->chii_first_tile < 25 &&
+			       get_histobit(&player->hand.chiitiles, input->tile);
 		}
 
 		case ACTION_PON: {

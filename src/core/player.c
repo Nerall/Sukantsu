@@ -118,14 +118,20 @@ void apply_call(struct player *player, const struct action_input *input) {
 	hand->has_claimed = 1;
 	switch (input->action) {
 		case ACTION_CHII: {
+			histo_index_t index = input->chii_first_tile;
 			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, input->tile));
-			ASSERT_BACKTRACE(input->chii_first_tile > 0 &&
-			                 input->chii_first_tile < NO_TILE_INDEX);
+			ASSERT_BACKTRACE(index > 0 && index < NO_TILE_INDEX);
 
-			// Find 1st tile of sequence & add group
-			// NEED REVISION: Since there can be multiple groups
-			// that can be done, we need to choose one (or ask the player)
-			ASSERT_BACKTRACE(0 && "Call-Chii is not ready");
+			// Make sure all tiles are in the same family
+			ASSERT_BACKTRACE(index % 9 < 7 && index < 25);
+
+			// Make sure we have the tree tiles
+			histo_cell_t *cell1 = &hand->histo.cells[index];
+			cell1 = cell1; // To remove warning
+			ASSERT_BACKTRACE(*cell1 && *(cell1 + 1) && *(cell1 + 2));
+
+			// Add sequence group
+			add_group_hand(hand, 0, SEQUENCE, index);
 			break;
 		}
 
