@@ -538,10 +538,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	riichi_init_phase(engine);
 
-	// Init GUI
-	struct gameGUI gameGUI;
-	init_gameGUI(&gameGUI);
-
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -597,9 +593,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 			if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
-			// Destroy GUI
-			destroy_gameGUI(&gameGUI);
-
 			return player_index;
 		}
 
@@ -615,9 +608,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
-
-	// Destroy GUI
-	destroy_gameGUI(&gameGUI);
 
 	return -1;
 }
