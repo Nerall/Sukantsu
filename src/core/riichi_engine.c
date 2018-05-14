@@ -538,8 +538,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	riichi_init_phase(engine);
 
-	// display_GUI(engine);
-
 	// Init GUI
 	struct gameGUI gameGUI;
 	init_gameGUI(&gameGUI);
@@ -598,6 +596,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
 			if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
+
+			// Destroy GUI
+			destroy_gameGUI(&gameGUI);
+
 			return player_index;
 		}
 

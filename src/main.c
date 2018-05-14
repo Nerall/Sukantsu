@@ -94,6 +94,8 @@ void host_main() {
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
 	        (engine.nb_games > 1) ? "s" : "");
 
+	// Destroy GUI
+	destroy_gameGUI(&engine.gameGUI);
 	sfRenderWindow_destroy(engine.gameGUI.window);
 
 	clean_net_server(&engine.server);
