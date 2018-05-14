@@ -2,6 +2,7 @@
 #define _NET_PACKET_
 
 #include "../core/histogram_s.h"
+#include "../core/groups_s.h"
 #include "../definitions.h"
 
 struct net_packet_init {
@@ -43,7 +44,7 @@ struct net_packet_claim {
 	enum packet_type packet_type; // Keep this at this place
 
 	enum action action;
-	// Add group for chii?
+	struct group chii_group; // Fill this if action == ACTION_CHII
 };
 
 #define MAX_PACKET_SIZE                                                        \

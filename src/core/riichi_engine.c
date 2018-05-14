@@ -155,7 +155,7 @@ int apply_action(struct player *player, const struct action_input *input) {
 		case ACTION_PON:
 		case ACTION_KAN:
 		case ACTION_RON: {
-			apply_call(player, input->tile, input->action);
+			apply_call(player, input);
 			return input->action == ACTION_RON;
 		}
 

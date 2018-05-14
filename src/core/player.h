@@ -4,6 +4,7 @@
 #include "../definitions.h"
 
 struct player;
+struct group;
 struct grouplist;
 struct net_client;
 
@@ -13,8 +14,7 @@ void init_player(struct player *player, enum player_type player_type,
 int player_turn(struct player *player, struct grouplist *grouplist,
                 histo_index_t *index_rem);
 
-void apply_call(struct player *player, histo_index_t called_tile,
-                enum action call_action);
+void apply_call(struct player *player, const struct action_input *input);
 
 void get_player_input(struct player *player, struct action_input *input);
 

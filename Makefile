@@ -13,15 +13,34 @@ SRC := $(wildcard src/*.c src/core/*.c src/AI/*.c src/network/*.c)
 OBJ := ${SRC:.c=.o}
 DEP := ${SRC:.c=.d}
 
-all: ${EXE}
+%.o: %.c
+	@echo "Compiling: $<"
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+all: pretty_message ${EXE}
 
 ${EXE}: ${OBJ}
-	${CC} ${CFLAGS} ${OBJ} -o ${EXE} ${LDLIBS}
+	@echo "Linking: ${EXE}"
+	@${CC} ${CFLAGS} ${OBJ} -o ${EXE} ${LDLIBS}
+
+pretty_message:
+	@echo "Target: \"${EXE}\""
+	@echo "CC    : ${CC}"
+	@echo "FLAGS : ${CPPFLAGS} ${CFLAGS}"
+	@echo "LIBS  : ${LDLIBS}"
+	@echo
 
 clean:
-	${RM} ${OBJ}
-	${RM} ${DEP}
-	${RM} ${EXE}
+	@echo "Removing .o files"
+	@${RM} ${OBJ}
+
+	@echo "Removing .d files"
+	@${RM} ${DEP}
+
+	@echo "Removing executable"
+	@${RM} ${EXE}
+
+	@echo
 
 -include ${DEP}
 

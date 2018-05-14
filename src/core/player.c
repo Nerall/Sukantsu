@@ -110,16 +110,18 @@ static void input_AI(struct player *player, struct action_input *input) {
 }
 
 // Work in Progress
-void apply_call(struct player *player, histo_index_t called_tile,
-                enum action call_action) {
+void apply_call(struct player *player, const struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 
 	struct hand *hand = &player->hand;
-	add_tile_hand(hand, called_tile);
+	add_tile_hand(hand, input->tile);
 	hand->has_claimed = 1;
-	switch (call_action) {
+	switch (input->action) {
 		case ACTION_CHII: {
-			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, called_tile));
+			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, input->tile));
+			ASSERT_BACKTRACE(input->chii_first_tile > 0 &&
+			                 input->chii_first_tile < NO_TILE_INDEX);
+
 			// Find 1st tile of sequence & add group
 			// NEED REVISION: Since there can be multiple groups
 			// that can be done, we need to choose one (or ask the player)
@@ -128,29 +130,29 @@ void apply_call(struct player *player, histo_index_t called_tile,
 		}
 
 		case ACTION_PON: {
-			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, called_tile));
+			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, input->tile));
 			// Add triplet group
-			add_group_hand(hand, 0, TRIPLET, called_tile);
+			add_group_hand(hand, 0, TRIPLET, input->tile);
 			break;
 		}
 
 		case ACTION_KAN: {
-			ASSERT_BACKTRACE(get_histobit(&hand->kantiles, called_tile));
+			ASSERT_BACKTRACE(get_histobit(&hand->kantiles, input->tile));
 			// Find if already triplet, else add quad group
-			if (hand->histo.cells[called_tile] == 4) {
+			if (hand->histo.cells[input->tile] == 4) {
 				// If no triplet group
-				add_group_hand(hand, 0, QUAD, called_tile);
+				add_group_hand(hand, 0, QUAD, input->tile);
 			} else {
 				// Find & modify triplet group to quad
 				int triplet_found = 0;
 				for (int g = 0; g < hand->nb_groups; ++g) {
-					if (hand->groups[g].tile == called_tile) {
+					if (hand->groups[g].tile == input->tile) {
 						ASSERT_BACKTRACE(hand->groups[g].type == TRIPLET);
 						hand->groups[g].type = QUAD;
 
 						// We need to remove the tile because
 						// we manually changed the group
-						remove_tile_hand(hand, called_tile);
+						remove_tile_hand(hand, input->tile);
 						triplet_found = 1;
 						break;
 					}
@@ -164,14 +166,12 @@ void apply_call(struct player *player, histo_index_t called_tile,
 		}
 
 		case ACTION_RON: {
-			ASSERT_BACKTRACE(get_histobit(&hand->wintiles, called_tile));
+			ASSERT_BACKTRACE(get_histobit(&hand->wintiles, input->tile));
 			// Do nothing more, function's caller will handle victory
 			break;
 		}
 
-		default: {
-			ASSERT_BACKTRACE(0 && "Not a call");
-		}
+		default: { ASSERT_BACKTRACE(0 && "Not a call"); }
 	}
 }
 
