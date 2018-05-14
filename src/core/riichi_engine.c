@@ -354,6 +354,12 @@ static int is_claim_action(enum action action) {
 	       action == ACTION_KAN || action == ACTION_RON;
 }
 
+static int is_at_left_of(enum table_pos self, enum table_pos other) {
+	// enum = { EAST, SOUTH, WEST, NORTH }
+	// NORTH -> EAST -> SOUTH -> WEST -> NORTH
+	return (self == NORTH && other == EAST) || (self + 1) == other;
+}
+
 // Claim phase of a riichi game
 // Return the index of the player who won (-1 if nobody)
 int riichi_claim_phase(struct riichi_engine *engine, int player_index,
@@ -419,6 +425,11 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			// TODO: Ask the host for claim_input
 			continue;
 		}
+
+		// Chii can only be called to the person at our left
+		if (claim_input.action == ACTION_CHII &&
+		    !is_at_left_of(other_player->player_pos, player->player_pos))
+			continue;
 
 		// Verify the action is valid
 		if (!verify_action(engine, other_player, &claim_input))
