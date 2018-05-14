@@ -441,6 +441,10 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI, int current_
 			break;
 	}
 	tilesGUI->scale = scale;
+	sfSprite *tilesprite[24];
+	for (int i = 0; i < 24; ++i) {
+	tilesGUI->tilesprite[i] = tilesprite[i];
+	}
 	tilesGUI->tileposition = tileposition;
 	tilesGUI->tileincrement = tileincrement;
 	tilesGUI->border = 0;
@@ -473,6 +477,7 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	centerposition.x = 320;
 	centerposition.y = 220;
 	gameGUI->centerposition = centerposition;
+	gameGUI->centercolor = sfGreen;
 	sfVector2f centersize;
 	centersize.x = 160;
 	centersize.y = 160;
@@ -827,12 +832,51 @@ void display(struct riichi_engine *engine, int current_player) {
 
 void display_GUI(struct riichi_engine *engine) {
 	struct gameGUI* gameGUI = &engine->gameGUI;
+	struct tilesGUI* P1 = &gameGUI->player1hand;
 	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
 	for (int i = 0; i < 35; ++i) {
 		char path[20];
 		sprintf(path, "src/tiles/%d.png", i);
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
-		sfTexture_destroy(gameGUI->textureslist[i]);
+	}
+	struct hand handcopy;
+	copy_hand(&engine->players[engine->nb_rounds % NB_PLAYERS].hand, &handcopy);
+	P1->border = sfRectangleShape_create();
+	for (int i = 0; i < 14; ++i) {
+		sfVector2f position;
+		position.x = P1->tileposition.x + P1->tileincrement.x * (i) +
+			(i == 13) * 9;
+		position.y = P1->tileposition.y;
+		sfRectangleShape_setFillColor(P1->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(P1->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(P1->border, 1.0);
+		sfRectangleShape_setPosition(P1->border, position);
+		sfRectangleShape_setSize(P1->border, P1->bordersize);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, P1->border, NULL);
+		P1->tilesprite[i] = sfSprite_create();
+		for (histo_cell_t j = 0; j < 34; ++j) {
+			if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
+				--handcopy.histo.cells[j];
+				sfSprite_setTexture(P1->tilesprite[i], gameGUI->textureslist[j], 1);
+				break;
+			}
+		}
+		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
+			--handcopy.histo.cells[handcopy.last_tile];
+			sfSprite_setTexture(P1->tilesprite[i],
+													gameGUI->textureslist[handcopy.last_tile], 1);
+		}
+		sfSprite_setPosition(P1->tilesprite[i], position);
+		sfSprite_setScale(P1->tilesprite[i], P1->scale);
+		sfRenderWindow_drawSprite(gameGUI->window, P1->tilesprite[i], NULL);
+
+		gameGUI->center = sfRectangleShape_create();
+		sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+		sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+		sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
+		sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
+		sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
 	}
 	sfRenderWindow_display(gameGUI->window);
 }

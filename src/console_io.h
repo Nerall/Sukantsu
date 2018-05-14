@@ -42,6 +42,7 @@ struct gameGUI {
   sfRectangleShape* center;
   sfVector2f centerposition;
   sfVector2f centersize;
+  sfColor centercolor;
 };
 
 histo_index_t char_to_index(char family, char number);

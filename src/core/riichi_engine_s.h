@@ -13,7 +13,8 @@ struct riichi_engine {
 	struct grouplist grouplist;
 	struct net_server server;
 	struct gameGUI gameGUI;
-	unsigned nb_games;
+	signed nb_games;
+	signed nb_rounds;
 	enum game_phase phase;
 };
 
