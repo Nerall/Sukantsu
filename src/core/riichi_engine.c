@@ -20,8 +20,8 @@ typedef struct net_packet_draw pk_draw;
 typedef struct net_packet_input pk_input;
 typedef struct net_packet_update pk_update;
 
-void send_to_all_clients(struct riichi_engine *engine, void *packet,
-                         size_t size, int index_to_ignore) {
+static void send_to_all_clients(struct riichi_engine *engine, void *packet,
+                                size_t size, int index_to_ignore) {
 	struct net_server *server = &engine->server;
 	for (int c = 0; c < NB_PLAYERS; ++c) {
 		if (engine->players[c].player_type != PLAYER_CLIENT)
@@ -52,7 +52,7 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	init_player(&engine->players[3], t4, WEST);
 	init_gameGUI(&engine->gameGUI);
 	engine->nb_games = 0;
-  engine->nb_rounds = 0;
+	engine->nb_rounds = 0;
 	engine->server.listener = NULL;
 	for (int i = 0; i < NB_PLAYERS; ++i) {
 		engine->server.clients[i] = NULL;
@@ -81,7 +81,8 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 		}
 
 		case ACTION_CHII: {
-			return get_histobit(&player->hand.chiitiles, input->tile);
+			return 0; // TODO: Call-Chii is not ready!
+			// return get_histobit(&player->hand.chiitiles, input->tile);
 		}
 
 		case ACTION_PON: {
@@ -108,9 +109,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 
 // Apply the action and return 1 if the player won
 // Suppose that the action is allowed
-int apply_action(struct riichi_engine *engine, struct player *player,
-                 const struct action_input *input) {
-	ASSERT_BACKTRACE(engine);
+int apply_action(struct player *player, const struct action_input *input) {
 	ASSERT_BACKTRACE(player);
 	ASSERT_BACKTRACE(input);
 
@@ -124,8 +123,8 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			player->hand.last_discard = input->tile;
 			/*
 			if (input->tile != player_hand->last_tile) {
-				tilestocall(player_hand, grouplist);
-				tenpailist(player_hand, grouplist);
+			    tilestocall(player_hand, grouplist);
+			    tenpailist(player_hand, grouplist);
 			}
 			*/
 			return 0;
@@ -152,24 +151,12 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			return 1;
 		}
 
-		case ACTION_CHII: {
-			apply_call(player, input->tile, CALL_CHII);
-			return 0;
-		}
-
-		case ACTION_PON: {
-			apply_call(player, input->tile, CALL_PON);
-			return 0;
-		}
-
-		case ACTION_KAN: {
-			apply_call(player, input->tile, CALL_KAN);
-			return 0;
-		}
-
+		case ACTION_CHII:
+		case ACTION_PON:
+		case ACTION_KAN:
 		case ACTION_RON: {
-			apply_call(player, input->tile, CALL_RON);
-			return 1;
+			apply_call(player, input->tile, input->action);
+			return input->action == ACTION_RON;
 		}
 
 		case ACTION_PASS: {
@@ -181,41 +168,6 @@ int apply_action(struct riichi_engine *engine, struct player *player,
 			break;
 	}
 	return 0;
-}
-
-// TODO //
-int verify_and_claim(struct riichi_engine *engine, int player_index,
-                     struct action_input input) {
-	ASSERT_BACKTRACE(engine);
-	ASSERT_BACKTRACE(player_index >= 0 && player_index < NB_PLAYERS);
-
-	struct player *player = &engine->players[player_index];
-
-	tenpailist(&player->hand, &engine->grouplist);
-	if (get_histobit(&player->hand.wintiles, input.tile)) {
-		// Claim the tile
-		add_tile_hand(&player->hand, input.tile);
-
-		ASSERT_BACKTRACE(is_valid_hand(&player->hand, &engine->grouplist));
-
-		// Player c win
-		engine->phase = PHASE_TSUMO;
-		makegroups(&player->hand, &engine->grouplist);
-		display_riichi(engine, player_index);
-
-		pk_update v_packet = {
-			packet_type : PACKET_UPDATE,
-			player_pos : player->player_pos,
-			input : input,
-			victory : 1
-		};
-
-		send_to_all_clients(engine, &v_packet, sizeof(pk_update), -1);
-
-		return player_index;
-	}
-
-	return -1;
 }
 
 // Init phase of a riichi game
@@ -395,6 +347,11 @@ void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
 	send_to_all_clients(engine, &packet, sizeof(pk_update), -1);
 }
 
+static int is_claim_action(enum action action) {
+	return action == ACTION_CHII || action == ACTION_PON ||
+	       action == ACTION_KAN || action == ACTION_RON;
+}
+
 // Claim phase of a riichi game
 // Return the index of the player who won (-1 if nobody)
 int riichi_claim_phase(struct riichi_engine *engine, int player_index,
@@ -418,68 +375,98 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 	send_to_all_clients(engine, &update_packet, sizeof(pk_update),
 	                    player_index);
 
-	char has_passed[NB_PLAYERS];
-	for (int i = 0; i < NB_PLAYERS; ++i) {
-		has_passed[i] = engine->players[i].player_type != PLAYER_CLIENT;
-		has_passed[i] |= (i != player_index);
-	}
-
+	struct action_input claim_input = {tile : input->tile};
 	int player_claim = -1;
-	struct action_input claim_input;
 
 	// [SERVER] Potentially receive claim packets from clients
-	{
-		time_t t1 = time(NULL);
-		int nb_pass;
-		do {
-			// Don't really work for now
-			break;
+	for (int c = 0; c < NB_PLAYERS; ++c) {
+		// Player who has played can't claim its own tile
+		if (c == player_index)
+			continue;
 
-			nb_pass = 0;
-			for (int iclient = 0; iclient < NB_PLAYERS; ++iclient) {
-				struct player *other_player = &engine->players[iclient];
-				if (has_passed[iclient] || !other_player->net_status) {
-					nb_pass++;
-					continue;
-				}
+		// AI are handled after
+		struct player *other_player = &engine->players[c];
+		if (other_player->player_type != PLAYER_AI)
+			continue;
 
-				pk_input packet;
+		if (other_player->player_type == PLAYER_CLIENT) {
+			// Here, we treat clients
 
-				if (!receive_data_from_client(server, player->net_id, &packet,
-				                              sizeof(pk_input))) {
-					// If no claim, continue with next player
-					continue;
-				}
-
-				if (packet.input.action == ACTION_PASS) {
-					has_passed[iclient] = 1;
-					continue;
-				}
-
-				// Claim received, verify the claim
-				player_claim = verify_and_claim(engine, iclient, packet.input);
-
-				if (player_claim != -1) {
-					claim_input = packet.input;
-					break;
-				}
-			}
-		} while (nb_pass < NB_PLAYERS && player_claim == -1 &&
-		         time(NULL) - t1 < TIMEOUT_RECEIVE);
-	}
-
-	// If no client claim, check AI claim
-	if (player_claim != -1) {
-		for (int iother = 0; iother < NB_PLAYERS; ++iother) {
-			if (player_index == iother ||
-			    engine->players[iother].player_type == PLAYER_CLIENT)
+			pk_input packet;
+			// Continue with next player if no claim
+			if (!receive_data_from_client(server, player->net_id, &packet,
+			                              sizeof(pk_input)))
 				continue;
 
-			// Claim the tile, verify the claim
-			player_claim = verify_and_claim(engine, iother, claim_input);
-			if (player_claim != -1) {
+			// Pass if player don't want to claim
+			if (packet.input.action == ACTION_PASS)
+				continue;
+
+			// Verify if the tile is still the same
+			if (packet.input.tile != input->tile)
+				continue;
+
+			// Verify the action is a claim
+			if (!is_claim_action(packet.input.action))
+				continue;
+
+			claim_input.action = packet.input.action;
+		} else {
+			// Here, we treat the host
+
+			// TODO: Ask the host for claim_input
+			continue;
+		}
+
+		// Verify the action is valid
+		if (!verify_action(engine, other_player, &claim_input))
+			continue;
+
+		// Apply the claim
+		apply_action(other_player, &claim_input);
+
+		// Remove tile from player's discard list
+		pop_last_discard(&player->hand.discardlist);
+
+		player_claim = c;
+		break;
+	}
+
+	// If no human claimed, check AI claim
+	if (player_claim == -1) {
+		for (int iother = 0; iother < NB_PLAYERS; ++iother) {
+			// Player who has played can't claim its own tile
+			if (player_index == iother)
+				continue;
+
+			// Only AI are claiming here
+			struct player *other_player = &engine->players[iother];
+			if (other_player->player_type != PLAYER_AI)
+				continue;
+
+			// Verify all claims to see if any is possible
+			enum action claims[4] = {ACTION_CHII, ACTION_PON, ACTION_KAN,
+			                         ACTION_RON};
+			for (int iclaim = 0; iclaim < 4; ++iclaim) {
+				claim_input.action = claims[iclaim];
+				// Verify the claim
+				if (!verify_action(engine, other_player, &claim_input)) {
+					continue;
+				}
+
+				// Apply the claim
+				apply_action(other_player, &claim_input);
+
+				// Remove tile from player's discard list
+				pop_last_discard(&player->hand.discardlist);
+
+				player_claim = iother;
 				break;
 			}
+
+			// Pass others AI if we claimed
+			if (player_claim != -1)
+				break;
 		}
 	}
 
@@ -513,7 +500,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	riichi_init_phase(engine);
 
-	//display_GUI(engine);
+	// display_GUI(engine);
 
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
@@ -528,7 +515,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
 		// Using GUI
-    struct gameGUI gameGUI;
+		struct gameGUI gameGUI;
 		init_gameGUI(&gameGUI);
 		if (player_index == 0)
 			display_GUI(engine);
@@ -541,7 +528,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 				player_input.action = ACTION_DISCARD;
 				player_input.tile = player->hand.last_tile;
 				ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
-				apply_action(engine, player, &player_input);
+				apply_action(player, &player_input);
 				continue;
 			}
 
@@ -556,7 +543,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
 
-			win = apply_action(engine, player, &player_input);
+			win = apply_action(player, &player_input);
 
 			// Hand *may* have changed => set histobits
 			set_hand_histobits(&player->hand, &engine->grouplist);
@@ -569,8 +556,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
-      if (engine->nb_rounds % NB_PLAYERS == player_index)
-        ++engine->nb_rounds;
+			if (engine->nb_rounds % NB_PLAYERS == player_index)
+				++engine->nb_rounds;
 			return player_index;
 		}
 

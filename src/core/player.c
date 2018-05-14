@@ -111,14 +111,14 @@ static void input_AI(struct player *player, struct action_input *input) {
 
 // Work in Progress
 void apply_call(struct player *player, histo_index_t called_tile,
-                enum call_type call_type) {
+                enum action call_action) {
 	ASSERT_BACKTRACE(player);
 
 	struct hand *hand = &player->hand;
 	add_tile_hand(hand, called_tile);
 	hand->has_claimed = 1;
-	switch (call_type) {
-		case CALL_CHII: {
+	switch (call_action) {
+		case ACTION_CHII: {
 			ASSERT_BACKTRACE(get_histobit(&hand->chiitiles, called_tile));
 			// Find 1st tile of sequence & add group
 			// NEED REVISION: Since there can be multiple groups
@@ -127,14 +127,14 @@ void apply_call(struct player *player, histo_index_t called_tile,
 			break;
 		}
 
-		case CALL_PON: {
+		case ACTION_PON: {
 			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, called_tile));
 			// Add triplet group
 			add_group_hand(hand, 0, TRIPLET, called_tile);
 			break;
 		}
 
-		case CALL_KAN: {
+		case ACTION_KAN: {
 			ASSERT_BACKTRACE(get_histobit(&hand->kantiles, called_tile));
 			// Find if already triplet, else add quad group
 			if (hand->histo.cells[called_tile] == 4) {
@@ -156,16 +156,21 @@ void apply_call(struct player *player, histo_index_t called_tile,
 					}
 				}
 
+				triplet_found = triplet_found; // To avoid compil warnings
 				ASSERT_BACKTRACE(triplet_found);
 			}
 
 			break;
 		}
 
-		case CALL_RON: {
+		case ACTION_RON: {
 			ASSERT_BACKTRACE(get_histobit(&hand->wintiles, called_tile));
 			// Do nothing more, function's caller will handle victory
 			break;
+		}
+
+		default: {
+			ASSERT_BACKTRACE(0 && "Not a call");
 		}
 	}
 }
@@ -254,7 +259,7 @@ void client_main_loop(struct net_client *client) {
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));
 
-				apply_action(&engine, player, &input->input);
+				apply_action(player, &input->input);
 				engine.phase = PHASE_GETINPUT;
 				display_riichi(&engine, iplayer);
 				break;

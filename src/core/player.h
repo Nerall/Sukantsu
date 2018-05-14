@@ -14,7 +14,7 @@ int player_turn(struct player *player, struct grouplist *grouplist,
                 histo_index_t *index_rem);
 
 void apply_call(struct player *player, histo_index_t called_tile,
-                enum call_type call_type);
+                enum action call_action);
 
 void get_player_input(struct player *player, struct action_input *input);
 

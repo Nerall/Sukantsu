@@ -41,3 +41,9 @@ void add_discard(struct discardlist *discardlist, histo_index_t tile) {
 	discardlist->discards[discardlist->nb_discards] = tile;
 	++discardlist->nb_discards;
 }
+
+histo_index_t pop_last_discard(struct discardlist *discardlist) {
+	ASSERT_BACKTRACE(discardlist);
+
+	return discardlist->discards[--discardlist->nb_discards];
+}

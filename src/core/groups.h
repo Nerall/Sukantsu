@@ -17,4 +17,6 @@ void init_discardlist(struct discardlist *discardlist);
 
 void add_discard(struct discardlist *discardlist, histo_index_t tile);
 
+histo_index_t pop_last_discard(struct discardlist *discardlist);
+
 #endif // _GROUPS_H_

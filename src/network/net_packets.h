@@ -42,7 +42,7 @@ struct net_packet_tsumo {
 struct net_packet_claim {
 	enum packet_type packet_type; // Keep this at this place
 
-	enum call_type call_type;
+	enum action action;
 	// Add group for chii?
 };
 
