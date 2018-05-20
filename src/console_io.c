@@ -107,19 +107,19 @@ void print_groups(const struct group *groups) {
 		wchar_t c_tile = tileslist[groups[i].tile];
 		switch (groups[i].type) {
 			case PAIR:
-				wprintf(L"Pair (%c%c%c)  %lc %lc\n", n, n, f, c_tile, c_tile);
+				wprintf(L"Pair %u (%c%c%c)  %lc %lc\n", groups[i].hidden, n, n, f, c_tile, c_tile);
 				break;
 			case SEQUENCE:
-				wprintf(L"Sequence (%c%c%c%c)  %lc %lc %lc\n", n, n + 1, n + 2,
+				wprintf(L"Sequence %u (%c%c%c%c)  %lc %lc %lc\n", groups[i].hidden, n, n + 1, n + 2,
 				        f, c_tile, tileslist[groups[i].tile + 1],
 				        tileslist[groups[i].tile + 2]);
 				break;
 			case TRIPLET:
-				wprintf(L"Triplet (%c%c%c%c)  %lc %lc %lc\n", n, n, n, f,
+				wprintf(L"Triplet %u (%c%c%c%c)  %lc %lc %lc\n", groups[i].hidden, n, n, n, f,
 				        c_tile, c_tile, c_tile);
 				break;
 			case QUAD:
-				wprintf(L"Quad (%c%c%c%c%c)  %lc %lc %lc %lc\n", n, n, n, n, f,
+				wprintf(L"Quad %u (%c%c%c%c%c)  %lc %lc %lc %lc\n", groups[i].hidden, n, n, n, n, f,
 				        c_tile, c_tile, c_tile, c_tile);
 				break;
 			default:
@@ -329,7 +329,7 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
                    int current_player) {
 	ASSERT_BACKTRACE(tilesGUI);
-	tilesGUI->rotation = 360 - 90 * (typeGUI + 1);
+	tilesGUI->rotation = 360 - 90 * (current_player);
 	tilesGUI->typeGUI = typeGUI;
 	sfVector2f scale;
 	sfVector2f tileposition;
@@ -495,10 +495,25 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	}
 
 	gameGUI->player1hand.border = sfRectangleShape_create();
+
 	gameGUI->center = sfRectangleShape_create();
 	for (int i = 0; i < 14; ++i) {
 		gameGUI->player1hand.tilesprite[i] = sfSprite_create();
 	}
+
+	gameGUI->player1discards.border = sfRectangleShape_create();
+	gameGUI->player2discards.border = sfRectangleShape_create();
+	gameGUI->player3discards.border = sfRectangleShape_create();
+	gameGUI->player4discards.border = sfRectangleShape_create();
+
+	for (int i = 0; i < 24; ++i) {
+		gameGUI->player1discards.tilesprite[i] = sfSprite_create();
+		gameGUI->player2discards.tilesprite[i] = sfSprite_create();
+		gameGUI->player3discards.tilesprite[i] = sfSprite_create();
+		gameGUI->player4discards.tilesprite[i] = sfSprite_create();
+
+	}
+
 }
 
 void destroy_gameGUI(struct gameGUI *gameGUI) {
@@ -512,6 +527,18 @@ void destroy_gameGUI(struct gameGUI *gameGUI) {
 	sfRectangleShape_destroy(gameGUI->center);
 	for (int i = 0; i < 14; ++i) {
 		sfSprite_destroy(gameGUI->player1hand.tilesprite[i]);
+	}
+	sfRectangleShape_destroy(gameGUI->player1discards.border);
+	sfRectangleShape_destroy(gameGUI->player2discards.border);
+	sfRectangleShape_destroy(gameGUI->player3discards.border);
+	sfRectangleShape_destroy(gameGUI->player4discards.border);
+
+	for (int i = 0; i < 24; ++i) {
+		sfSprite_destroy(gameGUI->player1discards.tilesprite[i]);
+		sfSprite_destroy(gameGUI->player2discards.tilesprite[i]);
+		sfSprite_destroy(gameGUI->player3discards.tilesprite[i]);
+		sfSprite_destroy(gameGUI->player4discards.tilesprite[i]);
+
 	}
 }
 
@@ -912,15 +939,106 @@ void display_GUI(struct riichi_engine *engine) {
 		sfSprite_setPosition(P1->tilesprite[i], position);
 		sfSprite_setScale(P1->tilesprite[i], P1->scale);
 		sfRenderWindow_drawSprite(gameGUI->window, P1->tilesprite[i], NULL);
+	}
+	//gameGUI->center = sfRectangleShape_create();
+	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+	sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
+	sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
+	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
+	                                  NULL);
 
-		//gameGUI->center = sfRectangleShape_create();
-		sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
-		sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
-		sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
-		sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
-		sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
-		                                  NULL);
+	struct tilesGUI *D1 = &gameGUI->player1discards;
+	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+		sfVector2f position;
+		position.x = D1->tileposition.x + D1->tileincrement.x * (i % 6);
+		position.y = D1->tileposition.y + D1->tileincrement.y * (i / 6);
+		sfRectangleShape_setFillColor(D1->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(D1->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(D1->border, 1.0);
+		sfRectangleShape_setPosition(D1->border, position);
+		sfRectangleShape_setSize(D1->border, D1->bordersize);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, D1->border, NULL);
+
+		sfSprite_setTexture(D1->tilesprite[i], gameGUI->textureslist[
+			handcopy.discardlist.discards[i]],1);
+		sfSprite_setPosition(D1->tilesprite[i], position);
+		sfSprite_setScale(D1->tilesprite[i], D1->scale);
+		sfRenderWindow_drawSprite(gameGUI->window, D1->tilesprite[i], NULL);
+
+	}
+
+	copy_hand(&engine->players[(engine->nb_rounds + 1) % NB_PLAYERS].hand,
+		&handcopy);
+	struct tilesGUI *D2 = &gameGUI->player2discards;
+	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+		sfVector2f position;
+		position.x = D2->tileposition.x + D2->tileincrement.x * (i / 6);
+		position.y = D2->tileposition.y + D2->tileincrement.y * (i % 6);
+		sfRectangleShape_setFillColor(D2->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(D2->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(D2->border, 1.0);
+		sfRectangleShape_setPosition(D2->border, position);
+		sfRectangleShape_setSize(D2->border, D2->bordersize);
+		sfRectangleShape_setRotation(D2->border, D2->rotation);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, D2->border, NULL);
+
+		sfSprite_setTexture(D2->tilesprite[i], gameGUI->textureslist[
+			handcopy.discardlist.discards[i]],1);
+		sfSprite_setPosition(D2->tilesprite[i], position);
+		sfSprite_setScale(D2->tilesprite[i], D2->scale);
+		sfSprite_setRotation(D2->tilesprite[i], D2->rotation);
+		sfRenderWindow_drawSprite(gameGUI->window, D2->tilesprite[i], NULL);
+
+	}
+
+	copy_hand(&engine->players[(engine->nb_rounds + 2) % NB_PLAYERS].hand,
+		&handcopy);
+	struct tilesGUI *D3 = &gameGUI->player3discards;
+	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+		sfVector2f position;
+		position.x = D3->tileposition.x + D3->tileincrement.x * (i % 6);
+		position.y = D3->tileposition.y + D3->tileincrement.y * (i / 6);
+		sfRectangleShape_setFillColor(D3->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(D3->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(D3->border, 1.0);
+		sfRectangleShape_setPosition(D3->border, position);
+		sfRectangleShape_setSize(D3->border, D3->bordersize);
+		sfRectangleShape_setRotation(D3->border, D3->rotation);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, D3->border, NULL);
+
+		sfSprite_setTexture(D3->tilesprite[i], gameGUI->textureslist[
+			handcopy.discardlist.discards[i]],1);
+		sfSprite_setPosition(D3->tilesprite[i], position);
+		sfSprite_setScale(D3->tilesprite[i], D3->scale);
+		sfSprite_setRotation(D3->tilesprite[i], D3->rotation);
+		sfRenderWindow_drawSprite(gameGUI->window, D3->tilesprite[i], NULL);
+
+	}
+
+	copy_hand(&engine->players[(engine->nb_rounds + 3) % NB_PLAYERS].hand,
+		&handcopy);
+	struct tilesGUI *D4 = &gameGUI->player4discards;
+	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
+		sfVector2f position;
+		position.x = D4->tileposition.x + D4->tileincrement.x * (i / 6);
+		position.y = D4->tileposition.y + D4->tileincrement.y * (i % 6);
+		sfRectangleShape_setFillColor(D4->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(D4->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(D4->border, 1.0);
+		sfRectangleShape_setPosition(D4->border, position);
+		sfRectangleShape_setSize(D4->border, D4->bordersize);
+		sfRectangleShape_setRotation(D4->border, D4->rotation);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, D4->border, NULL);
+
+		sfSprite_setTexture(D4->tilesprite[i], gameGUI->textureslist[
+			handcopy.discardlist.discards[i]],1);
+		sfSprite_setPosition(D4->tilesprite[i], position);
+		sfSprite_setScale(D4->tilesprite[i], D4->scale);
+		sfSprite_setRotation(D4->tilesprite[i], D4->rotation);
+		sfRenderWindow_drawSprite(gameGUI->window, D4->tilesprite[i], NULL);
+
 	}
 	sfRenderWindow_display(gameGUI->window);
 }
