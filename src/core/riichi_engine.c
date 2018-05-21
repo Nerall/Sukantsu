@@ -200,6 +200,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 			histo_index_t r = random_pop_histogram(&engine->wall);
 			add_tile_hand(&engine->players[player_index].hand, r);
 		}
+		engine->players[player_index].hand.last_tile = NO_TILE_INDEX;
 	}
 
 	// [SERVER] Send tiles to all clients
@@ -553,7 +554,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	riichi_init_phase(engine);
 
 	// Main loop
-	for (int player_index = 0; engine->wall.nb_tiles > 14;
+	for (int player_index = 0; engine->wall.nb_tiles > 0;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[player_index];
 
@@ -570,10 +571,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		//if (player_index == 0)
 			display_GUI(engine);
 
-		time_t t1 = time(NULL);
+/*		time_t t1 = time(NULL);
 		//if (player_index == 0)
-		 	do {} while (t1 == time(NULL));
-
+			do {} while (t1 == time(NULL));
+*/
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi

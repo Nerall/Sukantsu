@@ -131,7 +131,6 @@ void print_groups(const struct group *groups) {
 	wprintf(L"\n");
 }
 
-// TODO: histo[last_tile] == 0 sometimes
 void print_victory(const struct hand *hand, const struct grouplist *grouplist) {
 	ASSERT_BACKTRACE(grouplist);
 
@@ -144,8 +143,9 @@ void print_victory(const struct hand *hand, const struct grouplist *grouplist) {
 	else {
 		if (ischiitoi(hand))
 			wprintf(L"WOW, Seven pairs!\n");
-		for (int i = 0; i < grouplist->nb_groups; ++i)
+		for (int i = 0; i < grouplist->nb_groups; ++i) {
 			print_groups(grouplist->groups[i]);
+		}
 	}
 }
 
@@ -1080,7 +1080,7 @@ void display_GUI(struct riichi_engine *engine) {
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
 		sfVector2f position;
 		position.x = D2->tileposition.x + D2->tileincrement.x * (i / 6)
-			+ D2->tileincrement.x * (i > 17);
+			- D2->tileincrement.x * (i > 17);
 		position.y = D2->tileposition.y + D2->tileincrement.y * (i % 6)
 			+ D2->tileincrement.y * (i > 17) * 6;
 		sfRectangleShape_setFillColor(D2->border, sfTransparent);
@@ -1153,8 +1153,10 @@ void display_GUI(struct riichi_engine *engine) {
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
 		sfVector2f position;
-		position.x = D3->tileposition.x + D3->tileincrement.x * (i % 6);
-		position.y = D3->tileposition.y + D3->tileincrement.y * (i / 6);
+		position.x = D3->tileposition.x + D3->tileincrement.x * (i % 6)
+			+ D3->tileincrement.x * (i > 17) * 6;
+		position.y = D3->tileposition.y + D3->tileincrement.y * (i / 6)
+			- D3->tileincrement.y * (i > 17);
 		sfRectangleShape_setFillColor(D3->border, sfTransparent);
 		sfRectangleShape_setOutlineColor(D3->border, sfBlack);
 		sfRectangleShape_setOutlineThickness(D3->border, 1.0);
@@ -1225,8 +1227,10 @@ void display_GUI(struct riichi_engine *engine) {
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
 		sfVector2f position;
-		position.x = D4->tileposition.x + D4->tileincrement.x * (i / 6);
-		position.y = D4->tileposition.y + D4->tileincrement.y * (i % 6);
+		position.x = D4->tileposition.x + D4->tileincrement.x * (i / 6)
+			- D4->tileincrement.x * (i > 17);
+		position.y = D4->tileposition.y + D4->tileincrement.y * (i % 6)
+			+ D4->tileincrement.y * (i > 17) * 6;
 		sfRectangleShape_setFillColor(D4->border, sfTransparent);
 		sfRectangleShape_setOutlineColor(D4->border, sfBlack);
 		sfRectangleShape_setOutlineThickness(D4->border, 1.0);

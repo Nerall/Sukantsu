@@ -204,7 +204,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 // Work in Progress
 void apply_call(struct player *player, const struct action_input *input) {
 	ASSERT_BACKTRACE(player);
-	ASSERT_BACKTRACE(input->tile > 0 && input->tile < NO_TILE_INDEX);
+	ASSERT_BACKTRACE(input->tile >= 0 && input->tile < NO_TILE_INDEX);
 
 	struct hand *hand = &player->hand;
 	add_tile_hand(hand, input->tile);
