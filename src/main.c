@@ -70,7 +70,8 @@ void host_main() {
 		if (index_win == -1) {
 			wprintf(L"Result: Draw\n");
 		} else {
-			wprintf(L"Result: Player %d has won!\n", index_win + 1);
+			char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
+			wprintf(L"Result: Player %s has won!\n", pos[index_win]);
 		}
 		if (AI_MODE) {
 			if (index_win == 0)

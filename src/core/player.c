@@ -44,11 +44,29 @@ static void input_AI(struct player *player, struct action_input *input) {
 	input->action = ACTION_DISCARD;
 	input->tile = NO_TILE_INDEX;
 
+	histo_index_t last_tile = player_hand->last_tile;
+
+	struct grouplist grouplist;
+	init_grouplist(&grouplist);
+
+	tenpailist(player_hand, &grouplist);
+
+	for(histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		if (player_hand->tenpai) {
+			if (get_histobit(&player_hand->riichitiles, i)) {
+				wprintf(L"Problem\n");
+				input->tile = i;
+				return;
+			}
+		}
+	}
+
 	// Take "win" tile
 	if (player_hand->tenpai) {
 		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 			if (get_histobit(&player_hand->riichitiles, i - 1)) {
 				input->tile = i - 1;
+				wprintf(L"0\n");
 				return;
 			}
 		}
@@ -62,9 +80,6 @@ static void input_AI(struct player *player, struct action_input *input) {
 
 	struct histogram histocopy;
 	groups_to_histo(player_hand, &histocopy);
-
-	struct grouplist grouplist;
-	init_grouplist(&grouplist);
 
 	for (histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
 		tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
@@ -90,6 +105,8 @@ static void input_AI(struct player *player, struct action_input *input) {
 				input->tile = i - 1;
 				remove_tile_hand(player_hand, j);
 				add_tile_hand(player_hand, i - 1);
+				player_hand->last_tile = last_tile;
+				wprintf(L"1\n");
 				return;
 			}
 			remove_tile_hand(player_hand, j);
@@ -119,21 +136,67 @@ static void input_AI(struct player *player, struct action_input *input) {
 					remove_tile_hand(player_hand, j);
 					remove_tile_hand(player_hand, k);
 					add_tile_hand(player_hand, i - 1);
+					player_hand->last_tile = last_tile;
+					wprintf(L"2\n");
 					return;
 				}
 				remove_tile_hand(player_hand, j);
 			}
+			tiles_remaining.cells[k] += 1;
 			remove_tile_hand(player_hand, k);
 
 		}
 		add_tile_hand(player_hand, i - 1);
 	}
+/*
+	// Take "third best" tile
+	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
+		if (player_hand->histo.cells[i - 1] == 0)
+			continue;
 
+		remove_tile_hand(player_hand, i - 1);
+		for (histo_index_t l = 0; l < HISTO_INDEX_MAX; ++l) {
+			if (tiles_remaining.cells[l] == 0)
+					continue;
+				tiles_remaining.cells[l] -= 1;
+				add_tile_hand(player_hand, l);
+			for (histo_index_t k = 0; k < HISTO_INDEX_MAX; ++k) {
+				if (tiles_remaining.cells[k] == 0)
+					continue;
+				tiles_remaining.cells[k] -= 1;
+				add_tile_hand(player_hand, k);
+				for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
+					if (tiles_remaining.cells[j] == 0)
+						continue;
+
+					add_tile_hand(player_hand, j);
+					tenpailist(player_hand, &grouplist);
+					if (player_hand->tenpai) {
+						input->tile = i - 1;
+						remove_tile_hand(player_hand, j);
+						remove_tile_hand(player_hand, k);
+						add_tile_hand(player_hand, i - 1);
+						player_hand->last_tile = last_tile;
+						wprintf(L"3\n");
+						return;
+					}
+					remove_tile_hand(player_hand, j);
+				}
+				tiles_remaining.cells[k] += 1;
+				remove_tile_hand(player_hand, k);
+			}
+			tiles_remaining.cells[l] += 1;
+			remove_tile_hand(player_hand, l);
+		}
+		add_tile_hand(player_hand, i - 1);
+	}
+*/
 	// Take last tile
 	tenpailist(player_hand, &grouplist);
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
 			input->tile = i - 1;
+			wprintf(L"last\n");
 			return;
 		}
 	}
@@ -172,7 +235,9 @@ void apply_call(struct player *player, const struct action_input *input) {
 			ASSERT_BACKTRACE(get_histobit(&hand->pontiles, input->tile));
 			ASSERT_BACKTRACE(hand->histo.cells[input->tile] >= 3);
 			// Add triplet group
+			histo_index_t last_tile = hand->last_tile;
 			add_group_hand(hand, 0, TRIPLET, input->tile);
+			hand->last_tile = last_tile;
 			break;
 		}
 

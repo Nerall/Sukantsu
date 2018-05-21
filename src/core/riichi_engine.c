@@ -513,7 +513,11 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		}
 
 		char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
-		fprintf(stderr, "%s claim from player %s!\n", str, pos[player_claim]);
+		char f, n;
+		index_to_char(input->tile, &f, &n);
+
+		fprintf(stderr, "%s claim of %c%c from player %s!\n", str,
+			n, f, pos[player_claim]);
 
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
 			riichi_tsumo_phase(engine, player_index, &claim_input);
@@ -559,9 +563,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		//if (player_index == 0)
 			display_GUI(engine);
 
-		time_t t1 = time(NULL);
-		do {} while (t1 == time(NULL));
-
+/*		time_t t1 = time(NULL);
+		if (player_index == 0)
+			do {} while (t1 == time(NULL));
+*/
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi

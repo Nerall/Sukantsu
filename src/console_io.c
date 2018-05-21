@@ -344,7 +344,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					bordersize.x = 34;
 					bordersize.y = 46;
 					tileposition.x = 150;
-					tileposition.y = 500;
+					tileposition.y = 525;
 					tileincrement.x = 35;
 					tileincrement.y = 0;
 					break;
@@ -364,7 +364,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					bordersize.x = 34;
 					bordersize.y = 46;
 				 	tileposition.x = 650;
-					tileposition.y = 100;
+					tileposition.y = 75;
 					tileincrement.x = -35;
 					tileincrement.y = 0;
 					 break;
@@ -929,7 +929,6 @@ void display(struct riichi_engine *engine, int current_player) {
 
 void display_GUI(struct riichi_engine *engine) {
 	struct gameGUI *gameGUI = &engine->gameGUI;
-	struct tilesGUI *P1 = &gameGUI->player1hand;
 	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
 
 	/////////////////////////////////////////////////////////////////
@@ -947,8 +946,21 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 	*/
 
+	//gameGUI->center = sfRectangleShape_create();
+	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+	sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
+	sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
+	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
+	                                  NULL);
+
 	struct hand handcopy;
+
 	copy_hand(&engine->players[engine->nb_rounds % NB_PLAYERS].hand, &handcopy);
+	struct tilesGUI *P1 = &gameGUI->player1hand;
+	struct tilesGUI *D1 = &gameGUI->player1discards;
+
 	//P1->border = sfRectangleShape_create();
 	for (int i = 0; i < 14; ++i) {
 		sfVector2f position;
@@ -969,30 +981,30 @@ void display_GUI(struct riichi_engine *engine) {
 				                    1);
 				break;
 			}
+			if (j == 33)
+				sfSprite_setTexture(P1->tilesprite[i],
+									gameGUI->textureslist[34], 1);
 		}
 		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 			--handcopy.histo.cells[handcopy.last_tile];
 			sfSprite_setTexture(P1->tilesprite[i],
 			                    gameGUI->textureslist[handcopy.last_tile], 1);
 		}
+		else if (i == 13) {
+			sfSprite_setTexture(P1->tilesprite[i],
+			                    gameGUI->textureslist[34], 1);
+		}
 		sfSprite_setPosition(P1->tilesprite[i], position);
 		sfSprite_setScale(P1->tilesprite[i], P1->scale);
 		sfRenderWindow_drawSprite(gameGUI->window, P1->tilesprite[i], NULL);
 	}
-	//gameGUI->center = sfRectangleShape_create();
-	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
-	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
-	sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
-	sfRectangleShape_setSize(gameGUI->center, gameGUI->centersize);
-	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
-	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
-	                                  NULL);
 
-	struct tilesGUI *D1 = &gameGUI->player1discards;
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
 		sfVector2f position;
-		position.x = D1->tileposition.x + D1->tileincrement.x * (i % 6);
-		position.y = D1->tileposition.y + D1->tileincrement.y * (i / 6);
+		position.x = D1->tileposition.x + D1->tileincrement.x * (i % 6)
+			+ D1->tileincrement.x * (i > 17) * 6;
+		position.y = D1->tileposition.y + D1->tileincrement.y * (i / 6)
+			- D1->tileincrement.y * (i > 17);
 		sfRectangleShape_setFillColor(D1->border, sfTransparent);
 		sfRectangleShape_setOutlineColor(D1->border, sfBlack);
 		sfRectangleShape_setOutlineThickness(D1->border, 1.0);
@@ -1035,11 +1047,18 @@ void display_GUI(struct riichi_engine *engine) {
 				                    1);
 				break;
 			}
+			if (j == 33)
+				sfSprite_setTexture(P2->tilesprite[i],
+									gameGUI->textureslist[34], 1);
 		}
 		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 			--handcopy.histo.cells[handcopy.last_tile];
 			sfSprite_setTexture(P2->tilesprite[i],
 			                    gameGUI->textureslist[handcopy.last_tile], 1);
+		}
+		else if (i == 13) {
+			sfSprite_setTexture(P2->tilesprite[i],
+			                    gameGUI->textureslist[34], 1);
 		}
 		sfSprite_setPosition(P2->tilesprite[i], position);
 		sfSprite_setScale(P2->tilesprite[i], P2->scale);
@@ -1050,8 +1069,10 @@ void display_GUI(struct riichi_engine *engine) {
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
 		sfVector2f position;
-		position.x = D2->tileposition.x + D2->tileincrement.x * (i / 6);
-		position.y = D2->tileposition.y + D2->tileincrement.y * (i % 6);
+		position.x = D2->tileposition.x + D2->tileincrement.x * (i / 6)
+			+ D2->tileincrement.x * (i > 17);
+		position.y = D2->tileposition.y + D2->tileincrement.y * (i % 6)
+			+ D2->tileincrement.y * (i > 17) * 6;
 		sfRectangleShape_setFillColor(D2->border, sfTransparent);
 		sfRectangleShape_setOutlineColor(D2->border, sfBlack);
 		sfRectangleShape_setOutlineThickness(D2->border, 1.0);
@@ -1095,11 +1116,18 @@ void display_GUI(struct riichi_engine *engine) {
 				                    1);
 				break;
 			}
+			if (j == 33)
+				sfSprite_setTexture(P3->tilesprite[i],
+									gameGUI->textureslist[34], 1);
 		}
 		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 			--handcopy.histo.cells[handcopy.last_tile];
 			sfSprite_setTexture(P3->tilesprite[i],
 			                    gameGUI->textureslist[handcopy.last_tile], 1);
+		}
+		else if (i == 13) {
+			sfSprite_setTexture(P3->tilesprite[i],
+			                    gameGUI->textureslist[34], 1);
 		}
 		sfSprite_setPosition(P3->tilesprite[i], position);
 		sfSprite_setScale(P3->tilesprite[i], P3->scale);
@@ -1156,11 +1184,18 @@ void display_GUI(struct riichi_engine *engine) {
 				                    1);
 				break;
 			}
+			if (j == 33)
+				sfSprite_setTexture(P4->tilesprite[i],
+									gameGUI->textureslist[34], 1);
 		}
 		if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
 			--handcopy.histo.cells[handcopy.last_tile];
 			sfSprite_setTexture(P4->tilesprite[i],
 			                    gameGUI->textureslist[handcopy.last_tile], 1);
+		}
+		else if (i == 13) {
+			sfSprite_setTexture(P4->tilesprite[i],
+			                    gameGUI->textureslist[34], 1);
 		}
 		sfSprite_setPosition(P4->tilesprite[i], position);
 		sfSprite_setScale(P4->tilesprite[i], P4->scale);

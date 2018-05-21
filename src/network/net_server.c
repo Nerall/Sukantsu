@@ -38,7 +38,7 @@ void stop_listen_net_server(struct net_server *server) {
 
 	if (server->listener) {
 		sfTcpListener_destroy(server->listener);
-		wprintf(L"[SERVER] Stoped listening\n");
+		wprintf(L"[SERVER] Stopped listening\n");
 		server->listener = NULL;
 	}
 }

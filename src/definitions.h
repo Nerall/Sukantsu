@@ -4,7 +4,7 @@
 // For AI debug and tests
 #define AI_MODE 1
 
-#define GROUPLIST_CAPACITY 32
+#define GROUPLIST_CAPACITY 40
 #define GROUP_NB_TILES 4
 #define HAND_NB_GROUPS 5
 #define HISTO_INDEX_MAX 34
