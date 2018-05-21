@@ -11,6 +11,7 @@
 #include "riichi_engine_s.h"
 #include <SFML/Graphics.h>
 #include <stdio.h>
+#include <wchar.h>
 #include <time.h>
 
 
@@ -156,7 +157,7 @@ int apply_action(struct player *player, const struct action_input *input) {
 		}
 
 		case ACTION_TSUMO: {
-			return 1;
+			return input->action == ACTION_TSUMO;
 		}
 
 		case ACTION_CHII:
@@ -250,6 +251,12 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		// Give one tile to the player
 		histo_index_t randi = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, randi);
+	
+		/*char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
+		char f, n;
+		index_to_char(randi, &f, &n);
+		wprintf(L"Tile drawn by %s: %c%c\n", pos[player_index], n, f);
+		*/
 
 		// [SERVER] Send tile to client player_index
 		if (player->player_type == PLAYER_CLIENT) {
@@ -563,10 +570,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		//if (player_index == 0)
 			display_GUI(engine);
 
-/*		time_t t1 = time(NULL);
-		if (player_index == 0)
-			do {} while (t1 == time(NULL));
-*/
+		time_t t1 = time(NULL);
+		//if (player_index == 0)
+		 	do {} while (t1 == time(NULL));
+
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi

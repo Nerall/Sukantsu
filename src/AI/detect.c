@@ -47,6 +47,14 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
                            int *max_groups) {
 	ASSERT_BACKTRACE(hand);
 
+	char b = 0;
+	int i = 0;
+	while (!b && i < hand->nb_groups) {
+		if (hand->groups[i].type == PAIR)
+			b = 1;
+		++i;
+	}
+
 	if (hand->nb_groups >= 5) {
 		add_copy_grouplist(grouplist, hand->groups);
 		*max_groups = 5;
