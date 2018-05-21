@@ -11,6 +11,7 @@
 #include "riichi_engine_s.h"
 #include <SFML/Graphics.h>
 #include <stdio.h>
+#include <time.h>
 
 
 #define TIMEOUT_SEND 5
@@ -47,10 +48,10 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
                         enum player_type t4) {
 	ASSERT_BACKTRACE(engine);
 
-	init_player(&engine->players[0], t1, NORTH);
-	init_player(&engine->players[1], t2, EAST);
-	init_player(&engine->players[2], t3, SOUTH);
-	init_player(&engine->players[3], t4, WEST);
+	init_player(&engine->players[0], t1, EAST);
+	init_player(&engine->players[1], t2, SOUTH);
+	init_player(&engine->players[2], t3, WEST);
+	init_player(&engine->players[3], t4, NORTH);
 	init_gameGUI(&engine->gameGUI);
 	engine->nb_games = 0;
 	engine->nb_rounds = 0;
@@ -511,7 +512,8 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 				break;
 		}
 
-		fprintf(stderr, "%s claim from player %d!\n", str, player_claim + 1);
+		char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
+		fprintf(stderr, "%s claim from player %s!\n", str, pos[player_claim]);
 
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
 			riichi_tsumo_phase(engine, player_index, &claim_input);
@@ -551,11 +553,15 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		int win = is_valid_hand(&player->hand, &engine->grouplist);
 
+		struct action_input player_input;
+
 		// Using GUI
-		if (player_index == 0)
+		//if (player_index == 0)
 			display_GUI(engine);
 
-		struct action_input player_input;
+		time_t t1 = time(NULL);
+		do {} while (t1 == time(NULL));
+
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi
