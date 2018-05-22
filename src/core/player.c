@@ -417,6 +417,7 @@ void update_tiles_remaining(struct player *player,
 	
 	// Remove tiles in our hand
 	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		ASSERT_BACKTRACE(player->hand.histo.cells[i] <= 4);
 		player->tiles_remaining.cells[i] -= player->hand.histo.cells[i];
 	}
 
@@ -424,6 +425,7 @@ void update_tiles_remaining(struct player *player,
 	for (int p = 0; p < 4; ++p) {
 		struct discardlist *list = &engine->players[p].hand.discardlist;
 		for (unsigned char n = 0; n < list->nb_discards; ++n) {
+			ASSERT_BACKTRACE(player->tiles_remaining.cells[list->discards[n]]);
 			player->tiles_remaining.cells[list->discards[n]]--;
 		}
 	}
@@ -439,18 +441,24 @@ void update_tiles_remaining(struct player *player,
 
 			switch (hand->groups[g].type) {
 				case PAIR:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] >= 2);
 					player->tiles_remaining.cells[tile] -= 2;
 					break;
 
 				case TRIPLET:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] >= 3);
 					player->tiles_remaining.cells[tile] -= 3;
 					break;
 
 				case QUAD:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] == 4);
 					player->tiles_remaining.cells[tile] -= 4;
 					break;
 
 				case SEQUENCE:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile]);
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile + 1]);
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile + 2]);
 					player->tiles_remaining.cells[tile]--;
 					player->tiles_remaining.cells[tile + 1]--;
 					player->tiles_remaining.cells[tile + 2]--;
@@ -502,7 +510,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_DRAW: {
-				fprintf(stderr, "Received: pk_draw\n");
+				// fprintf(stderr, "Received: pk_draw\n");
 				pk_draw *draw = (pk_draw *)&receiver;
 				add_tile_hand(&player->hand, draw->tile);
 
@@ -510,15 +518,16 @@ void client_main_loop(struct net_client *client) {
 
 				engine.phase = PHASE_DRAW;
 				display_GUI(&engine);
-				display_riichi(&engine, iplayer);
+				//display_riichi(&engine, iplayer);
 				break;
 			}
 
 			case PACKET_INPUT: {
-				fprintf(stderr, "Received: pk_input\n");
+				// fprintf(stderr, "Received: pk_input\n");
 				// makegroups(&player->hand, &engine.grouplist);
 
 				pk_input *input = (pk_input *)&receiver;
+				update_tiles_remaining(player, &engine);
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));
 
@@ -526,12 +535,12 @@ void client_main_loop(struct net_client *client) {
 
 				engine.phase = PHASE_GETINPUT;
 				display_GUI(&engine);
-				display_riichi(&engine, iplayer);
+				//display_riichi(&engine, iplayer);
 				break;
 			}
 
 			case PACKET_TSUMO: {
-				fprintf(stderr, "Received: pk_tsumo\n");
+				// fprintf(stderr, "Received: pk_tsumo\n");
 				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
 
 				int itsumo = (int)tsumo->player_pos;
@@ -547,7 +556,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_UPDATE: {
-				fprintf(stderr, "Received: pk_update\n");
+				// fprintf(stderr, "Received: pk_update\n");
 				pk_update *update = (pk_update *)&receiver;
 
 				int index = get_index_from_pos(&engine, update->player_pos);

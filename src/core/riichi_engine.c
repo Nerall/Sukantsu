@@ -12,6 +12,7 @@
 #include "riichi_engine_s.h"
 #include <SFML/Graphics.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <wchar.h>
 
@@ -21,6 +22,7 @@
 typedef struct net_packet_init pk_init;
 typedef struct net_packet_draw pk_draw;
 typedef struct net_packet_input pk_input;
+typedef struct net_packet_tsumo pk_tsumo;
 typedef struct net_packet_update pk_update;
 
 static void send_to_all_clients(struct riichi_engine *engine, void *packet,
@@ -296,6 +298,7 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 	player_input->action = ACTION_PASS;
 
 	if (player->player_type != PLAYER_CLIENT) {
+		update_tiles_remaining(player, engine);
 		get_player_input(player, player_input);
 	} else {
 		pk_input packet = {packet_type : PACKET_INPUT};
@@ -348,12 +351,11 @@ void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
 	struct player *player = &engine->players[player_index];
 
 	// [SERVER] Send victory infos to all clients
-	pk_update packet = {
-		packet_type : PACKET_UPDATE,
-		player_pos : player->player_pos,
-		input : *input,
-		victory : 1
+	pk_tsumo packet = {
+		packet_type : PACKET_TSUMO,
 	};
+
+	memcpy(&packet.histo, &player->hand.histo, sizeof(struct histogram));
 
 	send_to_all_clients(engine, &packet, sizeof(pk_update), -1);
 }
@@ -386,7 +388,6 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		packet_type : PACKET_UPDATE,
 		player_pos : player->player_pos,
 		input : *input,
-		victory : 0
 	};
 
 	send_to_all_clients(engine, &update_packet, sizeof(pk_update),
@@ -536,7 +537,6 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			packet_type : PACKET_UPDATE,
 			player_pos : (enum table_pos)player_claim,
 			input : claim_input,
-			victory : 0
 		};
 
 		// [SERVER] Send claim infos to all clients
@@ -636,7 +636,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			}
 
 			if (engine->players[player_index].player_pos != EAST)
-			//if (engine->nb_rounds % NB_PLAYERS == player_index)
+				// if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
 			return engine->players[player_index].player_pos;
@@ -656,7 +656,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	}
 	if (!engine->players[0].hand.tenpai)
 		++engine->nb_rounds;
-	
+
 	int nb_tenpai = 0;
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)

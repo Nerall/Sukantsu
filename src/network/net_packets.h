@@ -30,7 +30,6 @@ struct net_packet_update {
 
 	enum table_pos player_pos; // Player who made the action
 	struct action_input input;
-	char victory : 1;
 };
 
 struct net_packet_tsumo {
