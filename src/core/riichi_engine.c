@@ -573,9 +573,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// if (player_index == 0)
 		display_GUI(engine);
 
-		time_t t1 = time(NULL);
+		//time_t t1 = time(NULL);
 		// if (player_index == 0)
-			do {} while (t1 == time(NULL));
+		//	do {} while (t1 == time(NULL));
 		
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
@@ -640,9 +640,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 				}
 			}
 
-				
-			
-			if (engine->nb_rounds % NB_PLAYERS == player_index)
+			if (player_index != EAST)
+			//if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
 			return player_index;
@@ -660,10 +659,13 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
+	if (engine->players[engine->nb_rounds % 4].hand.tenpai)
+		++engine->nb_rounds;
+	
 	int nb_tenpai = 0;
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)
-			nb_tenpai++;
+			++nb_tenpai;
 	}
 	if (nb_tenpai == 0 || nb_tenpai == 4)
 		return -1;

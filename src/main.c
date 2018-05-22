@@ -80,7 +80,7 @@ void host_main() {
 			++nb_won_games;
 		}
 		if (AI_MODE) {
-			if (engine.nb_games > 19)
+			if (engine.nb_rounds > 3)
 				break;
 			else
 				continue;
