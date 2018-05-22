@@ -611,27 +611,56 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
+			int cpt = 1;
+			for (int i = 0; i < engine->players[player_index].hand.histo.nb_tiles; i++) {
+				for (int j = 0 j < engine->doralist.nb_reveal; j++) {
+					if (engine->doralist.tiles[j] == 8) {
+						if (engine->players[player_index].hand.histo.cells[i] == 0)
+							cpt++;
+					}
+					else if (engine->doralist.tiles[j] == 17) {
+						if (engine->players[player_index].hand.histo.cells[i] == 9)
+							cpt++;
+					}
+					else if (engine->doralist.tiles[j] == 26) {
+						if (engine->players[player_index].hand.histo.cells[i] == 18)
+							cpt++;
+					}
+					else if (engine->doralist.tiles[j] == 30) {
+						if (engine->players[player_index].hand.histo.cells[i] == 27)
+							cpt++;
+					}
+					else if (engine->doralist.tiles[j] == 33) {
+						if (engine->players[player_index].hand.histo.cells[i] == 31)
+							cpt++;
+					}
+					else {
+						if (engine->players[player_index].hand.histo.cells[i] == engine->doralist.tiles[j] + 1)
+							cpt++;
+					}
+				}
+			}		
 			player->player_won = TSUMO;
 			if (engine->players[player_index].player_pos == EAST) {
-				engine->players[player_index].player_score += 3000;
+				engine->players[player_index].player_score += 3000*cpt;
 				if (engine->players[player_index].player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						else
-							engine->players[i].player_score -= 1000;
+							engine->players[i].player_score -= 1000*cpt;
 					}
 				}
 			} else {
-				engine->players[player_index].player_score += 2000;
+				engine->players[player_index].player_score += 2000*cpt;
 				if (engine->players[player_index].player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						if (engine->players[i].player_pos == EAST)
-							engine->players[i].player_score -= 1000;
+							engine->players[i].player_score -= 1000*cpt;
 						else
-							engine->players[i].player_score -= 500;
+							engine->players[i].player_score -= 500*cpt;
 					}
 				}
 			}
@@ -666,7 +695,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	if (nb_tenpai == 0 || nb_tenpai == 4)
 		return -1;
-
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)
 			engine->players[i].player_score += 3000 / nb_tenpai;
