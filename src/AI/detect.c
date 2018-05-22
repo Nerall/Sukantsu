@@ -5,7 +5,6 @@
 #include "../core/hand_s.h"
 #include "../core/histogram.h"
 #include "../debug.h"
-#include <wchar.h>
 
 int ischiitoi(const struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
@@ -125,7 +124,25 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 
 	int max_groups = makegroups(hand, grouplist);
 
-	if (max_groups < 4)
+	// Tenpai chiitoi
+	int pairs = 0;
+	for (histo_index_t i = 0; i < 34; ++i) {
+		if (hand->histo.cells[i] >= 2)
+			++pairs;
+	}
+
+	// Tenpai kokushi
+	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
+	int missingtiles = 0;
+	int pair = 0;
+	for (int i = 0; i < 13; ++i) {
+		if (hand->histo.cells[TerminalsHonors[i]] >= 2)
+			pair = 1;
+		else if (hand->histo.cells[TerminalsHonors[i]] == 0)
+			++missingtiles;
+	}
+
+	if (max_groups < 4 && pairs < 6 && missingtiles - pair > 0)
 		return;
 
 	struct histogram histofull;

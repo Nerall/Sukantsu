@@ -81,7 +81,7 @@ void print_histo(const struct histogram *histo, histo_index_t last_tile) {
 			wprintf(L"%d", 1 + i % 9);
 		}
 
-		if (histo->cells[i])
+		if (histo->cells[i] - (last_tile == i))
 			PSMZ[i / 9] = 1;
 
 		if ((i == 33 || i % 9 == 8) && PSMZ[i / 9])
