@@ -635,8 +635,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 							break;
 					}
 					// wprintf(L"%u\n", dora);
-					if (histofull.cells[itiles] == dora)
-						++cpt;
+					wprintf(L"%u %u\n", histofull.cells[itiles], dora);
+					if (itiles == dora)
+						cpt += histofull.cells[itiles];
 				}
 			}
 			
