@@ -64,6 +64,8 @@ void host_main() {
 	engine.gameGUI.window = sfRenderWindow_create(
 	    engine.gameGUI.mode, "Sukantsu", sfResize | sfClose, NULL);
 
+	engine.server.selector = sfSocketSelector_create();
+
 	char c = 0;
 	int nb_won_games = 0;
 	time_t t_init = time(NULL);
@@ -107,6 +109,7 @@ void host_main() {
 	destroy_gameGUI(&engine.gameGUI);
 	sfRenderWindow_destroy(engine.gameGUI.window);
 
+	sfSocketSelector_destroy(engine.server.selector);
 	clean_net_server(&engine.server);
 }
 

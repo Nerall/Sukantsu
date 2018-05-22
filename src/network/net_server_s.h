@@ -5,6 +5,7 @@
 
 struct net_server {
 	sfTcpListener *listener;
+	sfSocketSelector *selector;
 	sfTcpSocket *clients[4];
 	int nb_clients;
 };
