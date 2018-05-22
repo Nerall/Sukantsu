@@ -446,12 +446,6 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		if (!verify_action(engine, other_player, &claim_input))
 			continue;
 
-		// Apply the claim
-		apply_action(other_player, &claim_input);
-
-		// Remove tile from player's discard list
-		pop_last_discard(&player->hand.discardlist);
-
 		player_claim = c;
 		break;
 	}
@@ -473,21 +467,12 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			                         ACTION_RON};
 
 			// Modified to forbid claims
-			for (int iclaim = 4; iclaim < 4; ++iclaim) {
+			for (int iclaim = 0; iclaim < 4; ++iclaim) {
 				claim_input.action = claims[iclaim];
 				// Verify the claim
 				if (!verify_action(engine, other_player, &claim_input)) {
 					continue;
 				}
-
-				// Apply the claim
-				apply_action(other_player, &claim_input);
-
-				// if (claim_input.action == ACTION_RON)
-				// return other_player->player_pos;
-
-				// Remove tile from player's discard list
-				pop_last_discard(&player->hand.discardlist);
 
 				player_claim = iother;
 				break;
@@ -502,6 +487,20 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 	// Send infos if there is a claim
 	if (player_claim != -1) {
 		engine->players[player_claim].hand.has_claimed = 1;
+
+		ASSERT_BACKTRACE(claim_input.action == ACTION_RON
+			|| claim_input.action == ACTION_PON
+			|| claim_input.action == ACTION_CHII
+			|| claim_input.action == ACTION_KAN);
+
+		// Apply the claim
+		apply_action(&engine->players[player_claim], &claim_input);
+
+		// Remove tile from player's discard list
+		pop_last_discard(&player->hand.discardlist);
+
+		if (claim_input.action == ACTION_RON)
+			return engine->players[player_claim].player_pos;
 
 		char *str;
 		switch (claim_input.action) {
@@ -574,17 +573,14 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
 		// nanosleep(&delay, NULL);
 
-		if (!win) {
-			if (player->hand.riichi != NORIICHI) {
-				// A player can't play when he declared riichi
-				// So we discard its drawn tile
-				player_input.action = ACTION_DISCARD;
-				player_input.tile = player->hand.last_tile;
-				ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
-				apply_action(player, &player_input);
-				continue;
-			}
-
+		if (!win && player->hand.riichi != NORIICHI) {
+			// A player can't play when he declared riichi
+			// So we discard its drawn tile
+			player_input.action = ACTION_DISCARD;
+			player_input.tile = player->hand.last_tile;
+			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
+			apply_action(player, &player_input);
+		} else if (!win) {
 			riichi_get_input_phase(engine, player_index, &player_input);
 
 			if (player_input.action == ACTION_PASS) {
