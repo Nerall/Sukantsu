@@ -54,6 +54,26 @@ static void wait_for_players(struct riichi_engine *engine) {
 	stop_listen_net_server(&engine->server);
 }
 
+static void rotate_players(struct riichi_engine *engine) {
+	for (int i = 0; i < 4; ++i) {
+		enum table_pos *pos = &engine->players[i].player_pos;
+		switch (*pos) {
+			case EAST:
+				*pos = NORTH;
+				break;
+			case SOUTH:
+				*pos = EAST;
+				break;
+			case WEST:
+				*pos = SOUTH;
+				break;
+			case NORTH:
+				*pos = WEST;
+				break;
+		}
+	}
+}
+
 void host_main() {
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
@@ -71,14 +91,19 @@ void host_main() {
 	time_t t_init = time(NULL);
 
 	do {
-		int index_win = play_riichi_game(&engine);
-		if (index_win == -1) {
+		int win_pos = play_riichi_game(&engine);
+		if (win_pos == -1) {
 			wprintf(L"Result: Draw\n");
 		} else {
 			char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
-			wprintf(L"Result: Player %s has won!\n", pos[index_win]);
+			wprintf(L"Result: Player %s has won!\n", pos[win_pos]);
 			++nb_won_games;
 		}
+
+		// Rotate if winner != EAST
+		if (win_pos != 0 || (win_pos == -1 && engine.players[0].hand.tenpai))
+			rotate_players(&engine);
+
 		if (AI_MODE) {
 			if (engine.nb_rounds > 3)
 				break;
