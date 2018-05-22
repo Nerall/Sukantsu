@@ -77,7 +77,7 @@ void print_histo(const struct histogram *histo, histo_index_t last_tile) {
 
 	char PSMZ[] = {0, 0, 0, 0};
 	for (int i = 0; i < 34; ++i) {
-		for (histo_cell_t j = histo->cells[i]; j > 0; --j) {
+		for (histo_cell_t j = histo->cells[i] - (last_tile == i); j > 0; --j) {
 			wprintf(L"%d", 1 + i % 9);
 		}
 
@@ -296,7 +296,7 @@ void display_riichi(const struct riichi_engine *engine, int current_player) {
 
 		case PHASE_TSUMO: {
 			// engine->grouplist must contain the victory grouplist
-			if (player_hand->last_tile)
+			if (player_hand->last_tile != NO_TILE_INDEX)
 				wprintf(L"TSUMO!\n");
 			else
 				wprintf(L"RON!\n");

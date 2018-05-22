@@ -65,6 +65,9 @@ void host_main() {
 	    engine.gameGUI.mode, "Sukantsu", sfResize | sfClose, NULL);
 
 	char c = 0;
+	int nb_won_games = 0;
+	time_t t_init = time(NULL);
+
 	do {
 		int index_win = play_riichi_game(&engine);
 		if (index_win == -1) {
@@ -72,9 +75,10 @@ void host_main() {
 		} else {
 			char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
 			wprintf(L"Result: Player %s has won!\n", pos[index_win]);
+			++nb_won_games;
 		}
 		if (AI_MODE) {
-			if (index_win == 0)
+			if (engine.nb_games > 19)
 				break;
 			else
 				continue;
@@ -92,8 +96,12 @@ void host_main() {
 			;
 	} while (c != 'N');
 
+	wprintf(L"\nYou played %d seconds.", time(NULL) - t_init);
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
-	        (engine.nb_games > 1) ? "s" : "");
+	         (engine.nb_games > 1) ? "s" : "");
+	wprintf(L"%d game%s won.\n", nb_won_games, 
+			 (nb_won_games > 1) ? "s were" : " was");
+
 
 	// Destroy GUI
 	destroy_gameGUI(&engine.gameGUI);

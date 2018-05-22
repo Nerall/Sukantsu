@@ -69,7 +69,7 @@ static int verify_action(struct riichi_engine *engine, struct player *player,
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
-	// Kinda innefficient, but at least, we're sure
+	// Kinda inefficient, but at least, we're sure
 	// Try to change that later if possible
 	set_hand_histobits(&player->hand, &engine->grouplist);
 
@@ -474,7 +474,9 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			// Verify all claims to see if any is possible
 			enum action claims[4] = {ACTION_CHII, ACTION_PON, ACTION_KAN,
 			                         ACTION_RON};
-			for (int iclaim = 0; iclaim < 4; ++iclaim) {
+			
+			// Modified to forbid claims
+			for (int iclaim = 4; iclaim < 4; ++iclaim) {
 				claim_input.action = claims[iclaim];
 				// Verify the claim
 				if (!verify_action(engine, other_player, &claim_input)) {
@@ -483,6 +485,9 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 
 				// Apply the claim
 				apply_action(other_player, &claim_input);
+
+				// if (claim_input.action == ACTION_RON)
+					// return other_player->player_pos;
 
 				// Remove tile from player's discard list
 				pop_last_discard(&player->hand.discardlist);
@@ -592,7 +597,9 @@ int play_riichi_game(struct riichi_engine *engine) {
 				player_input.action = ACTION_DISCARD;
 				// We're not modifying hand here (put it back the line after)
 				player_input.tile = random_pop_histogram(&player->hand.histo);
-				player->hand.histo.cells[player_input.tile]++;
+				add_tile_hand(&player->hand, player_input.tile);
+				player->hand.last_tile = NO_TILE_INDEX;
+				// player->hand.histo.cells[player_input.tile]++;
 			}
 
 			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));

@@ -318,7 +318,9 @@ void get_player_input(struct player *player, struct action_input *input) {
 			return;
 
 		case PLAYER_AI:
+			//wprintf(L"before: %u\n", player->hand.histo.nb_tiles);
 			input_AI(player, input);
+			//wprintf(L"after: %u\n", player->hand.histo.nb_tiles);
 			return;
 
 		case PLAYER_CLIENT:
