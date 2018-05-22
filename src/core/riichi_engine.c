@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 199309L
 #include "riichi_engine.h"
 #include "../AI/detect.h"
 #include "../console_io.h"
@@ -551,6 +552,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
 	riichi_init_phase(engine);
+
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -568,10 +570,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// if (player_index == 0)
 		display_GUI(engine);
 
-		time_t t1 = time(NULL);
-		// if (player_index == 0)
-			do {} while (t1 == time(NULL));
-		
+		// Sleep for 0.5s
+		const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
+		nanosleep(&delay, NULL);
+
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi
@@ -652,11 +654,13 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
+
 	int nb_tenpai = 0;
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)
 			nb_tenpai++;
 	}
+
 	if (nb_tenpai == 0 || nb_tenpai == 4)
 		return -1;
 
