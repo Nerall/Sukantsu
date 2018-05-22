@@ -575,11 +575,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 		// if (player_index == 0)
 		display_GUI(engine);
 
-		/*
 		time_t t1 = time(NULL);
-		if (player_index == 0)
+		// if (player_index == 0)
 			do {} while (t1 == time(NULL));
-		*/
+		
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi
