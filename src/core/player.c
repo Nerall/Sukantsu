@@ -109,8 +109,8 @@ static void input_AI(struct player *player, struct action_input *input) {
 				add_tile_hand(player_hand, i - 1);
 				player_hand->last_tile = last_tile;
 				if (current_winning_tiles > max_winning_tiles) {
-						best_discard = i - 1;
-						max_winning_tiles = current_winning_tiles;
+					best_discard = i - 1;
+					max_winning_tiles = current_winning_tiles;
 				}
 			}
 		}
@@ -192,7 +192,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 						for (histo_index_t w = 0; w < HISTO_INDEX_MAX; ++w) {
 							if (get_histobit(&player_hand->wintiles, w)) {
 								current_winning_tiles +=
-								 tiles_remaining.cells[w];
+								    tiles_remaining.cells[w];
 							}
 						}
 						if (current_winning_tiles > max_winning_tiles) {
@@ -245,11 +245,11 @@ static void input_AI(struct player *player, struct action_input *input) {
 							tenpailist(player_hand, &grouplist);
 							if (player_hand->tenpai) {
 								for (histo_index_t w = 0; w < HISTO_INDEX_MAX;
-									  ++w) {
+								     ++w) {
 									if (get_histobit(&player_hand->wintiles,
-										 w)) {
+									                 w)) {
 										current_winning_tiles +=
-										 tiles_remaining.cells[w];
+										    tiles_remaining.cells[w];
 									}
 								}
 								if (current_winning_tiles > max_winning_tiles) {
@@ -375,9 +375,9 @@ void get_player_input(struct player *player, struct action_input *input) {
 			return;
 
 		case PLAYER_AI:
-			//wprintf(L"before: %u\n", player->hand.histo.nb_tiles);
+			// wprintf(L"before: %u\n", player->hand.histo.nb_tiles);
 			input_AI(player, input);
-			//wprintf(L"after: %u\n", player->hand.histo.nb_tiles);
+			// wprintf(L"after: %u\n", player->hand.histo.nb_tiles);
 			return;
 
 		case PLAYER_CLIENT:
@@ -405,7 +405,11 @@ void client_main_loop(struct net_client *client) {
 
 				enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
 				init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI,
-					PLAYER_AI);
+				                   PLAYER_AI);
+
+				engine.gameGUI.window = sfRenderWindow_create(
+				    engine.gameGUI.mode, "Sukantsu (client)",
+				    sfResize | sfClose, NULL);
 
 				for (int i = 0; i < 4; ++i) {
 					engine.players[i].player_pos = (init->player_pos + i) % 4;
@@ -418,6 +422,7 @@ void client_main_loop(struct net_client *client) {
 				player->hand.histo = init->histo;
 
 				engine.phase = PHASE_INIT;
+				display_GUI(&engine);
 				display_riichi(&engine, iplayer);
 				break;
 			}
@@ -430,12 +435,8 @@ void client_main_loop(struct net_client *client) {
 				engine.wall.nb_tiles = draw->nb_wall_tiles;
 
 				engine.phase = PHASE_DRAW;
+				display_GUI(&engine);
 				display_riichi(&engine, iplayer);
-
-				// Using GUI
-				display(&engine, 0);
-				struct gameGUI gameGUI;
-				init_gameGUI(&gameGUI);
 				break;
 			}
 
@@ -448,7 +449,9 @@ void client_main_loop(struct net_client *client) {
 				send_to_server(client, input, sizeof(pk_input));
 
 				apply_action(player, &input->input);
+
 				engine.phase = PHASE_GETINPUT;
+				display_GUI(&engine);
 				display_riichi(&engine, iplayer);
 				break;
 			}
@@ -464,6 +467,7 @@ void client_main_loop(struct net_client *client) {
 				makegroups(&engine.players[itsumo].hand, &engine.grouplist);
 
 				engine.phase = PHASE_TSUMO;
+				display_GUI(&engine);
 				display_riichi(&engine, itsumo);
 				break;
 			}
@@ -478,12 +482,16 @@ void client_main_loop(struct net_client *client) {
 				update_hand->last_discard = update->input.tile;
 
 				engine.phase = PHASE_GETINPUT;
+				display_GUI(&engine);
 				display_riichi(&engine, update->player_pos);
 
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
 					engine.phase = PHASE_CLAIM;
+					display_GUI(&engine);
 					display_riichi(&engine, update->player_pos);
+
+					// TODO: Ask for claim here
 
 					/*
 					pk_input input = {
