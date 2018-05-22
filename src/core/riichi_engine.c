@@ -398,7 +398,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 
 	struct action_input claim_input = {tile : input->tile};
 	int player_claim = -1;
-
+	
 	// [SERVER] Potentially receive claim packets from clients
 	for (int c = 0; c < NB_PLAYERS; ++c) {
 		// Player who has played can't claim its own tile

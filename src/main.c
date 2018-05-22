@@ -64,6 +64,8 @@ void host_main() {
 	engine.gameGUI.window = sfRenderWindow_create(
 	    engine.gameGUI.mode, "Sukantsu", sfResize | sfClose, NULL);
 
+	engine.server.selector = sfSocketSelector_create();
+
 	char c = 0;
 	do {
 		int index_win = play_riichi_game(&engine);
@@ -99,6 +101,7 @@ void host_main() {
 	destroy_gameGUI(&engine.gameGUI);
 	sfRenderWindow_destroy(engine.gameGUI.window);
 
+	sfSocketSelector_destroy(engine.server.selector);
 	clean_net_server(&engine.server);
 }
 
