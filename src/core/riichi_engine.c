@@ -11,9 +11,8 @@
 #include "riichi_engine_s.h"
 #include <SFML/Graphics.h>
 #include <stdio.h>
-#include <wchar.h>
 #include <time.h>
-
+#include <wchar.h>
 
 #define TIMEOUT_SEND 5
 #define TIMEOUT_RECEIVE 15
@@ -252,7 +251,7 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 		// Give one tile to the player
 		histo_index_t randi = random_pop_histogram(&engine->wall);
 		add_tile_hand(&player->hand, randi);
-	
+
 		/*char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
 		char f, n;
 		index_to_char(randi, &f, &n);
@@ -524,8 +523,8 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		char f, n;
 		index_to_char(input->tile, &f, &n);
 
-		fprintf(stderr, "%s claim of %c%c from player %s!\n", str,
-			n, f, pos[player_claim]);
+		fprintf(stderr, "%s claim of %c%c from player %s!\n", str, n, f,
+		        pos[player_claim]);
 
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
 			riichi_tsumo_phase(engine, player_index, &claim_input);
@@ -568,13 +567,14 @@ int play_riichi_game(struct riichi_engine *engine) {
 		struct action_input player_input;
 
 		// Using GUI
-		//if (player_index == 0)
-			display_GUI(engine);
+		// if (player_index == 0)
+		display_GUI(engine);
 
-/*		time_t t1 = time(NULL);
-		//if (player_index == 0)
+		/*
+		time_t t1 = time(NULL);
+		if (player_index == 0)
 			do {} while (t1 == time(NULL));
-*/
+		*/
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi

@@ -1,11 +1,11 @@
 #include "detect.h"
+#include "../console_io.h"
 #include "../core/groups.h"
 #include "../core/hand.h"
 #include "../core/hand_s.h"
 #include "../core/histogram.h"
 #include "../debug.h"
 #include <wchar.h>
-#include "../console_io.h"
 
 int ischiitoi(const struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
@@ -48,15 +48,15 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
                            struct grouplist *grouplist, int pair,
                            int *max_groups) {
 	ASSERT_BACKTRACE(hand);
-/*
-	char b = 0;
-	int i = 0;
-	while (!b && i < hand->nb_groups) {
-		if (hand->groups[i].type == PAIR)
-			b = 1;
-		++i;
-	}
-*/
+	/*
+	    char b = 0;
+	    int i = 0;
+	    while (!b && i < hand->nb_groups) {
+	        if (hand->groups[i].type == PAIR)
+	            b = 1;
+	        ++i;
+	    }
+	*/
 
 	if (hand->nb_groups == 5 && pair) {
 		add_copy_grouplist(grouplist, hand->groups);
