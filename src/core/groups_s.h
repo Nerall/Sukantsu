@@ -19,7 +19,7 @@ struct discardlist {
 	unsigned char nb_discards;
 };
 
-struct dora {
+struct doralist {
 	histo_index_t tiles[10];
 	unsigned char nb_revealed;
 };
