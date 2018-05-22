@@ -11,6 +11,7 @@ struct riichi_engine {
 	struct histogram wall;
 	struct player players[NB_PLAYERS];
 	struct grouplist grouplist;
+	struct doralist doralist;
 	struct net_server server;
 	struct gameGUI gameGUI;
 	signed nb_games;
