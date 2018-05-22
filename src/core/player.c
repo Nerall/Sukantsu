@@ -25,6 +25,7 @@ void init_player(struct player *player, enum player_type player_type,
 	ASSERT_BACKTRACE(player);
 
 	init_hand(&player->hand);
+	init_histogram(&player->tiles_remaining, 4);
 	player->player_type = player_type;
 	player->player_pos = player_pos;
 	player->player_score = 25000;
@@ -48,6 +49,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 	struct grouplist grouplist;
 	init_grouplist(&grouplist);
 
+	histo_index_t last_tile = player_hand->last_tile;
 	tenpailist(player_hand, &grouplist);
 
 	struct histobit eratosthene;
@@ -75,29 +77,6 @@ static void input_AI(struct player *player, struct action_input *input) {
 		set_histobit(&eratosthene, i);
 	}
 
-	// Take "win" tile
-	if (player_hand->tenpai) {
-		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
-			if (get_histobit(&player_hand->riichitiles, i - 1)) {
-				input->tile = i - 1;
-				player_hand->last_tile = NO_TILE_INDEX;
-				wprintf(L"P%u tenpai\n", player->player_pos + 1);
-				return;
-			}
-		}
-
-		ASSERT_BACKTRACE(0 && "RiichiTiles Histobit is empty");
-		return;
-	}
-
-	// Take "last_tile" tile
-	if (player_hand->last_tile != NO_TILE_INDEX &&
-	    get_histobit(&player_hand->furitentiles, player_hand->last_tile)) {
-		input->tile = player_hand->last_tile;
-		wprintf(L"P%u furiten\n", player->player_pos + 1);
-		return;
-	}
-
 	struct histogram tiles_remaining;
 	init_histogram(&tiles_remaining, 4);
 
@@ -112,12 +91,55 @@ static void input_AI(struct player *player, struct action_input *input) {
 		tiles_remaining.cells[i] -= histocopy.cells[i];
 	}
 
+	histo_index_t best_discard = NO_TILE_INDEX;
+	int max_winning_tiles = 0;
+	int current_winning_tiles = 0;
+
+	// Take "win" tile
+	if (player_hand->tenpai) {
+		for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
+			if (get_histobit(&player_hand->riichitiles, i - 1)) {
+				remove_tile_hand(player_hand, i - 1);
+				current_winning_tiles = 0;
+				tenpailist(player_hand, &grouplist);
+				for (histo_index_t w = 0; w < HISTO_INDEX_MAX; ++w) {
+					if (get_histobit(&player_hand->wintiles, w)) {
+						current_winning_tiles += tiles_remaining.cells[w];
+					}
+				}
+				add_tile_hand(player_hand, i - 1);
+				player_hand->last_tile = last_tile;
+				if (current_winning_tiles > max_winning_tiles) {
+					best_discard = i - 1;
+					max_winning_tiles = current_winning_tiles;
+				}
+			}
+		}
+	}
+
+	if (best_discard != NO_TILE_INDEX) {
+		input->tile = best_discard;
+		player_hand->last_tile = NO_TILE_INDEX;
+		// wprintf(L"P%u tenpai\n", player->player_pos + 1);
+		return;
+	}
+
+	// Take "last_tile" tile
+	if (player_hand->last_tile != NO_TILE_INDEX &&
+	    get_histobit(&player_hand->furitentiles, player_hand->last_tile)) {
+		input->tile = player_hand->last_tile;
+		player_hand->last_tile = NO_TILE_INDEX;
+		// wprintf(L"P%u furiten\n", player->player_pos + 1);
+		return;
+	}
+
 	// Take "best" tile
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1] == 0)
 			continue;
 
 		remove_tile_hand(player_hand, i - 1);
+		current_winning_tiles = 0;
 		for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
 			if (tiles_remaining.cells[j] == 0)
 				continue;
@@ -125,16 +147,26 @@ static void input_AI(struct player *player, struct action_input *input) {
 			add_tile_hand(player_hand, j);
 			tenpailist(player_hand, &grouplist);
 			if (player_hand->tenpai) {
-				input->tile = i - 1;
-				remove_tile_hand(player_hand, j);
-				add_tile_hand(player_hand, i - 1);
-				player_hand->last_tile = NO_TILE_INDEX;
-				wprintf(L"P%u 1-shanten\n", player->player_pos + 1);
-				return;
+				for (histo_index_t w = 0; w < HISTO_INDEX_MAX; ++w) {
+					if (get_histobit(&player_hand->wintiles, w)) {
+						current_winning_tiles += tiles_remaining.cells[w];
+					}
+				}
+				if (current_winning_tiles > max_winning_tiles) {
+					best_discard = i - 1;
+					max_winning_tiles = current_winning_tiles;
+				}
 			}
 			remove_tile_hand(player_hand, j);
 		}
 		add_tile_hand(player_hand, i - 1);
+	}
+
+	if (best_discard != NO_TILE_INDEX) {
+		input->tile = best_discard;
+		player_hand->last_tile = NO_TILE_INDEX;
+		// wprintf(L"P%u 1-shanten\n", player->player_pos + 1);
+		return;
 	}
 
 	// Take "second best" tile
@@ -143,6 +175,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 			continue;
 
 		remove_tile_hand(player_hand, i - 1);
+		current_winning_tiles = 0;
 		for (histo_index_t k = 0; k < HISTO_INDEX_MAX; ++k) {
 			if (get_histobit(&eratosthene, k)) {
 				if (tiles_remaining.cells[k] == 0)
@@ -157,13 +190,16 @@ static void input_AI(struct player *player, struct action_input *input) {
 					add_tile_hand(player_hand, j);
 					tenpailist(player_hand, &grouplist);
 					if (player_hand->tenpai) {
-						input->tile = i - 1;
-						remove_tile_hand(player_hand, j);
-						remove_tile_hand(player_hand, k);
-						add_tile_hand(player_hand, i - 1);
-						player_hand->last_tile = NO_TILE_INDEX;
-						wprintf(L"P%u 2-shanten\n", player->player_pos + 1);
-						return;
+						for (histo_index_t w = 0; w < HISTO_INDEX_MAX; ++w) {
+							if (get_histobit(&player_hand->wintiles, w)) {
+								current_winning_tiles +=
+								    tiles_remaining.cells[w];
+							}
+						}
+						if (current_winning_tiles > max_winning_tiles) {
+							best_discard = i - 1;
+							max_winning_tiles = current_winning_tiles;
+						}
 					}
 					remove_tile_hand(player_hand, j);
 				}
@@ -174,12 +210,20 @@ static void input_AI(struct player *player, struct action_input *input) {
 		add_tile_hand(player_hand, i - 1);
 	}
 
+	if (best_discard != NO_TILE_INDEX) {
+		input->tile = best_discard;
+		player_hand->last_tile = NO_TILE_INDEX;
+		// wprintf(L"P%u 2-shanten\n", player->player_pos + 1);
+		return;
+	}
+
 	// Take "third best" tile
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1] == 0)
 			continue;
 
 		remove_tile_hand(player_hand, i - 1);
+		current_winning_tiles = 0;
 		for (histo_index_t l = 0; l < HISTO_INDEX_MAX; ++l) {
 			if (get_histobit(&eratosthene, l)) {
 				if (tiles_remaining.cells[l] == 0)
@@ -201,15 +245,18 @@ static void input_AI(struct player *player, struct action_input *input) {
 							add_tile_hand(player_hand, j);
 							tenpailist(player_hand, &grouplist);
 							if (player_hand->tenpai) {
-								input->tile = i - 1;
-								remove_tile_hand(player_hand, l);
-								remove_tile_hand(player_hand, j);
-								remove_tile_hand(player_hand, k);
-								add_tile_hand(player_hand, i - 1);
-								player_hand->last_tile = NO_TILE_INDEX;
-								wprintf(L"P%u 3-shanten\n",
-								        player->player_pos + 1);
-								return;
+								for (histo_index_t w = 0; w < HISTO_INDEX_MAX;
+								     ++w) {
+									if (get_histobit(&player_hand->wintiles,
+									                 w)) {
+										current_winning_tiles +=
+										    tiles_remaining.cells[w];
+									}
+								}
+								if (current_winning_tiles > max_winning_tiles) {
+									best_discard = i - 1;
+									max_winning_tiles = current_winning_tiles;
+								}
 							}
 							remove_tile_hand(player_hand, j);
 						}
@@ -224,13 +271,20 @@ static void input_AI(struct player *player, struct action_input *input) {
 		add_tile_hand(player_hand, i - 1);
 	}
 
+	if (best_discard != NO_TILE_INDEX) {
+		input->tile = best_discard;
+		player_hand->last_tile = NO_TILE_INDEX;
+		// wprintf(L"P%u 3-shanten\n", player->player_pos + 1);
+		return;
+	}
+
 	// Take last tile
 	tenpailist(player_hand, &grouplist);
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
 		if (player_hand->histo.cells[i - 1]) {
 			input->tile = i - 1;
 			player_hand->last_tile = NO_TILE_INDEX;
-			wprintf(L"P%u stupid\n", player->player_pos + 1);
+			// wprintf(L"P%u stupid\n", player->player_pos + 1);
 			return;
 		}
 	}
@@ -322,9 +376,9 @@ void get_player_input(struct player *player, struct action_input *input) {
 			return;
 
 		case PLAYER_AI:
-			//wprintf(L"before: %u\n", player->hand.histo.nb_tiles);
+			// wprintf(L"before: %u\n", player->hand.histo.nb_tiles);
 			input_AI(player, input);
-			//wprintf(L"after: %u\n", player->hand.histo.nb_tiles);
+			// wprintf(L"after: %u\n", player->hand.histo.nb_tiles);
 			return;
 
 		case PLAYER_CLIENT:
@@ -337,6 +391,86 @@ void get_player_input(struct player *player, struct action_input *input) {
 	}
 }
 
+static int get_index_from_pos(struct riichi_engine *engine,
+                              enum table_pos pos) {
+	ASSERT_BACKTRACE(engine);
+	ASSERT_BACKTRACE(pos == NORTH || pos == EAST || pos == WEST ||
+	                 pos == SOUTH);
+
+	for (int i = 0; i < 4; ++i) {
+		if (engine->players[i].player_pos == pos) {
+			return i;
+		}
+	}
+
+	ASSERT_BACKTRACE(0 && "Position not found in players");
+}
+
+// Update player->tiles_remaining based on **public** infos
+void update_tiles_remaining(struct player *player,
+                            struct riichi_engine *engine) {
+	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(engine);
+
+	// Reset histogram
+	init_histogram(&player->tiles_remaining, 4);
+	
+	// Remove tiles in our hand
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		ASSERT_BACKTRACE(player->hand.histo.cells[i] <= 4);
+		player->tiles_remaining.cells[i] -= player->hand.histo.cells[i];
+	}
+
+	// Remove tiles in every player's discard
+	for (int p = 0; p < 4; ++p) {
+		struct discardlist *list = &engine->players[p].hand.discardlist;
+		for (unsigned char n = 0; n < list->nb_discards; ++n) {
+			ASSERT_BACKTRACE(player->tiles_remaining.cells[list->discards[n]]);
+			player->tiles_remaining.cells[list->discards[n]]--;
+		}
+	}
+
+	// Remove tiles in not hidden groups
+	for (int p = 0; p < 4; ++p) {
+		struct hand *hand = &engine->players[p].hand;
+		for (int g = 0; g < hand->nb_groups; ++g) {
+			if (hand->groups[g].hidden)
+				continue;
+
+			histo_index_t tile = hand->groups[g].tile;
+
+			switch (hand->groups[g].type) {
+				case PAIR:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] >= 2);
+					player->tiles_remaining.cells[tile] -= 2;
+					break;
+
+				case TRIPLET:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] >= 3);
+					player->tiles_remaining.cells[tile] -= 3;
+					break;
+
+				case QUAD:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile] == 4);
+					player->tiles_remaining.cells[tile] -= 4;
+					break;
+
+				case SEQUENCE:
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile]);
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile + 1]);
+					ASSERT_BACKTRACE(player->tiles_remaining.cells[tile + 2]);
+					player->tiles_remaining.cells[tile]--;
+					player->tiles_remaining.cells[tile + 1]--;
+					player->tiles_remaining.cells[tile + 2]--;
+					break;
+
+				default:
+					ASSERT_BACKTRACE(0 && "Group type not known");
+			}
+		}
+	}
+}
+
 void client_main_loop(struct net_client *client) {
 	ASSERT_BACKTRACE(client);
 
@@ -344,32 +478,33 @@ void client_main_loop(struct net_client *client) {
 	struct net_packet receiver;
 	struct player *player = NULL;
 	int iplayer = 0, nb_games = 0;
+
+	enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+	init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+
+	engine.gameGUI.window = sfRenderWindow_create(
+	    engine.gameGUI.mode, "Sukantsu (client)", sfResize | sfClose, NULL);
+
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
 				// fprintf(stderr, "Received: pk_init\n");
 				pk_init *init = (pk_init *)&receiver;
 
-				enum player_type types[4];
-				iplayer = (int)init->player_pos;
+				init_hand(&engine.players[0].hand);
+				init_hand(&engine.players[1].hand);
+				init_hand(&engine.players[2].hand);
+				init_hand(&engine.players[3].hand);
 				for (int i = 0; i < 4; ++i) {
-					if (i != iplayer) {
-						types[i] = PLAYER_CLIENT;
-					} else {
-						types[i] = AI_MODE ? PLAYER_AI : PLAYER_HOST;
-					}
+					engine.players[i].player_pos = (init->player_pos + i) % 4;
 				}
 
-				init_riichi_engine(&engine, types[0], types[1], types[2],
-				                   types[3]);
 				engine.nb_games = ++nb_games;
-
 				player = &engine.players[iplayer];
-
 				player->hand.histo = init->histo;
-				player->player_pos = init->player_pos;
 
 				engine.phase = PHASE_INIT;
+				display_GUI(&engine);
 				display_riichi(&engine, iplayer);
 				break;
 			}
@@ -382,12 +517,8 @@ void client_main_loop(struct net_client *client) {
 				engine.wall.nb_tiles = draw->nb_wall_tiles;
 
 				engine.phase = PHASE_DRAW;
-				display_riichi(&engine, iplayer);
-
-				// Using GUI
-				display(&engine, 0);
-				struct gameGUI gameGUI;
-				init_gameGUI(&gameGUI);
+				display_GUI(&engine);
+				//display_riichi(&engine, iplayer);
 				break;
 			}
 
@@ -396,12 +527,15 @@ void client_main_loop(struct net_client *client) {
 				// makegroups(&player->hand, &engine.grouplist);
 
 				pk_input *input = (pk_input *)&receiver;
+				update_tiles_remaining(player, &engine);
 				get_player_input(player, &input->input);
 				send_to_server(client, input, sizeof(pk_input));
 
 				apply_action(player, &input->input);
+
 				engine.phase = PHASE_GETINPUT;
-				display_riichi(&engine, iplayer);
+				display_GUI(&engine);
+				//display_riichi(&engine, iplayer);
 				break;
 			}
 
@@ -416,6 +550,7 @@ void client_main_loop(struct net_client *client) {
 				makegroups(&engine.players[itsumo].hand, &engine.grouplist);
 
 				engine.phase = PHASE_TSUMO;
+				display_GUI(&engine);
 				display_riichi(&engine, itsumo);
 				break;
 			}
@@ -423,19 +558,25 @@ void client_main_loop(struct net_client *client) {
 			case PACKET_UPDATE: {
 				// fprintf(stderr, "Received: pk_update\n");
 				pk_update *update = (pk_update *)&receiver;
-				struct hand *update_hand =
-				    &engine.players[update->player_pos].hand;
+
+				int index = get_index_from_pos(&engine, update->player_pos);
+				struct hand *update_hand = &engine.players[index].hand;
 
 				add_discard(&update_hand->discardlist, update->input.tile);
 				update_hand->last_discard = update->input.tile;
 
 				engine.phase = PHASE_GETINPUT;
-				display_riichi(&engine, update->player_pos);
+				display_GUI(&engine);
+
+				// display_riichi(&engine, update->player_pos);
 
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
 					engine.phase = PHASE_CLAIM;
+					display_GUI(&engine);
 					display_riichi(&engine, update->player_pos);
+
+					// TODO: Ask for claim here
 
 					/*
 					pk_input input = {
@@ -457,4 +598,7 @@ void client_main_loop(struct net_client *client) {
 				break;
 		}
 	}
+
+	destroy_gameGUI(&engine.gameGUI);
+	sfRenderWindow_destroy(engine.gameGUI.window);
 }

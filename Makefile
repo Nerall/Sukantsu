@@ -6,7 +6,7 @@ RELEASE_FLAGS = -O2 -fshort-enums -DNGDEBUG
 CC = gcc
 CPPFLAGS = -MMD
 CFLAGS = -Wall -Wextra -std=c99 ${DEBUG_FLAGS}
-LDLIBS = -lcsfml-network -lcsfml-graphics
+LDLIBS = -lcsfml-system -lcsfml-network -lcsfml-graphics
 
 EXE := sukantsu
 SRC := $(wildcard src/*.c src/core/*.c src/AI/*.c src/network/*.c)

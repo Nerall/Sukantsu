@@ -99,15 +99,22 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
 // Receive data from the client
 // If operation is successful, returns 1, else 0
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
-                             size_t data_size/*, sfTime timeout*/) {
+                             size_t data_size, sfTime timeout) {
 	ASSERT_BACKTRACE(server);
 	ASSERT_BACKTRACE(server->clients[iclient]);
 
-	//selector->add(server->clients[iclient]);
-
 	size_t rec;
 	sfTcpSocket *client = server->clients[iclient];
-	sfSocketStatus status = sfTcpSocket_receive(client, data, data_size, &rec);
+	sfSocketStatus status;
+
+	sfSocketSelector_clear(server->selector);
+	sfSocketSelector_addTcpSocket(server->selector, client);
+
+	if (sfSocketSelector_wait(server->selector, timeout)) {
+		status = sfTcpSocket_receive(client, data, data_size, &rec);
+	} else {
+		status = sfSocketNotReady;
+	}
 
 	const struct timespec delay = {tv_sec : 0, tv_nsec : 10 * 1000000};
 	nanosleep(&delay, NULL);

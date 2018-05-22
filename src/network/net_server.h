@@ -1,6 +1,7 @@
 #ifndef _NET_SERVER_H_
 #define _NET_SERVER_H_
 
+#include <SFML/Network.h>
 #include <time.h>
 
 struct net_server;
@@ -18,6 +19,6 @@ int send_data_to_client(struct net_server *server, int iclient, void *data,
                         size_t data_size);
 
 int receive_data_from_client(struct net_server *server, int iclient, void *data,
-                             size_t data_size);
+                             size_t data_size, sfTime timeout);
 
 #endif // _NET_SERVER_H_

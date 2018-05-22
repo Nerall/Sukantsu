@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 199309L
 #include "riichi_engine.h"
 #include "../AI/detect.h"
 #include "../console_io.h"
@@ -11,15 +12,17 @@
 #include "riichi_engine_s.h"
 #include <SFML/Graphics.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <wchar.h>
 
 #define TIMEOUT_SEND 5
-#define TIMEOUT_RECEIVE 15
+#define TIMEOUT_RECEIVE sfTime_Zero
 
 typedef struct net_packet_init pk_init;
 typedef struct net_packet_draw pk_draw;
 typedef struct net_packet_input pk_input;
+typedef struct net_packet_tsumo pk_tsumo;
 typedef struct net_packet_update pk_update;
 
 static void send_to_all_clients(struct riichi_engine *engine, void *packet,
@@ -291,16 +294,13 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 	struct net_server *server = &engine->server;
 	struct player *player = &engine->players[player_index];
 
-	for (time_t t1 = time(NULL); time(NULL) - t1 < TIMEOUT_RECEIVE;) {
-		if (player->player_type != PLAYER_CLIENT) {
-			get_player_input(player, player_input);
+	player_input->tile = NO_TILE_INDEX;
+	player_input->action = ACTION_PASS;
 
-			if (verify_action(engine, player, player_input)) {
-				ASSERT_BACKTRACE(verify_action(engine, player, player_input));
-				return;
-			}
-		}
-
+	if (player->player_type != PLAYER_CLIENT) {
+		update_tiles_remaining(player, engine);
+		get_player_input(player, player_input);
+	} else {
 		pk_input packet = {packet_type : PACKET_INPUT};
 
 		// [SERVER] Ask client player_index to send input
@@ -312,26 +312,25 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 			        "[ERROR][SERVER] Error while asking"
 			        " input to player %d\n",
 			        player_index);
-			break;
-		}
+		} else {
+			// [SERVER] Receive input from client player_index
+			receive_data_from_client(server, player->net_id, &packet,
+			                         sizeof(pk_input), TIMEOUT_RECEIVE);
+			player->net_status = s;
+			if (!s) {
+				fprintf(stderr,
+				        "[ERROR][SERVER] Error while"
+				        " receiving input from player %d\n",
+				        player_index);
+			}
 
-		// [SERVER] Receive input from client player_index
-		receive_data_from_client(server, player->net_id, &packet,
-		                         sizeof(pk_input));
-		player->net_status = s;
-		if (!s) {
-			fprintf(stderr,
-			        "[ERROR][SERVER] Error while"
-			        " receiving input from player %d\n",
-			        player_index);
-			break;
-		}
-
-		if (verify_action(engine, player, &packet.input)) {
 			*player_input = packet.input;
-			ASSERT_BACKTRACE(verify_action(engine, player, player_input));
-			return;
 		}
+	}
+
+	if (verify_action(engine, player, player_input)) {
+		ASSERT_BACKTRACE(verify_action(engine, player, player_input));
+		return;
 	}
 
 	player_input->tile = NO_TILE_INDEX;
@@ -352,12 +351,11 @@ void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
 	struct player *player = &engine->players[player_index];
 
 	// [SERVER] Send victory infos to all clients
-	pk_update packet = {
-		packet_type : PACKET_UPDATE,
-		player_pos : player->player_pos,
-		input : *input,
-		victory : 1
+	pk_tsumo packet = {
+		packet_type : PACKET_TSUMO,
 	};
+
+	memcpy(&packet.histo, &player->hand.histo, sizeof(struct histogram));
 
 	send_to_all_clients(engine, &packet, sizeof(pk_update), -1);
 }
@@ -390,7 +388,6 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		packet_type : PACKET_UPDATE,
 		player_pos : player->player_pos,
 		input : *input,
-		victory : 0
 	};
 
 	send_to_all_clients(engine, &update_packet, sizeof(pk_update),
@@ -398,7 +395,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 
 	struct action_input claim_input = {tile : input->tile};
 	int player_claim = -1;
-	
+
 	// [SERVER] Potentially receive claim packets from clients
 	for (int c = 0; c < NB_PLAYERS; ++c) {
 		// Player who has played can't claim its own tile
@@ -416,7 +413,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			pk_input packet;
 			// Continue with next player if no claim
 			if (!receive_data_from_client(server, player->net_id, &packet,
-			                              sizeof(pk_input)))
+			                              sizeof(pk_input), TIMEOUT_RECEIVE))
 				continue;
 
 			// Pass if player don't want to claim
@@ -473,7 +470,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			// Verify all claims to see if any is possible
 			enum action claims[4] = {ACTION_CHII, ACTION_PON, ACTION_KAN,
 			                         ACTION_RON};
-			
+
 			// Modified to forbid claims
 			for (int iclaim = 4; iclaim < 4; ++iclaim) {
 				claim_input.action = claims[iclaim];
@@ -486,7 +483,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 				apply_action(other_player, &claim_input);
 
 				// if (claim_input.action == ACTION_RON)
-					// return other_player->player_pos;
+				// return other_player->player_pos;
 
 				// Remove tile from player's discard list
 				pop_last_discard(&player->hand.discardlist);
@@ -540,7 +537,6 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 			packet_type : PACKET_UPDATE,
 			player_pos : (enum table_pos)player_claim,
 			input : claim_input,
-			victory : 0
 		};
 
 		// [SERVER] Send claim infos to all clients
@@ -556,6 +552,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
 	riichi_init_phase(engine);
+
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -570,14 +567,12 @@ int play_riichi_game(struct riichi_engine *engine) {
 		struct action_input player_input;
 
 		// Using GUI
-		// if (player_index == 0)
 		display_GUI(engine);
 
-		/*
-		time_t t1 = time(NULL);
-		if (player_index == 0)
-			do {} while (t1 == time(NULL));
-		*/
+		// Sleep for 0.5s
+		// const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
+		// nanosleep(&delay, NULL);
+
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
 				// A player can't play when he declared riichi
@@ -626,8 +621,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 							engine->players[i].player_score -= 1000;
 					}
 				}
-			}
-			else {
+			} else {
 				engine->players[player_index].player_score += 2000;
 				if (engine->players[player_index].player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
@@ -641,12 +635,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 				}
 			}
 
-				
-			
-			if (engine->nb_rounds % NB_PLAYERS == player_index)
+			if (engine->players[player_index].player_pos != EAST)
+				// if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
-			return player_index;
+			return engine->players[player_index].player_pos;
 		}
 
 		if (is_valid_index(player_input.tile)) {
@@ -661,19 +654,24 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
+	if (!engine->players[0].hand.tenpai)
+		++engine->nb_rounds;
+
 	int nb_tenpai = 0;
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)
-			nb_tenpai++;
+			++nb_tenpai;
 	}
+
 	if (nb_tenpai == 0 || nb_tenpai == 4)
 		return -1;
 
 	for (int i = 0; i < 4; i++) {
 		if (engine->players[i].hand.tenpai)
-			engine->players[i].player_score += 3000/nb_tenpai;
+			engine->players[i].player_score += 3000 / nb_tenpai;
 		else
-			engine->players[i].player_score -= 3000/(4-nb_tenpai);
+			engine->players[i].player_score -= 3000 / (4 - nb_tenpai);
 	}
+
 	return -1;
 }
