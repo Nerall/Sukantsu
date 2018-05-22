@@ -19,4 +19,8 @@ struct discardlist {
 	unsigned char nb_discards;
 };
 
+struct dora {
+	histo_index_t tiles[10];
+	unsigned char nb_revealed;
+};
 #endif // _GROUPS_S_H_

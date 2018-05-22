@@ -47,3 +47,10 @@ histo_index_t pop_last_discard(struct discardlist *discardlist) {
 
 	return discardlist->discards[--discardlist->nb_discards];
 }
+
+void init_doralist(struct doralist *doralist, struct histogram *histo) {
+	ASSERT_BACKTRACE(doralist);
+	for (int i = 0; i < 10; i++)
+		doralist->tiles[i] = random_pop_histogram(histo);
+	doralist->nb_revealed = 0;
+}
