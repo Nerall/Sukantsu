@@ -98,11 +98,6 @@ void host_main() {
 			wprintf(L"Result: Draw\n\n");
 		}
 		else {
-			// char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
-			wprintf(L"%d\n", round);
-			for (int i = 0; i < 4; ++i) {
-				wprintf(L"%d %d\n", (int)engine.players[i].player_pos == win_pos, win_pos);
-			}
 			wprintf(L"Result: %s has won!\n\n",
 					 pnames[(win_pos + round) % 4]);
 			++nb_won_games;

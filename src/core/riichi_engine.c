@@ -615,7 +615,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			groups_to_histo(&player->hand, &histofull);
 			int cpt = 1;
 			histo_index_t dora;
-			for (histo_index_t tiles = 0; tiles < histofull.nb_tiles; ++tiles) {
+			for (histo_index_t itiles = 0; itiles < HISTO_INDEX_MAX; ++itiles) {
 				for (histo_index_t idora = 0;
 					  idora < engine->doralist.nb_revealed; ++idora) {
 					switch (engine->doralist.tiles[idora]) {
@@ -635,12 +635,13 @@ int play_riichi_game(struct riichi_engine *engine) {
 							break;
 					}
 					// wprintf(L"%u\n", dora);
-					if (histofull.cells[tiles] == dora)
+					if (histofull.cells[itiles] == dora)
 						++cpt;
 				}
 			}
 			
-			cpt = 1;
+			wprintf(L"%u\n", engine->doralist.tiles[0]);
+			wprintf(L"%d\n", cpt);
 			// 
 			player->player_won = TSUMO;
 			
