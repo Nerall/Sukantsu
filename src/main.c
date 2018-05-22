@@ -54,6 +54,26 @@ static void wait_for_players(struct riichi_engine *engine) {
 	stop_listen_net_server(&engine->server);
 }
 
+static void rotate_players(struct riichi_engine *engine) {
+	for (int i = 0; i < 4; ++i) {
+		enum table_pos *pos = &engine->players[i].player_pos;
+		switch (*pos) {
+			case EAST:
+				*pos = NORTH;
+				break;
+			case SOUTH:
+				*pos = EAST;
+				break;
+			case WEST:
+				*pos = SOUTH;
+				break;
+			case NORTH:
+				*pos = WEST;
+				break;
+		}
+	}
+}
+
 void host_main() {
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
@@ -79,6 +99,9 @@ void host_main() {
 			wprintf(L"Result: Player %s has won!\n", pos[index_win]);
 			++nb_won_games;
 		}
+
+		rotate_players(&engine);
+
 		if (AI_MODE) {
 			if (engine.nb_games > 19)
 				break;

@@ -374,24 +374,19 @@ void client_main_loop(struct net_client *client) {
 				// fprintf(stderr, "Received: pk_init\n");
 				pk_init *init = (pk_init *)&receiver;
 
-				enum player_type types[4];
-				iplayer = (int)init->player_pos;
+				enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+				init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI,
+					PLAYER_AI);
+
 				for (int i = 0; i < 4; ++i) {
-					if (i != iplayer) {
-						types[i] = PLAYER_CLIENT;
-					} else {
-						types[i] = AI_MODE ? PLAYER_AI : PLAYER_HOST;
-					}
+					engine.players[i].player_pos = (init->player_pos + i) % 4;
 				}
 
-				init_riichi_engine(&engine, types[0], types[1], types[2],
-				                   types[3]);
 				engine.nb_games = ++nb_games;
 
 				player = &engine.players[iplayer];
 
 				player->hand.histo = init->histo;
-				player->player_pos = init->player_pos;
 
 				engine.phase = PHASE_INIT;
 				display_riichi(&engine, iplayer);

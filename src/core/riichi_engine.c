@@ -553,6 +553,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 	riichi_init_phase(engine);
 
+	fprintf(stderr, "############## %d\n", engine->players[0].player_pos);
+
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
@@ -670,5 +672,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 		else
 			engine->players[i].player_score -= 3000 / (4 - nb_tenpai);
 	}
+
 	return -1;
 }
