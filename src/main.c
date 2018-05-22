@@ -55,6 +55,7 @@ static void wait_for_players(struct riichi_engine *engine) {
 }
 
 static void rotate_players(struct riichi_engine *engine) {
+	++engine->nb_rounds;
 	for (int i = 0; i < 4; ++i) {
 		enum table_pos *pos = &engine->players[i].player_pos;
 		switch (*pos) {
@@ -96,20 +97,19 @@ void host_main() {
 		char *pnames[] = {"Thibaut", "Nicolas", "Manuel", "Gabriel"};
 		if (win_pos == -1) {
 			wprintf(L"Result: Draw\n\n");
-		}
-		else {
-			wprintf(L"Result: %s has won!\n\n",
-					 pnames[(win_pos + round) % 4]);
+		} else {
+			wprintf(L"Result: %s has won!\n\n", pnames[(win_pos + round) % 4]);
 			++nb_won_games;
 		}
 
 		for (int i = 0; i < 4; ++i) {
 			wprintf(L"%s has %d points.\n", pnames[i],
-					 engine.players[i].player_score);
+			        engine.players[i].player_score);
 		}
 
 		// Rotate if winner != EAST
-		if (win_pos != 0 || (win_pos == -1 && engine.players[(win_pos + round) % 4].hand.tenpai))
+		if (win_pos != 0 ||
+		    (win_pos == -1 && engine.players[round % 4].hand.tenpai))
 			rotate_players(&engine);
 
 		if (AI_MODE) {
@@ -133,10 +133,9 @@ void host_main() {
 
 	wprintf(L"\nYou played %d seconds.", time(NULL) - t_init);
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
-	         (engine.nb_games > 1) ? "s" : "");
-	wprintf(L"%d game%s won.\n", nb_won_games, 
-			 (nb_won_games > 1) ? "s were" : " was");
-
+	        (engine.nb_games > 1) ? "s" : "");
+	wprintf(L"%d game%s won.\n", nb_won_games,
+	        (nb_won_games > 1) ? "s were" : " was");
 
 	// Destroy GUI
 	destroy_gameGUI(&engine.gameGUI);

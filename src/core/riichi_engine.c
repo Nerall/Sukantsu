@@ -671,9 +671,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 				}
 			}
 
-			if (player->player_pos != EAST)
-				++engine->nb_rounds;
-
 			return player->player_pos;
 		}
 
@@ -689,8 +686,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
-	if (!engine->players[0].hand.tenpai)
-		++engine->nb_rounds;
 
 	int nb_tenpai = 0;
 	for (int i = 0; i < 4; i++) {
