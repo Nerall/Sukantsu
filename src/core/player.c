@@ -25,6 +25,7 @@ void init_player(struct player *player, enum player_type player_type,
 	ASSERT_BACKTRACE(player);
 
 	init_hand(&player->hand);
+	init_histogram(&player->tiles_remaining, 4);
 	player->player_type = player_type;
 	player->player_pos = player_pos;
 	player->player_score = 25000;
@@ -403,6 +404,63 @@ static int get_index_from_pos(struct riichi_engine *engine,
 	}
 
 	ASSERT_BACKTRACE(0 && "Position not found in players");
+}
+
+// Update player->tiles_remaining based on **public** infos
+void update_tiles_remaining(struct player *player,
+                            struct riichi_engine *engine) {
+	ASSERT_BACKTRACE(player);
+	ASSERT_BACKTRACE(engine);
+
+	// Reset histogram
+	init_histogram(&player->tiles_remaining, 4);
+	
+	// Remove tiles in our hand
+	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
+		player->tiles_remaining.cells[i] -= player->hand.histo.cells[i];
+	}
+
+	// Remove tiles in every player's discard
+	for (int p = 0; p < 4; ++p) {
+		struct discardlist *list = &engine->players[p].hand.discardlist;
+		for (unsigned char n = 0; n < list->nb_discards; ++n) {
+			player->tiles_remaining.cells[list->discards[n]]--;
+		}
+	}
+
+	// Remove tiles in not hidden groups
+	for (int p = 0; p < 4; ++p) {
+		struct hand *hand = &engine->players[p].hand;
+		for (int g = 0; g < hand->nb_groups; ++g) {
+			if (hand->groups[g].hidden)
+				continue;
+
+			histo_index_t tile = hand->groups[g].tile;
+
+			switch (hand->groups[g].type) {
+				case PAIR:
+					player->tiles_remaining.cells[tile] -= 2;
+					break;
+
+				case TRIPLET:
+					player->tiles_remaining.cells[tile] -= 3;
+					break;
+
+				case QUAD:
+					player->tiles_remaining.cells[tile] -= 4;
+					break;
+
+				case SEQUENCE:
+					player->tiles_remaining.cells[tile]--;
+					player->tiles_remaining.cells[tile + 1]--;
+					player->tiles_remaining.cells[tile + 2]--;
+					break;
+
+				default:
+					ASSERT_BACKTRACE(0 && "Group type not known");
+			}
+		}
+	}
 }
 
 void client_main_loop(struct net_client *client) {
