@@ -4,6 +4,7 @@
 #include "core/riichi_engine_s.h"
 #include "network/net_client.h"
 #include "network/net_server.h"
+#include "network/net_packets.h"
 #include <SFML/Graphics.h>
 #include <locale.h>
 #include <stdio.h>
@@ -75,6 +76,56 @@ static void rotate_players(struct riichi_engine *engine) {
 	}
 }
 
+static void send_end_game(struct riichi_engine *engine) {
+	struct net_packet_init packet = {
+		packet_type : PACKET_INIT,
+		end_game : 1,
+	};
+
+	struct net_server *server = &engine->server;
+
+	for (int i = 0; i < 4; ++i) {
+		switch (engine->players[i].player_pos) {
+			case EAST:
+				packet.score_east = engine->players[i].player_score;
+				break;
+
+			case SOUTH:
+				packet.score_south = engine->players[i].player_score;
+				break;
+
+			case WEST:
+				packet.score_west = engine->players[i].player_score;
+				break;
+
+			case NORTH:
+				packet.score_north = engine->players[i].player_score;
+				break;
+		}
+	}
+
+	// [SERVER] Send tiles to all clients
+	for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
+		struct player *player = &engine->players[client_index];
+
+		if (player->player_type != PLAYER_CLIENT)
+			continue;
+
+		packet.player_pos = player->player_pos;
+		packet.histo = player->hand.histo;
+
+		int s = send_data_to_client(server, player->net_id, &packet,
+		                            sizeof(struct net_packet_init));
+		player->net_status = !s;
+		if (s) {
+			fprintf(stderr,
+			        "[ERROR][SERVER] Error while sending"
+			        " init data to player %d\n",
+			        client_index);
+		}
+	}
+}
+
 void host_main() {
 	struct riichi_engine engine;
 	enum player_type ptype = AI_MODE ? PLAYER_AI : PLAYER_HOST;
@@ -130,6 +181,8 @@ void host_main() {
 		while (getchar() != '\n')
 			;
 	} while (c != 'N');
+
+	send_end_game(&engine);
 
 	wprintf(L"\nYou played %d seconds.", time(NULL) - t_init);
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,

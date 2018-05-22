@@ -193,7 +193,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 	// Initialize structures
 	init_histogram(&engine->wall, 4);
 	init_doralist(&engine->doralist, &engine->wall);
-	
+
 	// Give 13 tiles to each player
 	for (int player_index = 0; player_index < NB_PLAYERS; ++player_index) {
 		// player_type has been initialized in init_riichi_engine
@@ -206,6 +206,31 @@ void riichi_init_phase(struct riichi_engine *engine) {
 		engine->players[player_index].hand.last_tile = NO_TILE_INDEX;
 	}
 
+	pk_init packet = {
+		packet_type : PACKET_INIT,
+		end_game : 0,
+	};
+
+	for (int i = 0; i < 4; ++i) {
+		switch (engine->players[i].player_pos) {
+			case EAST:
+				packet.score_east = engine->players[i].player_score;
+				break;
+
+			case SOUTH:
+				packet.score_south = engine->players[i].player_score;
+				break;
+
+			case WEST:
+				packet.score_west = engine->players[i].player_score;
+				break;
+
+			case NORTH:
+				packet.score_north = engine->players[i].player_score;
+				break;
+		}
+	}
+
 	// [SERVER] Send tiles to all clients
 	for (int client_index = 0; client_index < NB_PLAYERS; ++client_index) {
 		struct player *player = &engine->players[client_index];
@@ -216,11 +241,8 @@ void riichi_init_phase(struct riichi_engine *engine) {
 		// Warning: sfTrue !
 		sfTcpSocket_setBlocking(server->clients[player->net_id], sfTrue);
 
-		pk_init packet = {
-			packet_type : PACKET_INIT,
-			player_pos : player->player_pos,
-			histo : player->hand.histo
-		};
+		packet.player_pos = player->player_pos;
+		packet.histo = player->hand.histo;
 
 		int s = send_data_to_client(server, player->net_id, &packet,
 		                            sizeof(pk_init));
@@ -488,10 +510,10 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 	if (player_claim != -1) {
 		engine->players[player_claim].hand.has_claimed = 1;
 
-		ASSERT_BACKTRACE(claim_input.action == ACTION_RON
-			|| claim_input.action == ACTION_PON
-			|| claim_input.action == ACTION_CHII
-			|| claim_input.action == ACTION_KAN);
+		ASSERT_BACKTRACE(claim_input.action == ACTION_RON ||
+		                 claim_input.action == ACTION_PON ||
+		                 claim_input.action == ACTION_CHII ||
+		                 claim_input.action == ACTION_KAN);
 
 		// Apply the claim
 		apply_action(&engine->players[player_claim], &claim_input);
@@ -613,7 +635,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			histo_index_t dora;
 			for (histo_index_t itiles = 0; itiles < HISTO_INDEX_MAX; ++itiles) {
 				for (histo_index_t idora = 0;
-					  idora < engine->doralist.nb_revealed; ++idora) {
+				     idora < engine->doralist.nb_revealed; ++idora) {
 					switch (engine->doralist.tiles[idora]) {
 						case 8:
 						case 17:
@@ -636,12 +658,12 @@ int play_riichi_game(struct riichi_engine *engine) {
 						cpt += histofull.cells[itiles];
 				}
 			}
-			
+
 			wprintf(L"%u\n", engine->doralist.tiles[0]);
 			wprintf(L"%d\n", cpt);
-			// 
+			//
 			player->player_won = TSUMO;
-			
+
 			if (player->player_pos == EAST) {
 				player->player_score += 3000 * cpt;
 				if (player->player_won == TSUMO) {
@@ -652,8 +674,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 							engine->players[i].player_score -= 1000 * cpt;
 					}
 				}
-			}
-			else {
+			} else {
 				player->player_score += 2000 * cpt;
 				if (player->player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {

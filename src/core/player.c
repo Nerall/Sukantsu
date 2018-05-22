@@ -131,10 +131,10 @@ static void input_AI(struct player *player, struct action_input *input) {
 	// Take "last_tile" tile
 	if (player_hand->last_tile != NO_TILE_INDEX &&
 	    get_histobit(&player_hand->furitentiles, player_hand->last_tile)) {
-		input->tile = player_hand->last_tile;
-		player_hand->last_tile = NO_TILE_INDEX;
-		// wprintf(L"P%u furiten\n", player->player_pos + 1);
-		return;
+	    input->tile = player_hand->last_tile;
+	    player_hand->last_tile = NO_TILE_INDEX;
+	    // wprintf(L"P%u furiten\n", player->player_pos + 1);
+	    return;
 	} */
 
 	// Take "best" tile
@@ -418,7 +418,7 @@ void update_tiles_remaining(struct player *player,
 
 	// Reset histogram
 	init_histogram(&player->tiles_remaining, 4);
-	
+
 	// Remove tiles in our hand
 	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
 		ASSERT_BACKTRACE(player->hand.histo.cells[i] <= 4);
@@ -482,6 +482,7 @@ void client_main_loop(struct net_client *client) {
 	struct net_packet receiver;
 	struct player *player = NULL;
 	int iplayer = 0, nb_games = 0;
+	int who_won = -666;
 
 	enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
 	init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI, PLAYER_AI);
@@ -499,8 +500,26 @@ void client_main_loop(struct net_client *client) {
 				init_hand(&engine.players[1].hand);
 				init_hand(&engine.players[2].hand);
 				init_hand(&engine.players[3].hand);
+
 				for (int i = 0; i < 4; ++i) {
 					engine.players[i].player_pos = (init->player_pos + i) % 4;
+					switch (engine.players[i].player_pos) {
+						case EAST:
+							engine.players[i].player_score = init->score_east;
+							break;
+
+						case SOUTH:
+							engine.players[i].player_score = init->score_south;
+							break;
+
+						case WEST:
+							engine.players[i].player_score = init->score_west;
+							break;
+
+						case NORTH:
+							engine.players[i].player_score = init->score_north;
+							break;
+					}
 				}
 
 				engine.nb_games = ++nb_games;
@@ -510,6 +529,29 @@ void client_main_loop(struct net_client *client) {
 				engine.phase = PHASE_INIT;
 				display_GUI(&engine);
 				display_riichi(&engine, iplayer);
+
+				if (who_won != -666) {
+					char *pnames[] = {"Nicolas", "Manuel", "Gabriel", "Thibaut"};
+					if (who_won == -1) {
+						wprintf(L"Result: Draw\n\n");
+					} else {
+						wprintf(L"Result: %s has won!\n\n", pnames[who_won]);
+					}
+
+					who_won = -1;
+
+					for (int i = 0; i < 4; ++i) {
+						wprintf(L"%s has %d points.\n", pnames[i],
+						        engine.players[i].player_score);
+					}
+				}
+
+				if (init->end_game) {
+					destroy_gameGUI(&engine.gameGUI);
+					sfRenderWindow_destroy(engine.gameGUI.window);
+					return;
+				}
+
 				break;
 			}
 
@@ -522,7 +564,7 @@ void client_main_loop(struct net_client *client) {
 
 				engine.phase = PHASE_DRAW;
 				display_GUI(&engine);
-				//display_riichi(&engine, iplayer);
+				// display_riichi(&engine, iplayer);
 				break;
 			}
 
@@ -539,7 +581,7 @@ void client_main_loop(struct net_client *client) {
 
 				engine.phase = PHASE_GETINPUT;
 				display_GUI(&engine);
-				//display_riichi(&engine, iplayer);
+				// display_riichi(&engine, iplayer);
 				break;
 			}
 
@@ -547,15 +589,20 @@ void client_main_loop(struct net_client *client) {
 				// fprintf(stderr, "Received: pk_tsumo\n");
 				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
 
-				int itsumo = (int)tsumo->player_pos;
-				memcpy(&engine.players[itsumo].hand.histo, &tsumo->histo,
+				int index_win = 0;
+				for (int i = 0; i < 4; ++i) {
+					if (engine.players[i].player_pos == tsumo->player_pos) {
+						index_win = i;
+						break;
+					}
+				}
+
+				who_won = index_win;
+
+				memcpy(&engine.players[index_win].hand.histo, &tsumo->histo,
 				       sizeof(struct histogram));
 
-				makegroups(&engine.players[itsumo].hand, &engine.grouplist);
-
-				engine.phase = PHASE_TSUMO;
-				display_GUI(&engine);
-				display_riichi(&engine, itsumo);
+				makegroups(&engine.players[index_win].hand, &engine.grouplist);
 				break;
 			}
 
