@@ -567,12 +567,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 		struct action_input player_input;
 
 		// Using GUI
-		// if (player_index == 0)
 		display_GUI(engine);
 
 		// Sleep for 0.5s
-		const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
-		nanosleep(&delay, NULL);
+		// const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
+		// nanosleep(&delay, NULL);
 
 		if (!win) {
 			if (player->hand.riichi != NORIICHI) {
@@ -636,7 +635,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 				}
 			}
 
-			if (player_index != EAST)
+			if (engine->players[player_index].player_pos != EAST)
 			//if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
@@ -655,7 +654,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
-	if (engine->players[engine->nb_rounds % 4].hand.tenpai)
+	if (!engine->players[0].hand.tenpai)
 		++engine->nb_rounds;
 	
 	int nb_tenpai = 0;
