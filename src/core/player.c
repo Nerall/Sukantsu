@@ -27,6 +27,7 @@ void init_player(struct player *player, enum player_type player_type,
 	init_hand(&player->hand);
 	player->player_type = player_type;
 	player->player_pos = player_pos;
+	player->player_score = 25000;
 }
 
 static void input_console(const struct player *player,

@@ -556,12 +556,10 @@ int play_riichi_game(struct riichi_engine *engine) {
 	ASSERT_BACKTRACE(engine);
 
 	riichi_init_phase(engine);
-
 	// Main loop
 	for (int player_index = 0; engine->wall.nb_tiles > 14;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[player_index];
-
 		riichi_draw_phase(engine, player_index);
 
 		// Hand has changed => set histobits
@@ -617,6 +615,34 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
+			player->player_won = TSUMO;
+			if (engine->players[player_index].player_pos == EAST) {
+				engine->players[player_index].player_score += 3000;
+				if (engine->players[player_index].player_won == TSUMO) {
+					for (int i = 0; i < 4; i++) {
+						if (i == player_index)
+							continue;
+						else
+							engine->players[i].player_score -= 1000;
+					}
+				}
+			}
+			else {
+				engine->players[player_index].player_score += 2000;
+				if (engine->players[player_index].player_won == TSUMO) {
+					for (int i = 0; i < 4; i++) {
+						if (i == player_index)
+							continue;
+						if (engine->players[i].player_pos == EAST)
+							engine->players[i].player_score -= 1000;
+						else
+							engine->players[i].player_score -= 500;
+					}
+				}
+			}
+
+				
+			
 			if (engine->nb_rounds % NB_PLAYERS == player_index)
 				++engine->nb_rounds;
 
@@ -635,6 +661,19 @@ int play_riichi_game(struct riichi_engine *engine) {
 		if (player->player_type == PLAYER_HOST)
 			display_riichi(engine, player_index);
 	}
+	int nb_tenpai = 0;
+	for (int i = 0; i < 4; i++) {
+		if (engine->players[i].hand.tenpai)
+			nb_tenpai++;
+	}
+	if (nb_tenpai == 0 || nb_tenpai == 4)
+		return -1;
 
+	for (int i = 0; i < 4; i++) {
+		if (engine->players[i].hand.tenpai)
+			engine->players[i].player_score += 3000/nb_tenpai;
+		else
+			engine->players[i].player_score -= 3000/(4-nb_tenpai);
+	}
 	return -1;
 }
