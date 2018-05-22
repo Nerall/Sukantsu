@@ -640,7 +640,7 @@ void display_GUI(struct riichi_engine *engine) {
 
 	struct hand handcopy;
 
-	copy_hand(&engine->players[(-(engine->nb_rounds % 4) + 4) % 4]
+	copy_hand(&engine->players[0]
 			  .hand, &handcopy);
 	struct tilesGUI *P1 = &gameGUI->player1hand;
 	struct tilesGUI *D1 = &gameGUI->player1discards;
@@ -707,7 +707,7 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	// Player 2
-	copy_hand(&engine->players[(-(engine->nb_rounds % 4) + 5) % 4]
+	copy_hand(&engine->players[1]
 			   .hand, &handcopy);
 	struct tilesGUI *P2 = &gameGUI->player2hand;
 	struct tilesGUI *D2 = &gameGUI->player2discards;
@@ -779,7 +779,7 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	// Player 3
-	copy_hand(&engine->players[(-(engine->nb_rounds % 4) + 6) % 4]
+	copy_hand(&engine->players[2]
 			   .hand, &handcopy);
 	struct tilesGUI *P3 = &gameGUI->player3hand;
 	struct tilesGUI *D3 = &gameGUI->player3discards;
@@ -851,7 +851,7 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	// Player 4
-	copy_hand(&engine->players[(-(engine->nb_rounds % 4) + 7) % 4]
+	copy_hand(&engine->players[3]
 			   .hand, &handcopy);
 	struct tilesGUI *P4 = &gameGUI->player4hand;
 	struct tilesGUI *D4 = &gameGUI->player4discards;

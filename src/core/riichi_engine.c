@@ -555,7 +555,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	riichi_init_phase(engine);
 
 	// Main loop
-	for (int player_index = 0; engine->wall.nb_tiles > 4;
+	for (int player_index = engine->nb_rounds % 4; engine->wall.nb_tiles > 4;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[player_index];
 		riichi_draw_phase(engine, player_index);

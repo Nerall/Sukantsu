@@ -114,7 +114,7 @@ void host_main() {
 		}
 
 		// Rotate if winner != EAST
-		if (win_pos != 0 || (win_pos == -1 && engine.players[0].hand.tenpai))
+		if (win_pos != 0 || (win_pos == -1 && engine.players[(win_pos + round) % 4].hand.tenpai))
 			rotate_players(&engine);
 
 		if (AI_MODE) {
