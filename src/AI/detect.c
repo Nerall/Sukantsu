@@ -4,6 +4,8 @@
 #include "../core/hand_s.h"
 #include "../core/histogram.h"
 #include "../debug.h"
+#include <wchar.h>
+#include "../console_io.h"
 
 int ischiitoi(const struct hand *hand) {
 	ASSERT_BACKTRACE(hand);
@@ -46,7 +48,7 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
                            struct grouplist *grouplist, int pair,
                            int *max_groups) {
 	ASSERT_BACKTRACE(hand);
-
+/*
 	char b = 0;
 	int i = 0;
 	while (!b && i < hand->nb_groups) {
@@ -54,10 +56,11 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 			b = 1;
 		++i;
 	}
+*/
 
-	if (hand->nb_groups >= 5) {
+	if (hand->nb_groups == 5 && pair) {
 		add_copy_grouplist(grouplist, hand->groups);
-		*max_groups = 5;
+		*max_groups = hand->nb_groups;
 		return;
 	}
 
@@ -107,7 +110,7 @@ static void makegroups_rec(struct hand *hand, histo_index_t index,
 int makegroups(struct hand *hand, struct grouplist *grouplist) {
 	histo_index_t last_tile = hand->last_tile;
 	init_grouplist(grouplist);
-	int max_groups;
+	int max_groups = 0;
 	makegroups_rec(hand, 0, grouplist, 0, &max_groups);
 	hand->last_tile = last_tile;
 	return max_groups;
@@ -121,14 +124,15 @@ void tenpailist(struct hand *hand, struct grouplist *grouplist) {
 	hand->tenpai = 0;
 
 	int max_groups = makegroups(hand, grouplist);
-	if (max_groups != 4)
+
+	if (max_groups < 4)
 		return;
 
 	struct histogram histofull;
 	groups_to_histo(hand, &histofull);
 
 	histo_index_t last_tile = hand->last_tile;
-	for (histo_index_t j = 0; j < 34; ++j) {
+	for (histo_index_t j = 0; j < HISTO_INDEX_MAX; ++j) {
 		if (histofull.cells[j] < 4) {
 			add_tile_hand(hand, j);
 			if (is_valid_hand(hand, grouplist)) {
