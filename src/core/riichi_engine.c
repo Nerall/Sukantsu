@@ -613,7 +613,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
 			int cpt = 1;
 			for (int i = 0; i < engine->players[player_index].hand.histo.nb_tiles; i++) {
-				for (int j = 0 j < engine->doralist.nb_reveal; j++) {
+				for (int j = 0; j < engine->doralist.nb_revealed; j++) {
 					if (engine->doralist.tiles[j] == 8) {
 						if (engine->players[player_index].hand.histo.cells[i] == 0)
 							cpt++;
