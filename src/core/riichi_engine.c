@@ -555,7 +555,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 	riichi_init_phase(engine);
 
 	// Main loop
-	for (int player_index = 0; engine->wall.nb_tiles > 14;
+	for (int player_index = 0; engine->wall.nb_tiles > 4;
 	     player_index = (player_index + 1) % NB_PLAYERS) {
 		struct player *player = &engine->players[player_index];
 		riichi_draw_phase(engine, player_index);
@@ -611,65 +611,68 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		if (win) {
 			riichi_tsumo_phase(engine, player_index, &player_input);
+			struct histogram histofull;
+			groups_to_histo(&player->hand, &histofull);
 			int cpt = 1;
-			for (int i = 0; i < engine->players[player_index].hand.histo.nb_tiles; i++) {
-				for (int j = 0; j < engine->doralist.nb_revealed; j++) {
-					if (engine->doralist.tiles[j] == 8) {
-						if (engine->players[player_index].hand.histo.cells[i] == 0)
-							cpt++;
+			histo_index_t dora;
+			for (histo_index_t tiles = 0; tiles < histofull.nb_tiles; ++tiles) {
+				for (histo_index_t idora = 0;
+					  idora < engine->doralist.nb_revealed; ++idora) {
+					switch (engine->doralist.tiles[idora]) {
+						case 8:
+						case 17:
+						case 26:
+							dora = engine->doralist.tiles[idora] - 8;
+							break;
+						case 30:
+							dora = 27;
+							break;
+						case 33:
+							dora = 31;
+							break;
+						default:
+							dora = engine->doralist.tiles[idora] + 1;
+							break;
 					}
-					else if (engine->doralist.tiles[j] == 17) {
-						if (engine->players[player_index].hand.histo.cells[i] == 9)
-							cpt++;
-					}
-					else if (engine->doralist.tiles[j] == 26) {
-						if (engine->players[player_index].hand.histo.cells[i] == 18)
-							cpt++;
-					}
-					else if (engine->doralist.tiles[j] == 30) {
-						if (engine->players[player_index].hand.histo.cells[i] == 27)
-							cpt++;
-					}
-					else if (engine->doralist.tiles[j] == 33) {
-						if (engine->players[player_index].hand.histo.cells[i] == 31)
-							cpt++;
-					}
-					else {
-						if (engine->players[player_index].hand.histo.cells[i] == engine->doralist.tiles[j] + 1)
-							cpt++;
-					}
+					// wprintf(L"%u\n", dora);
+					if (histofull.cells[tiles] == dora)
+						++cpt;
 				}
-			}		
+			}
+			
+			cpt = 1;
+			// 
 			player->player_won = TSUMO;
-			if (engine->players[player_index].player_pos == EAST) {
-				engine->players[player_index].player_score += 3000*cpt;
-				if (engine->players[player_index].player_won == TSUMO) {
+			
+			if (player->player_pos == EAST) {
+				player->player_score += 3000 * cpt;
+				if (player->player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						else
-							engine->players[i].player_score -= 1000*cpt;
+							engine->players[i].player_score -= 1000 * cpt;
 					}
 				}
-			} else {
-				engine->players[player_index].player_score += 2000*cpt;
-				if (engine->players[player_index].player_won == TSUMO) {
+			}
+			else {
+				player->player_score += 2000 * cpt;
+				if (player->player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						if (engine->players[i].player_pos == EAST)
-							engine->players[i].player_score -= 1000*cpt;
+							engine->players[i].player_score -= 1000 * cpt;
 						else
-							engine->players[i].player_score -= 500*cpt;
+							engine->players[i].player_score -= 500 * cpt;
 					}
 				}
 			}
 
-			if (engine->players[player_index].player_pos != EAST)
-				// if (engine->nb_rounds % NB_PLAYERS == player_index)
+			if (player->player_pos != EAST)
 				++engine->nb_rounds;
 
-			return engine->players[player_index].player_pos;
+			return player->player_pos;
 		}
 
 		if (is_valid_index(player_input.tile)) {

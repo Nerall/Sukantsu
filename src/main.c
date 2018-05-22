@@ -91,19 +91,26 @@ void host_main() {
 	time_t t_init = time(NULL);
 
 	do {
+		int round = engine.nb_rounds;
 		int win_pos = play_riichi_game(&engine);
+		char *pnames[] = {"Thibaut", "Nicolas", "Manuel", "Gabriel"};
 		if (win_pos == -1) {
 			wprintf(L"Result: Draw\n\n");
 		}
 		else {
-			char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
-			wprintf(L"Result: Player %s has won!\n\n", pos[win_pos]);
+			// char *pos[] = {"EAST", "SOUTH", "WEST", "NORTH"};
+			wprintf(L"%d\n", round);
+			for (int i = 0; i < 4; ++i) {
+				wprintf(L"%d %d\n", (int)engine.players[i].player_pos == win_pos, win_pos);
+			}
+			wprintf(L"Result: %s has won!\n\n",
+					 pnames[(win_pos + round) % 4]);
 			++nb_won_games;
 		}
 
-		char *pnames[] = {"Thibaut", "Nicolas", "Manuel", "Gabriel"};
 		for (int i = 0; i < 4; ++i) {
-			wprintf(L"%s has %d points.\n", pnames[i], engine.players[i].player_score);
+			wprintf(L"%s has %d points.\n", pnames[i],
+					 engine.players[i].player_score);
 		}
 
 		// Rotate if winner != EAST
