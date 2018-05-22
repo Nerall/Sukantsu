@@ -193,6 +193,7 @@ void riichi_init_phase(struct riichi_engine *engine) {
 	// Initialize structures
 	init_histogram(&engine->wall, 4);
 	init_doralist(&engine->doralist, &engine->wall);
+	
 	// Give 13 tiles to each player
 	for (int player_index = 0; player_index < NB_PLAYERS; ++player_index) {
 		// player_type has been initialized in init_riichi_engine
@@ -274,8 +275,7 @@ void riichi_draw_phase(struct riichi_engine *engine, int player_index) {
 			if (!s) {
 				fprintf(stderr,
 				        "[ERROR][SERVER] Error while sending"
-				Find or start a conversation
-        " popped tile to player %d\n",
+				        " popped tile to player %d\n",
 				        player_index);
 			}
 		}

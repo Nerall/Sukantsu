@@ -3,7 +3,6 @@
 #include "groups_s.h"
 #include <string.h>
 
-
 // Initialize an empty group
 // The pointer's data must be accessible
 void init_group(struct group *group) {
@@ -51,7 +50,11 @@ histo_index_t pop_last_discard(struct discardlist *discardlist) {
 
 void init_doralist(struct doralist *doralist, struct histogram *histo) {
 	ASSERT_BACKTRACE(doralist);
-	for (int i = 0; i < 10; i++)
+	ASSERT_BACKTRACE(histo);
+
+	for (int i = 0; i < 10; i++) {
 		doralist->tiles[i] = random_pop_histogram(histo);
+	}
+
 	doralist->nb_revealed = 1;
 }
