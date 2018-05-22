@@ -426,7 +426,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					tileincrement.y = 35;
 					break;
 				case 1:
-					tileposition.x = 481;
+					tileposition.x = 531;
 					tileposition.y = 378;
 					tileincrement.x = 35;
 					tileincrement.y = -26;
@@ -438,7 +438,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					tileincrement.y = -35;
 					break;
 				case 3:
-					tileposition.x = 319;
+					tileposition.x = 269;
 					tileposition.y = 222;
 					tileincrement.x = -35;
 					tileincrement.y = 26;
@@ -455,14 +455,14 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 			scale.x = 0.11;
 			bordersize.x = 25;
 			bordersize.y = 34;
-			tileposition.x = 0;
-			tileposition.y = 0;
-			tileincrement.x = 0;
-			tileincrement.y = 0;
+			tileposition.x = 335;
+			tileposition.y = 265;
+			tileincrement.x = 26;
+			tileincrement.y = 35;
 			break;
 		default:
-			scale.x = 0.15;
-			scale.y = 0.15;
+			scale.x = 1;
+			scale.y = 1;
 			bordersize.x = 0;
 			bordersize.y = 0;
 			tileposition.x = 0;
@@ -506,12 +506,12 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 
 	gameGUI->center = NULL;
 	sfVector2f centerposition;
-	centerposition.x = 320;
+	centerposition.x = 270;
 	centerposition.y = 220;
 	gameGUI->centerposition = centerposition;
 	gameGUI->centercolor = sfGreen;
 	sfVector2f centersize;
-	centersize.x = 160;
+	centersize.x = 260;
 	centersize.y = 160;
 	gameGUI->centersize = centersize;
 
@@ -521,19 +521,19 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 		sprintf(path, "src/tiles/%d.png", i);
 		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
 	}
+	gameGUI->center = sfRectangleShape_create();
 
 	gameGUI->player1hand.border = sfRectangleShape_create();
 	gameGUI->player2hand.border = sfRectangleShape_create();
 	gameGUI->player3hand.border = sfRectangleShape_create();
 	gameGUI->player4hand.border = sfRectangleShape_create();
 
-	gameGUI->center = sfRectangleShape_create();
 	for (int i = 0; i < 14; ++i) {
 		gameGUI->player1hand.tilesprite[i] = sfSprite_create();
 		gameGUI->player2hand.tilesprite[i] = sfSprite_create();
 		gameGUI->player3hand.tilesprite[i] = sfSprite_create();
 		gameGUI->player4hand.tilesprite[i] = sfSprite_create();
-}
+	}
 
 	gameGUI->player1discards.border = sfRectangleShape_create();
 	gameGUI->player2discards.border = sfRectangleShape_create();
@@ -545,9 +545,13 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 		gameGUI->player2discards.tilesprite[i] = sfSprite_create();
 		gameGUI->player3discards.tilesprite[i] = sfSprite_create();
 		gameGUI->player4discards.tilesprite[i] = sfSprite_create();
-
 	}
 
+	gameGUI->doras.border = sfRectangleShape_create();
+
+	for (int i = 0; i < 10; ++i) {
+		gameGUI->doras.tilesprite[i] = sfSprite_create();
+	}
 }
 
 void destroy_gameGUI(struct gameGUI *gameGUI) {
@@ -580,7 +584,12 @@ void destroy_gameGUI(struct gameGUI *gameGUI) {
 		sfSprite_destroy(gameGUI->player2discards.tilesprite[i]);
 		sfSprite_destroy(gameGUI->player3discards.tilesprite[i]);
 		sfSprite_destroy(gameGUI->player4discards.tilesprite[i]);
+	}
 
+	sfRectangleShape_destroy(gameGUI->doras.border);
+
+	for (int i = 0; i < 10; ++i) {
+		sfSprite_destroy(gameGUI->doras.tilesprite[i]);
 	}
 }
 
@@ -595,14 +604,6 @@ void display_GUI(struct riichi_engine *engine) {
 	//   is not so great for my computer's memory ;)               //
 	/////////////////////////////////////////////////////////////////
 
-	/*
-	for (int i = 0; i < 35; ++i) {
-		char path[20];
-		sprintf(path, "src/tiles/%d.png", i);
-		gameGUI->textureslist[i] = sfTexture_createFromFile(path, NULL);
-	}
-	*/
-
 	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
 	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
 	sfRectangleShape_setPosition(gameGUI->center, gameGUI->centerposition);
@@ -610,6 +611,32 @@ void display_GUI(struct riichi_engine *engine) {
 	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
 	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center,
 	                                  NULL);
+
+	sfVector2f position;
+
+	struct tilesGUI *doras = &gameGUI->doras;
+	for (int i = 0; i < 10; ++i) {
+		position.x =
+		    doras->tileposition.x + doras->tileincrement.x * (i % 5);
+		position.y =
+			doras->tileposition.y + doras->tileincrement.y * (i / 5);
+		sfRectangleShape_setFillColor(doras->border, sfTransparent);
+		sfRectangleShape_setOutlineColor(doras->border, sfBlack);
+		sfRectangleShape_setOutlineThickness(doras->border, 1.0);
+		sfRectangleShape_setPosition(doras->border, position);
+		sfRectangleShape_setSize(doras->border, doras->bordersize);
+		sfRenderWindow_drawRectangleShape(gameGUI->window, doras->border, NULL);
+		if (i < engine->doralist.nb_revealed) {
+			sfSprite_setTexture(doras->tilesprite[i],
+			 gameGUI->textureslist[engine->doralist.tiles[i]], 1);
+		}
+		else
+			sfSprite_setTexture(doras->tilesprite[i],
+								 gameGUI->textureslist[34], 1);
+		sfSprite_setPosition(doras->tilesprite[i], position);
+		sfSprite_setScale(doras->tilesprite[i], doras->scale);
+		sfRenderWindow_drawSprite(gameGUI->window, doras->tilesprite[i], NULL);
+	}
 
 	struct hand handcopy;
 
@@ -620,7 +647,6 @@ void display_GUI(struct riichi_engine *engine) {
 
 	int n = 13;
 	for (int i = 0; i < 14; ++i) {
-		sfVector2f position;
 		position.x =
 		    P1->tileposition.x + P1->tileincrement.x * (i) + (i == 13) * 9;
 		position.y = P1->tileposition.y;
@@ -661,7 +687,6 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-		sfVector2f position;
 		position.x = D1->tileposition.x + D1->tileincrement.x * (i % 6)
 			+ D1->tileincrement.x * (i > 17) * 6;
 		position.y = D1->tileposition.y + D1->tileincrement.y * (i / 6)
@@ -689,7 +714,6 @@ void display_GUI(struct riichi_engine *engine) {
 	
 	n = 13;
 	for (int i = 0; i < 14; ++i) {
-		sfVector2f position;
 		position.x = P2->tileposition.x;
 		position.y =
 			P2->tileposition.y + P2->tileincrement.y * (i) - (i == 13) * 9;
@@ -733,7 +757,6 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-		sfVector2f position;
 		position.x = D2->tileposition.x + D2->tileincrement.x * (i / 6)
 			- D2->tileincrement.x * (i > 17);
 		position.y = D2->tileposition.y + D2->tileincrement.y * (i % 6)
@@ -763,7 +786,6 @@ void display_GUI(struct riichi_engine *engine) {
 	
 	n = 13;
 	for (int i = 0; i < 14; ++i) {
-		sfVector2f position;
 		position.x =
 		    P3->tileposition.x + P3->tileincrement.x * (i) - (i == 13) * 9;
 		position.y = P3->tileposition.y;
@@ -807,7 +829,6 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-		sfVector2f position;
 		position.x = D3->tileposition.x + D3->tileincrement.x * (i % 6)
 			+ D3->tileincrement.x * (i > 17) * 6;
 		position.y = D3->tileposition.y + D3->tileincrement.y * (i / 6)
@@ -837,7 +858,6 @@ void display_GUI(struct riichi_engine *engine) {
 	
 	n = 13;
 	for (int i = 0; i < 14; ++i) {
-		sfVector2f position;
 		position.x = P4->tileposition.x;
 		position.y =
 			P4->tileposition.y + P4->tileincrement.y * (i) + (i == 13) * 9;
@@ -881,7 +901,6 @@ void display_GUI(struct riichi_engine *engine) {
 	}
 
 	for (int i = 0; i < handcopy.discardlist.nb_discards; ++i) {
-		sfVector2f position;
 		position.x = D4->tileposition.x + D4->tileincrement.x * (i / 6)
 			- D4->tileincrement.x * (i > 17);
 		position.y = D4->tileposition.y + D4->tileincrement.y * (i % 6)
