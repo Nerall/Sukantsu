@@ -390,6 +390,21 @@ void get_player_input(struct player *player, struct action_input *input) {
 	}
 }
 
+static int get_index_from_pos(struct riichi_engine *engine,
+                              enum table_pos pos) {
+	ASSERT_BACKTRACE(engine);
+	ASSERT_BACKTRACE(pos == NORTH || pos == EAST || pos == WEST ||
+	                 pos == SOUTH);
+
+	for (int i = 0; i < 4; ++i) {
+		if (engine->players[i].player_pos == pos) {
+			return i;
+		}
+	}
+
+	ASSERT_BACKTRACE(0 && "Position not found in players");
+}
+
 void client_main_loop(struct net_client *client) {
 	ASSERT_BACKTRACE(client);
 
@@ -397,28 +412,29 @@ void client_main_loop(struct net_client *client) {
 	struct net_packet receiver;
 	struct player *player = NULL;
 	int iplayer = 0, nb_games = 0;
+
+	enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+	init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI, PLAYER_AI);
+
+	engine.gameGUI.window = sfRenderWindow_create(
+	    engine.gameGUI.mode, "Sukantsu (client)", sfResize | sfClose, NULL);
+
 	while (receive_from_server(client, &receiver, sizeof(struct net_packet))) {
 		switch (receiver.packet_type) {
 			case PACKET_INIT: {
 				// fprintf(stderr, "Received: pk_init\n");
 				pk_init *init = (pk_init *)&receiver;
 
-				enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
-				init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI,
-				                   PLAYER_AI);
-
-				engine.gameGUI.window = sfRenderWindow_create(
-				    engine.gameGUI.mode, "Sukantsu (client)",
-				    sfResize | sfClose, NULL);
-
+				init_hand(&engine.players[0].hand);
+				init_hand(&engine.players[1].hand);
+				init_hand(&engine.players[2].hand);
+				init_hand(&engine.players[3].hand);
 				for (int i = 0; i < 4; ++i) {
 					engine.players[i].player_pos = (init->player_pos + i) % 4;
 				}
 
 				engine.nb_games = ++nb_games;
-
 				player = &engine.players[iplayer];
-
 				player->hand.histo = init->histo;
 
 				engine.phase = PHASE_INIT;
@@ -428,7 +444,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_DRAW: {
-				// fprintf(stderr, "Received: pk_draw\n");
+				fprintf(stderr, "Received: pk_draw\n");
 				pk_draw *draw = (pk_draw *)&receiver;
 				add_tile_hand(&player->hand, draw->tile);
 
@@ -441,7 +457,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_INPUT: {
-				// fprintf(stderr, "Received: pk_input\n");
+				fprintf(stderr, "Received: pk_input\n");
 				// makegroups(&player->hand, &engine.grouplist);
 
 				pk_input *input = (pk_input *)&receiver;
@@ -457,7 +473,7 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_TSUMO: {
-				// fprintf(stderr, "Received: pk_tsumo\n");
+				fprintf(stderr, "Received: pk_tsumo\n");
 				pk_tsumo *tsumo = (pk_tsumo *)&receiver;
 
 				int itsumo = (int)tsumo->player_pos;
@@ -473,17 +489,19 @@ void client_main_loop(struct net_client *client) {
 			}
 
 			case PACKET_UPDATE: {
-				// fprintf(stderr, "Received: pk_update\n");
+				fprintf(stderr, "Received: pk_update\n");
 				pk_update *update = (pk_update *)&receiver;
-				struct hand *update_hand =
-				    &engine.players[update->player_pos].hand;
+
+				int index = get_index_from_pos(&engine, update->player_pos);
+				struct hand *update_hand = &engine.players[index].hand;
 
 				add_discard(&update_hand->discardlist, update->input.tile);
 				update_hand->last_discard = update->input.tile;
 
 				engine.phase = PHASE_GETINPUT;
 				display_GUI(&engine);
-				display_riichi(&engine, update->player_pos);
+
+				// display_riichi(&engine, update->player_pos);
 
 				if (update->input.action == ACTION_DISCARD &&
 				    update->player_pos != player->player_pos) {
@@ -513,4 +531,7 @@ void client_main_loop(struct net_client *client) {
 				break;
 		}
 	}
+
+	destroy_gameGUI(&engine.gameGUI);
+	sfRenderWindow_destroy(engine.gameGUI.window);
 }
