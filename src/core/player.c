@@ -52,8 +52,20 @@ static void input_AI(struct player *player, struct action_input *input) {
 	histo_index_t last_tile = player_hand->last_tile;
 	tenpailist(player_hand, &grouplist);
 
-	struct histobit eratosthene;
-	init_histobit(&eratosthene, 0);
+	struct histobit usefultiles;
+	init_histobit(&usefultiles, 0);
+
+	int TerminalsHonors[] = {0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33};
+	int nb_terminals = 0;
+	for (int i = 0; i < 13; ++i) {
+		if (player_hand->histo.cells[TerminalsHonors[i]])
+			++nb_terminals;
+	}
+	if (nb_terminals >= 9) {
+		for (int i = 0; i < 13; ++i) {
+			set_histobit(&usefultiles, TerminalsHonors[i]);
+		}
+	}
 
 	for (int i = 0; i < HISTO_INDEX_MAX; ++i) {
 		if (player_hand->histo.cells[i])
@@ -62,34 +74,25 @@ static void input_AI(struct player *player, struct action_input *input) {
 		if (i < 27) {
 			int mod9 = i % 9;
 			if (mod9 > 0) {
-				set_histobit(&eratosthene, i - 1);
+				set_histobit(&usefultiles, i - 1);
 				if (mod9 > 1) {
-					set_histobit(&eratosthene, i - 2);
+					set_histobit(&usefultiles, i - 2);
 				}
 			}
 			if (mod9 < 8) {
-				set_histobit(&eratosthene, i + 1);
+				set_histobit(&usefultiles, i + 1);
 				if (mod9 < 7) {
-					set_histobit(&eratosthene, i + 2);
+					set_histobit(&usefultiles, i + 2);
 				}
 			}
 		}
-		set_histobit(&eratosthene, i);
+		set_histobit(&usefultiles, i);
 	}
 
-	struct histogram tiles_remaining;
-	init_histogram(&tiles_remaining, 4);
+	struct histogram tiles_remaining = player->tiles_remaining;
 
 	struct histogram histocopy;
 	groups_to_histo(player_hand, &histocopy);
-
-	/*for (histo_index_t i = 0; i < player_hand->discardlist.nb_discards; ++i) {
-	    tiles_remaining.cells[player_hand->discardlist.discards[i]] -= 1;
-	}*/
-
-	for (histo_index_t i = 0; i < HISTO_INDEX_MAX; ++i) {
-		tiles_remaining.cells[i] -= histocopy.cells[i];
-	}
 
 	histo_index_t best_discard = NO_TILE_INDEX;
 	int max_winning_tiles = 0;
@@ -124,6 +127,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 		return;
 	}
 
+	/* Not that useful
 	// Take "last_tile" tile
 	if (player_hand->last_tile != NO_TILE_INDEX &&
 	    get_histobit(&player_hand->furitentiles, player_hand->last_tile)) {
@@ -131,7 +135,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 		player_hand->last_tile = NO_TILE_INDEX;
 		// wprintf(L"P%u furiten\n", player->player_pos + 1);
 		return;
-	}
+	} */
 
 	// Take "best" tile
 	for (histo_index_t i = HISTO_INDEX_MAX; i > 0; --i) {
@@ -177,7 +181,7 @@ static void input_AI(struct player *player, struct action_input *input) {
 		remove_tile_hand(player_hand, i - 1);
 		current_winning_tiles = 0;
 		for (histo_index_t k = 0; k < HISTO_INDEX_MAX; ++k) {
-			if (get_histobit(&eratosthene, k)) {
+			if (get_histobit(&usefultiles, k)) {
 				if (tiles_remaining.cells[k] == 0)
 					continue;
 
@@ -225,14 +229,14 @@ static void input_AI(struct player *player, struct action_input *input) {
 		remove_tile_hand(player_hand, i - 1);
 		current_winning_tiles = 0;
 		for (histo_index_t l = 0; l < HISTO_INDEX_MAX; ++l) {
-			if (get_histobit(&eratosthene, l)) {
+			if (get_histobit(&usefultiles, l)) {
 				if (tiles_remaining.cells[l] == 0)
 					continue;
 
 				tiles_remaining.cells[l] -= 1;
 				add_tile_hand(player_hand, l);
 				for (histo_index_t k = l; k < HISTO_INDEX_MAX; ++k) {
-					if (get_histobit(&eratosthene, k)) {
+					if (get_histobit(&usefultiles, k)) {
 						if (tiles_remaining.cells[k] == 0)
 							continue;
 
