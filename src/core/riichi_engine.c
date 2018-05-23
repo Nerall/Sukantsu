@@ -593,8 +593,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 		struct action_input player_input;
 
 		// Sleep for 0.5s
-		// const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
-		// nanosleep(&delay, NULL);
+		const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
+		nanosleep(&delay, NULL);
 
 		if (!win && player->hand.riichi != NORIICHI) {
 			// A player can't play when he declared riichi
