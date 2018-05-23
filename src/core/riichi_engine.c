@@ -300,7 +300,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 
 	if (player->player_type != PLAYER_CLIENT) {
 		update_tiles_remaining(player, engine);
-		get_player_input(player, player_input);
+		get_player_click(engine, player_input);
+		if (player_input->action == ACTION_PASS)
+			get_player_input(player, player_input);
 	} else {
 		pk_input packet = {packet_type : PACKET_INPUT};
 

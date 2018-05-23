@@ -43,6 +43,8 @@ struct gameGUI {
 	sfVector2f centerposition;
 	sfVector2f centersize;
 	sfColor centercolor;
+	sfRectangleShape *suppx;
+	sfRectangleShape *suppy;
 };
 
 histo_index_t char_to_index(char family, char number);
@@ -70,5 +72,7 @@ void destroy_gameGUI(struct gameGUI *gameGUI);
 void display(struct riichi_engine *engine, int current_player);
 
 void display_GUI(struct riichi_engine *engine);
+
+void get_player_click(struct riichi_engine *engine, struct action_input *input);
 
 #endif // _CONSOLE_INPUT_H_
