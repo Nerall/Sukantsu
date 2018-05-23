@@ -936,62 +936,71 @@ void display_GUI(struct riichi_engine *engine) {
 void get_player_click(struct riichi_engine *engine, struct action_input *input) {
 	sfRenderWindow* window = engine->gameGUI.window;
     sfEvent event;
-	while (sfRenderWindow_pollEvent(window, &event))
-    {
-        switch (event.type) {
-			case sfEvtClosed:
-				sfRenderWindow_close(window);
-       			break;
-       		case sfEvtResized:
-       			if (event.size.width > 800) {
-       				sfRectangleShape *suppx = engine->gameGUI.suppx;
-       				sfVector2f size;
-        			size.x = event.size.width - 800;
-        			size.y = event.size.height;
-        			sfVector2f position;
-        			position.x = 800;
-        			position.y = 0;
-        			sfRectangleShape_setFillColor(suppx, sfBlack);
-        			sfRectangleShape_setSize(suppx, size);
-        			sfRectangleShape_setPosition(suppx, position);
-        			sfRenderWindow_drawRectangleShape(window, suppx, NULL);
-          			}
-        		if (event.size.height > 600) {
-        			sfRectangleShape *suppy = engine->gameGUI.suppy;
-        			sfVector2f size;
-        			size.x = event.size.width;
-        			size.y = event.size.height - 600;
-        			sfVector2f position;
-        			position.x = 0;
-        			position.y = 600;
-        			sfRectangleShape_setFillColor(suppy, sfBlack);
-        			sfRectangleShape_setSize(suppy, size);
-        			sfRectangleShape_setPosition(suppy, position);
-        			sfRenderWindow_drawRectangleShape(window, suppy, NULL);
-        		}
-       			break;
-       		case sfEvtMouseButtonPressed:
-       			if (event.mouseButton.x > 148 && event.mouseButton.x < 650
-       			 && event.mouseButton.y > 523 && event.mouseButton.y < 573) {
-       				struct hand hand = engine->players[0].hand;
-       				histo_index_t i = (event.mouseButton.x - 149) % 35;
-       				histo_index_t cpt = 0;
-       				input->action = ACTION_DISCARD;
-      				for (histo_index_t index = 0; index < 34; ++index) {
-        				cpt += hand.histo.cells[index]
-        				 -(index == hand.last_tile);
-        				if (cpt >= i) {
-        					input->tile = index;
-       						break;
-        				}
-        			}
-					if (!input->tile && hand.last_tile != NO_TILE_INDEX) {
-						input->tile = hand.last_tile;
-					}
-        		}
-        		return;
-       		default:
-        		break;
-       	}
+    while(sfRenderWindow_isOpen(window)) {
+		while (sfRenderWindow_pollEvent(window, &event))
+	    {
+	        switch (event.type) {
+				case sfEvtClosed:
+					return;
+		       	case sfEvtResized:
+	       			/*if (event.size.width > 800) {
+	       				sfRectangleShape *suppx = engine->gameGUI.suppx;
+	       				sfVector2f size;
+	        			size.x = event.size.width - 800;
+	        			size.y = event.size.height;
+	        			sfVector2f position;
+	        			position.x = 800;
+	        			position.y = 0;
+	        			sfRectangleShape_setFillColor(suppx, sfBlack);
+	        			sfRectangleShape_setSize(suppx, size);
+	        			sfRectangleShape_setPosition(suppx, position);
+	        			sfRenderWindow_drawRectangleShape(window, suppx, NULL);
+	          			}
+	        		if (event.size.height > 600) {
+	        			sfRectangleShape *suppy = engine->gameGUI.suppy;
+	        			sfVector2f size;
+	        			size.x = event.size.width;
+	        			size.y = event.size.height - 600;
+	        			sfVector2f position;
+	        			position.x = 0;
+	        			position.y = 600;
+	        			sfRectangleShape_setFillColor(suppy, sfBlack);
+	        			sfRectangleShape_setSize(suppy, size);
+	        			sfRectangleShape_setPosition(suppy, position);
+	        			sfRenderWindow_drawRectangleShape(window, suppy, NULL);
+	        		}*/
+	       			return;
+	       		case sfEvtMouseButtonPressed:
+	       			if (event.mouseButton.x > 148 && event.mouseButton.x < 650
+	       			 && event.mouseButton.y > 523 && event.mouseButton.y < 573) {
+	       				struct hand hand = engine->players[0].hand;
+	       				if (event.mouseButton.x > 604) {
+	       					if (event.mouseButton.x > 613 &&
+	       						 hand.last_tile != NO_TILE_INDEX) {
+	       						input->action = ACTION_DISCARD;
+	       						input->tile = hand.last_tile;
+								hand.last_tile = NO_TILE_INDEX;
+	       					}
+	       					return;
+	       				}
+	       				int i = (event.mouseButton.x - 149) / 35;
+	       				int cpt = 0;
+	       				input->action = ACTION_DISCARD;
+	      				for (histo_index_t index = 0; index < 34; ++index) {
+	        				cpt += hand.histo.cells[index]
+	        				 -(index == hand.last_tile);
+	        				if (cpt > i) {
+	        					input->tile = index;
+	       						break;
+	        				}
+	        			}
+	        			hand.last_tile = NO_TILE_INDEX;
+						return;
+	        		}
+	        		break;
+	       		default:
+	        		break;
+	       	}
+	    }
     }
 }

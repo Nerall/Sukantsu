@@ -322,7 +322,9 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 
 	if (player->player_type != PLAYER_CLIENT) {
 		update_tiles_remaining(player, engine);
-		get_player_click(engine, player_input);
+		// while(!sfRenderWindow_isOpen(engine->gameGUI.window)) {}
+		if (player->player_type != PLAYER_AI)
+			get_player_click(engine, player_input);
 		if (player_input->action == ACTION_PASS)
 			get_player_input(player, player_input);
 	} else {
@@ -367,7 +369,7 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 // Tsumo phase of a riichi game
 void riichi_tsumo_phase(struct riichi_engine *engine, int player_index) {
 	ASSERT_BACKTRACE(engine);
-	ASSERT_BACKTRACE(input);
+	// ASSERT_BACKTRACE(input);
 
 	engine->phase = PHASE_TSUMO;
 	display_riichi(engine, player_index);
@@ -589,9 +591,6 @@ int play_riichi_game(struct riichi_engine *engine) {
 
 		struct action_input player_input;
 
-		// Using GUI
-		display_GUI(engine);
-
 		// Sleep for 0.5s
 		// const struct timespec delay = {tv_sec : 0, tv_nsec : 500 * 1000000};
 		// nanosleep(&delay, NULL);
@@ -604,8 +603,8 @@ int play_riichi_game(struct riichi_engine *engine) {
 			ASSERT_BACKTRACE(verify_action(engine, player, &player_input));
 			apply_action(player, &player_input);
 		} else if (!win) {
+			display_GUI(engine);
 			riichi_get_input_phase(engine, player_index, &player_input);
-
 			if (player_input.action == ACTION_PASS) {
 				player_input.action = ACTION_DISCARD;
 				// We're not modifying hand here (put it back the line after)
@@ -653,15 +652,11 @@ int play_riichi_game(struct riichi_engine *engine) {
 							dora = engine->doralist.tiles[idora] + 1;
 							break;
 					}
-					// wprintf(L"%u\n", dora);
-					wprintf(L"%u %u\n", histofull.cells[itiles], dora);
 					if (itiles == dora)
 						cpt += histofull.cells[itiles];
 				}
 			}
 
-			wprintf(L"%u\n", engine->doralist.tiles[0]);
-			wprintf(L"%d\n", cpt);
 			//
 			player->player_won = TSUMO;
 

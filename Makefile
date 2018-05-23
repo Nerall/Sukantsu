@@ -5,7 +5,7 @@ RELEASE_FLAGS = -O2 -fshort-enums -DNGDEBUG
 
 CC = gcc
 CPPFLAGS = -MMD
-CFLAGS = -Wall -Wextra -std=c99 ${RELEASE_FLAGS}
+CFLAGS = -Wall -Wextra -std=c99 ${DEBUG_FLAGS}
 LDLIBS = -lcsfml-system -lcsfml-network -lcsfml-graphics
 
 EXE := sukantsu
