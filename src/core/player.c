@@ -11,6 +11,7 @@
 #include "riichi_engine.h"
 #include "riichi_engine_s.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -485,7 +486,7 @@ void client_main_loop(struct net_client *client) {
 	int iplayer = 0, nb_games = 0;
 	int who_won = -666;
 
-	enum player_type our_type = AI_MODE ? PLAYER_AI : PLAYER_HOST;
+	enum player_type our_type = PLAYER_AI;
 	init_riichi_engine(&engine, our_type, PLAYER_AI, PLAYER_AI, PLAYER_AI);
 
 	engine.gameGUI.window = sfRenderWindow_create(
@@ -532,7 +533,8 @@ void client_main_loop(struct net_client *client) {
 				display_riichi(&engine, iplayer);
 
 				if (who_won != -666) {
-					char *pnames[] = {"Nicolas", "Manuel", "Gabriel", "Thibaut"};
+					char *pnames[] = {"Nicolas", "Manuel", "Gabriel",
+					                  "Thibaut"};
 					if (who_won == -1) {
 						wprintf(L"Result: Draw\n\n");
 					} else {
@@ -650,6 +652,8 @@ void client_main_loop(struct net_client *client) {
 				break;
 		}
 	}
+
+	exit(0);
 
 	destroy_gameGUI(&engine.gameGUI);
 	sfRenderWindow_destroy(engine.gameGUI.window);
