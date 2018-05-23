@@ -10,6 +10,11 @@ struct net_packet_init {
 
 	enum table_pos player_pos;
 	struct histogram histo;
+	unsigned char end_game;
+	unsigned long int score_east;
+	unsigned long int score_south;
+	unsigned long int score_west;
+	unsigned long int score_north;
 };
 
 struct net_packet_draw {
