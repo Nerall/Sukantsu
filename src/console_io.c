@@ -1218,6 +1218,7 @@ void display_GUI(struct riichi_engine *engine) {
 				O4->rotation);
 			sfRenderWindow_drawSprite(gameGUI->window,
 				O4->tilesprite[sum_exposed_tiles + j], NULL);
+			position.y += O4->tileincrement.y;
 		}
 		position.y -= 9;
 		sum_exposed_tiles += nb_exposed_tiles;
