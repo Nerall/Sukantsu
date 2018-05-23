@@ -347,7 +347,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					bordersize.x = 34;
 					bordersize.y = 46;
 					tileposition.x = 150;
-					tileposition.y = 525;
+					tileposition.y = 515;
 					tileincrement.x = 35;
 					tileincrement.y = 0;
 					break;
@@ -356,7 +356,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					scale.y = 0.15;
 					bordersize.x = 34;
 					bordersize.y = 46;
-				 	tileposition.x = 725;
+				 	tileposition.x = 715;
 					tileposition.y = 550;
 					tileincrement.x = 0;
 					tileincrement.y = -35;
@@ -367,7 +367,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					bordersize.x = 34;
 					bordersize.y = 46;
 				 	tileposition.x = 650;
-					tileposition.y = 75;
+					tileposition.y = 85;
 					tileincrement.x = -35;
 					tileincrement.y = 0;
 					 break;
@@ -376,7 +376,7 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 					scale.y = 0.15;
 					bordersize.x = 34;
 					bordersize.y = 46;
-				 	tileposition.x = 75;
+				 	tileposition.x = 85;
 					tileposition.y = 50;
 					tileincrement.x = 0;
 					tileincrement.y = 35;
@@ -398,28 +398,28 @@ void init_tilesGUI(struct tilesGUI *tilesGUI, enum typeGUI typeGUI,
 			bordersize.y = 34;
 			switch (current_player) {
 				 case 0:
-					tileposition.x = 750;
-					tileposition.y = 550;
+					tileposition.x = 774;
+					tileposition.y = 565;
 					tileincrement.x = -26;
 					tileincrement.y = 0;				     
 				    break;
 				 case 1:
-					tileposition.x = 750;
-					tileposition.y = 0;
-					tileincrement.x = -26;
-					tileincrement.y = 0;
+					tileposition.x = 765;
+					tileposition.y = 26;
+					tileincrement.x = 0;
+					tileincrement.y = 26;
 					break;
 				 case 2:
-				 	tileposition.x = 0;
-					tileposition.y = 0;
-					tileincrement.x = -26;
+				 	tileposition.x = 26;
+					tileposition.y = 35;
+					tileincrement.x = 26;
 					tileincrement.y = 0;
 				    break;
 				 case 3:
-					tileposition.x = 0;
-					tileposition.y = 550;
-					tileincrement.x = -26;
-					tileincrement.y = 0;
+					tileposition.x = 35;
+					tileposition.y = 574;
+					tileincrement.x = 0;
+					tileincrement.y = -26;
 					break;
 				default:
 					tileposition.x = 0;
@@ -571,7 +571,7 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	gameGUI->player3handopen.border = sfRectangleShape_create();
 	gameGUI->player4handopen.border = sfRectangleShape_create();
 
-	for (int i = 0; i < 24; ++i) {
+	for (int i = 0; i < 18; ++i) {
 		gameGUI->player1handopen.tilesprite[i] = sfSprite_create();
 		gameGUI->player2handopen.tilesprite[i] = sfSprite_create();
 		gameGUI->player3handopen.tilesprite[i] = sfSprite_create();
@@ -662,6 +662,10 @@ void display_GUI(struct riichi_engine *engine) {
 	                                  NULL);
 
 	sfVector2f position;
+	struct hand handcopy;
+	int nb_exposed_tiles = 0;
+	int sum_exposed_tiles = 0;
+
 
 	struct tilesGUI *doras = &gameGUI->doras;
 	for (int i = 0; i < 10; ++i) {
@@ -686,9 +690,6 @@ void display_GUI(struct riichi_engine *engine) {
 		sfSprite_setScale(doras->tilesprite[i], doras->scale);
 		sfRenderWindow_drawSprite(gameGUI->window, doras->tilesprite[i], NULL);
 	}
-
-	struct hand handcopy;
-	int nb_exposed_tiles = 0;
 
 	copy_hand(&engine->players[0]
 			  .hand, &handcopy);
@@ -774,32 +775,12 @@ void display_GUI(struct riichi_engine *engine) {
 		sfRenderWindow_drawSprite(gameGUI->window, D1->tilesprite[i], NULL);
 	}
 
+	sum_exposed_tiles = 0;
+	position.x = O1->tileposition.x;
+	position.y = O1->tileposition.y;
+
 	for (int i = 0; i < handcopy.nb_groups; ++i) {
-		position.x = O1->tileposition.x + O1->tileincrement.x;
-		position.y = O1->tileposition.y + O1->tileincrement.y;
-		sfRectangleShape_setFillColor(O1->border, sfTransparent);
-		sfRectangleShape_setOutlineColor(O1->border, sfBlack);
-		sfRectangleShape_setOutlineThickness(O1->border, 1.0);
-		sfRectangleShape_setPosition(O1->border, position);
-		sfRectangleShape_setSize(O1->border, O1->bordersize);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, O1->border, NULL);
-
-		sfSprite_setTexture(O1->tilesprite[i], gameGUI->textureslist[
-			handcopy.groups[i].tile],1);
-		sfSprite_setPosition(O1->tilesprite[i], position);
-		sfSprite_setScale(O1->tilesprite[i], O1->scale);
-		sfRenderWindow_drawSprite(gameGUI->window, O1->tilesprite[i], NULL);
-	}
-
-
-	// Player 2
-	copy_hand(&engine->players[1]
-			   .hand, &handcopy);
-	struct tilesGUI *P2 = &gameGUI->player2hand;
-	struct tilesGUI *D2 = &gameGUI->player2discards;
-	struct tilesGUI *O2 = &gameGUI->player2handopen;
-	nb_exposed_tiles = 0;
-	for (int i = 0; i < handcopy.nb_groups; ++i) {
+		nb_exposed_tiles = 0;
 		switch (handcopy.groups[i].type) {
 			case PAIR:
 				nb_exposed_tiles += 2;
@@ -816,7 +797,34 @@ void display_GUI(struct riichi_engine *engine) {
 			default:
 				break;
 		}
+		for (int j = 0; j < nb_exposed_tiles; ++j) {
+			sfRectangleShape_setFillColor(O1->border, sfTransparent);
+			sfRectangleShape_setOutlineColor(O1->border, sfBlack);
+			sfRectangleShape_setOutlineThickness(O1->border, 1.0);
+			sfRectangleShape_setPosition(O1->border, position);
+			sfRectangleShape_setSize(O1->border, O1->bordersize);
+			sfRenderWindow_drawRectangleShape(gameGUI->window, O1->border, NULL);
+
+			sfSprite_setTexture(O1->tilesprite[sum_exposed_tiles + j],
+		gameGUI->textureslist[handcopy.groups[i].tile],1);
+			sfSprite_setPosition(O1->tilesprite[sum_exposed_tiles + j],
+				position);
+			sfSprite_setScale(O1->tilesprite[sum_exposed_tiles + j],
+				O1->scale);
+			sfRenderWindow_drawSprite(gameGUI->window,
+				O1->tilesprite[sum_exposed_tiles + j], NULL);
+			position.x += O1->tileincrement.x;
+		}
+		position.x -= 9;
+		sum_exposed_tiles += nb_exposed_tiles;
 	}
+
+	// Player 2
+	copy_hand(&engine->players[1]
+			   .hand, &handcopy);
+	struct tilesGUI *P2 = &gameGUI->player2hand;
+	struct tilesGUI *D2 = &gameGUI->player2discards;
+	struct tilesGUI *O2 = &gameGUI->player2handopen;
 
 	n = 13;
 	for (int i = 0; i < 14; ++i) {
@@ -883,23 +891,50 @@ void display_GUI(struct riichi_engine *engine) {
 		sfRenderWindow_drawSprite(gameGUI->window, D2->tilesprite[i], NULL);
 	}
 
+	sum_exposed_tiles = 0;
+	position.x = O2->tileposition.x;
+	position.y = O2->tileposition.y;
 	for (int i = 0; i < handcopy.nb_groups; ++i) {
-		position.x = O2->tileposition.x + O2->tileincrement.x;
-		position.y = O2->tileposition.y + O2->tileincrement.y;
-		sfRectangleShape_setFillColor(O2->border, sfTransparent);
-		sfRectangleShape_setOutlineColor(O2->border, sfBlack);
-		sfRectangleShape_setOutlineThickness(O2->border, 1.0);
-		sfRectangleShape_setPosition(O2->border, position);
-		sfRectangleShape_setSize(O2->border, O2->bordersize);
-		sfRectangleShape_setRotation(O2->border, O2->rotation);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, O2->border, NULL);
+		nb_exposed_tiles = 0;
+		switch (handcopy.groups[i].type) {
+			case PAIR:
+				nb_exposed_tiles += 2;
+				break;
+			case SEQUENCE:
+				nb_exposed_tiles += 3;
+				break;
+			case TRIPLET:
+				nb_exposed_tiles += 3;
+				break;
+			case QUAD:
+				nb_exposed_tiles += 4;
+				break;
+			default:
+				break;
+		}
+		for (int j = 0; j < nb_exposed_tiles; ++j) {
+			sfRectangleShape_setFillColor(O2->border, sfTransparent);
+			sfRectangleShape_setOutlineColor(O2->border, sfBlack);
+			sfRectangleShape_setOutlineThickness(O2->border, 1.0);
+			sfRectangleShape_setPosition(O2->border, position);
+			sfRectangleShape_setSize(O2->border, O2->bordersize);
+			sfRectangleShape_setRotation(O2->border, O2->rotation);
+			sfRenderWindow_drawRectangleShape(gameGUI->window, O2->border, NULL);
 
-		sfSprite_setTexture(O2->tilesprite[i], gameGUI->textureslist[
-			handcopy.groups[i].tile],1);
-		sfSprite_setPosition(O2->tilesprite[i], position);
-		sfSprite_setScale(O2->tilesprite[i], O2->scale);
-		sfSprite_setRotation(O2->tilesprite[i], O2->rotation);
-		sfRenderWindow_drawSprite(gameGUI->window, O2->tilesprite[i], NULL);
+			sfSprite_setTexture(O2->tilesprite[sum_exposed_tiles + j],
+		gameGUI->textureslist[handcopy.groups[i].tile],1);
+			sfSprite_setPosition(O2->tilesprite[sum_exposed_tiles + j],
+				position);
+			sfSprite_setScale(O2->tilesprite[sum_exposed_tiles + j],
+				O2->scale);
+			sfSprite_setRotation(O2->tilesprite[sum_exposed_tiles + j],
+				O2->rotation);
+			sfRenderWindow_drawSprite(gameGUI->window,
+				O2->tilesprite[sum_exposed_tiles + j], NULL);
+			position.y += O2->tileincrement.y;
+		}
+		position.y += 9;
+		sum_exposed_tiles += nb_exposed_tiles;
 	}
 
 
@@ -994,23 +1029,50 @@ void display_GUI(struct riichi_engine *engine) {
 		sfRenderWindow_drawSprite(gameGUI->window, D3->tilesprite[i], NULL);
 	}
 
+	sum_exposed_tiles = 0;
+	position.x = O3->tileposition.x;
+	position.y = O3->tileposition.y;
 	for (int i = 0; i < handcopy.nb_groups; ++i) {
-		position.x = O3->tileposition.x + O3->tileincrement.x;
-		position.y = O3->tileposition.y + O3->tileincrement.y;
-		sfRectangleShape_setFillColor(O3->border, sfTransparent);
-		sfRectangleShape_setOutlineColor(O3->border, sfBlack);
-		sfRectangleShape_setOutlineThickness(O3->border, 1.0);
-		sfRectangleShape_setPosition(O3->border, position);
-		sfRectangleShape_setSize(O3->border, O3->bordersize);
-		sfRectangleShape_setRotation(O3->border, O3->rotation);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, O3->border, NULL);
+		nb_exposed_tiles = 0;
+		switch (handcopy.groups[i].type) {
+			case PAIR:
+				nb_exposed_tiles += 2;
+				break;
+			case SEQUENCE:
+				nb_exposed_tiles += 3;
+				break;
+			case TRIPLET:
+				nb_exposed_tiles += 3;
+				break;
+			case QUAD:
+				nb_exposed_tiles += 4;
+				break;
+			default:
+				break;
+		}
+		for (int j = 0; j < nb_exposed_tiles; ++j) {
+			sfRectangleShape_setFillColor(O3->border, sfTransparent);
+			sfRectangleShape_setOutlineColor(O3->border, sfBlack);
+			sfRectangleShape_setOutlineThickness(O3->border, 1.0);
+			sfRectangleShape_setPosition(O3->border, position);
+			sfRectangleShape_setSize(O3->border, O3->bordersize);
+			sfRectangleShape_setRotation(O3->border, O3->rotation);
+			sfRenderWindow_drawRectangleShape(gameGUI->window, O3->border, NULL);
 
-		sfSprite_setTexture(O3->tilesprite[i], gameGUI->textureslist[
-			handcopy.groups[i].tile],1);
-		sfSprite_setPosition(O3->tilesprite[i], position);
-		sfSprite_setScale(O3->tilesprite[i], O3->scale);
-		sfSprite_setRotation(O3->tilesprite[i], O3->rotation);
-		sfRenderWindow_drawSprite(gameGUI->window, O3->tilesprite[i], NULL);
+			sfSprite_setTexture(O3->tilesprite[sum_exposed_tiles + j],
+		gameGUI->textureslist[handcopy.groups[i].tile],1);
+			sfSprite_setPosition(O3->tilesprite[sum_exposed_tiles + j],
+				position);
+			sfSprite_setScale(O3->tilesprite[sum_exposed_tiles + j],
+				O3->scale);
+			sfSprite_setRotation(O3->tilesprite[sum_exposed_tiles + j],
+				O3->rotation);
+			sfRenderWindow_drawSprite(gameGUI->window,
+				O3->tilesprite[sum_exposed_tiles + j], NULL);
+			position.x += O3->tileincrement.x;
+		}
+		position.x += 9;
+		sum_exposed_tiles += nb_exposed_tiles;
 	}
 
 
@@ -1106,23 +1168,50 @@ void display_GUI(struct riichi_engine *engine) {
 		sfRenderWindow_drawSprite(gameGUI->window, D4->tilesprite[i], NULL);
 	}
 
+	sum_exposed_tiles = 0;
+	position.x = O4->tileposition.x;
+	position.y = O4->tileposition.y;
 	for (int i = 0; i < handcopy.nb_groups; ++i) {
-		position.x = O4->tileposition.x + O4->tileincrement.x;
-		position.y = O4->tileposition.y + O4->tileincrement.y;
-		sfRectangleShape_setFillColor(O4->border, sfTransparent);
-		sfRectangleShape_setOutlineColor(O4->border, sfBlack);
-		sfRectangleShape_setOutlineThickness(O4->border, 1.0);
-		sfRectangleShape_setPosition(O4->border, position);
-		sfRectangleShape_setSize(O4->border, O4->bordersize);
-		sfRectangleShape_setRotation(O4->border, O4->rotation);
-		sfRenderWindow_drawRectangleShape(gameGUI->window, O4->border, NULL);
+		nb_exposed_tiles = 0;
+		switch (handcopy.groups[i].type) {
+			case PAIR:
+				nb_exposed_tiles += 2;
+				break;
+			case SEQUENCE:
+				nb_exposed_tiles += 3;
+				break;
+			case TRIPLET:
+				nb_exposed_tiles += 3;
+				break;
+			case QUAD:
+				nb_exposed_tiles += 4;
+				break;
+			default:
+				break;
+		}
+		for (int j = 0; j < nb_exposed_tiles; ++j) {
+			sfRectangleShape_setFillColor(O4->border, sfTransparent);
+			sfRectangleShape_setOutlineColor(O4->border, sfBlack);
+			sfRectangleShape_setOutlineThickness(O4->border, 1.0);
+			sfRectangleShape_setPosition(O4->border, position);
+			sfRectangleShape_setSize(O4->border, O4->bordersize);
+			sfRectangleShape_setRotation(O4->border, O4->rotation);
+			sfRenderWindow_drawRectangleShape(gameGUI->window, O4->border, NULL);
 
-		sfSprite_setTexture(O4->tilesprite[i], gameGUI->textureslist[
-			handcopy.groups[i].tile],1);
-		sfSprite_setPosition(O4->tilesprite[i], position);
-		sfSprite_setScale(O4->tilesprite[i], O4->scale);
-		sfSprite_setRotation(O4->tilesprite[i], O4->rotation);
-		sfRenderWindow_drawSprite(gameGUI->window, O4->tilesprite[i], NULL);
+			sfSprite_setTexture(O4->tilesprite[sum_exposed_tiles + j],
+		gameGUI->textureslist[handcopy.groups[i].tile],1);
+			sfSprite_setPosition(O4->tilesprite[sum_exposed_tiles + j],
+				position);
+			sfSprite_setScale(O4->tilesprite[sum_exposed_tiles + j],
+				O4->scale);
+			sfSprite_setRotation(O4->tilesprite[sum_exposed_tiles + j],
+				O4->rotation);
+			sfRenderWindow_drawSprite(gameGUI->window,
+				O4->tilesprite[sum_exposed_tiles + j], NULL);
+			position.y += O4->tileincrement.y;
+		}
+		position.y -= 9;
+		sum_exposed_tiles += nb_exposed_tiles;
 	}
 
 	sfRenderWindow_display(gameGUI->window);
@@ -1136,7 +1225,7 @@ void get_player_click(struct riichi_engine *engine, struct action_input *input) 
 	    {
 	        switch (event.type) {
 				case sfEvtClosed:
-					return;
+					break;
 		       	case sfEvtResized:
 	       			/*if (event.size.width > 800) {
 	       				sfRectangleShape *suppx = engine->gameGUI.suppx;
@@ -1164,7 +1253,7 @@ void get_player_click(struct riichi_engine *engine, struct action_input *input) 
 	        			sfRectangleShape_setPosition(suppy, position);
 	        			sfRenderWindow_drawRectangleShape(window, suppy, NULL);
 	        		}*/
-	       			return;
+	       			break;
 	       		case sfEvtMouseButtonPressed:
 	       			if (event.mouseButton.x > 148 && event.mouseButton.x < 650
 	       			 && event.mouseButton.y > 523 && event.mouseButton.y < 573) {
