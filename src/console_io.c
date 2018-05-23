@@ -526,7 +526,7 @@ void init_gameGUI(struct gameGUI *gameGUI) {
 	centerposition.x = 270;
 	centerposition.y = 220;
 	gameGUI->centerposition = centerposition;
-	gameGUI->centercolor = sfGreen;
+	gameGUI->centercolor = sfColor_fromRGB(0, 255, 128);
 	sfVector2f centersize;
 	centersize.x = 260;
 	centersize.y = 160;
@@ -1229,7 +1229,7 @@ void display_GUI(struct riichi_engine *engine) {
 
 int display_replay(struct riichi_engine *engine) {
 	struct gameGUI *gameGUI = &engine->gameGUI;
-	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
+	// sfRenderWindow_clear(gameGUI->window, gameGUI->background);
 
 	sfVector2f posRecText = {200, 100};
 	sfVector2f sizeRecText = {400, 100};
@@ -1237,55 +1237,59 @@ int display_replay(struct riichi_engine *engine) {
 	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
 	sfRectangleShape_setPosition(gameGUI->center, posRecText);
 	sfRectangleShape_setSize(gameGUI->center, sizeRecText);
-	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
-	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+	sfRectangleShape_setFillColor(gameGUI->center, sfColor_fromRGBA(0, 255, 128, 240));
+	//sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
 
 	sfFont *font = sfFont_createFromFile("arial.ttf");
 	sfText *text1 = sfText_create();
 	sfVector2f posText = {275, 135};
 	//sfVector2f sizeText = {400, 100};
 	sfText_setFont(text1, font);
-	sfText_setString(text1, "Do you want to replay?");
+	sfText_setString(text1, "Do you want to play again?");
 	sfText_setPosition(text1, posText);
 	sfText_setCharacterSize(text1, 24);
-	sfRenderWindow_drawText(gameGUI->window, text1, NULL);
+	sfText_setFillColor(text1, sfWhite);
+	//sfRenderWindow_drawText(gameGUI->window, text1, NULL);
 
 	// Button left
 	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
 	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
-	sfVector2f posRecLeft = {100, 300};
+	sfVector2f posRecLeft = {100, 400};
 	sfVector2f sizeRecLeft = {200, 100};
 	sfRectangleShape_setPosition(gameGUI->center, posRecLeft);
 	sfRectangleShape_setSize(gameGUI->center, sizeRecLeft);
-	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRectangleShape_setFillColor(gameGUI->center, sfColor_fromRGBA(0, 255, 128, 240));
 	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
 
 	sfText *textLeft = sfText_create();
-	sfVector2f posTextLeft = {150, 335};
+	sfVector2f posTextLeft = {150, 435};
 	// sfVector2f sizeTextLeft = {200,100};
 	sfText_setFont(textLeft, font);
 	sfText_setString(textLeft, "Continue");
 	sfText_setPosition(textLeft, posTextLeft);
 	sfText_setCharacterSize(textLeft, 24);
+	sfText_setFillColor(textLeft, sfWhite);
 	sfRenderWindow_drawText(gameGUI->window, textLeft, NULL);
 
 	// Button right
 	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
 	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
-	sfVector2f posRecRight = {500, 300};
+	sfVector2f posRecRight = {500, 400};
 	sfVector2f sizeRecRight = {200, 100};
 	sfRectangleShape_setPosition(gameGUI->center, posRecRight);
 	sfRectangleShape_setSize(gameGUI->center, sizeRecRight);
-	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRectangleShape_setFillColor(gameGUI->center, sfColor_fromRGBA(0, 255, 128, 240));
 	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
 
 	sfText *textRight = sfText_create();
-	sfVector2f posTextRight = {575, 335};
+	sfVector2f posTextRight = {580, 435};
 	// sfVector2f sizeTextLeft = {200,100};
 	sfText_setFont(textRight, font);
 	sfText_setString(textRight, "Quit");
 	sfText_setPosition(textRight, posTextRight);
 	sfText_setCharacterSize(textRight, 24);
+	sfText_setFillColor(textRight, sfWhite);
+
 	sfRenderWindow_drawText(gameGUI->window, textRight, NULL);
 
 	sfRenderWindow_display(gameGUI->window);
@@ -1300,8 +1304,6 @@ int display_replay(struct riichi_engine *engine) {
 					exit(0);
 				case sfEvtMouseButtonPressed: {
 					int x = event.mouseButton.x;
-
-					fprintf(stderr, "BLA\n");
 
 					if (x > posRecLeft.x && x < posRecLeft.x + sizeRecLeft.x) {
 						return 1;
