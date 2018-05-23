@@ -147,12 +147,9 @@ void host_main() {
 		int win_pos = play_riichi_game(&engine);
 		char *pnames[] = {"Thibaut", "Nicolas", "Manuel", "Gabriel"};
 
-		if (!display_replay(&engine)) {
-			fprintf(stderr, "BLA2\n");
+		if (!display_replay(&engine, (win_pos + round) % 4)) {
 			break;
 		}
-
-		fprintf(stderr, "BLAZE\n");
 
 		if (win_pos == -1) {
 			wprintf(L"Result: Draw\n\n");
@@ -198,8 +195,8 @@ void host_main() {
 	wprintf(L"\nYou played %d seconds.", time(NULL) - t_init);
 	wprintf(L"\nYou played %d game%s.\n", engine.nb_games,
 	        (engine.nb_games > 1) ? "s" : "");
-	wprintf(L"%d game%s won.\n", nb_won_games,
-	        (nb_won_games > 1) ? "s were" : " was");
+	//wprintf(L"%d game%s won.\n", nb_won_games,
+	  //      (nb_won_games > 1) ? "s were" : " was");
 
 	exit(0);
 

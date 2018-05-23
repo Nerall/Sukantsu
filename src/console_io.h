@@ -70,7 +70,7 @@ void destroy_gameGUI(struct gameGUI *gameGUI);
 
 void display_GUI(struct riichi_engine *engine);
 
-int display_replay(struct riichi_engine *engine);
+int display_replay(struct riichi_engine *engine, int winner_position);
 
 void get_player_click(struct riichi_engine *engine, struct action_input *input);
 

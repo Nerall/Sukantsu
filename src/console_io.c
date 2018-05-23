@@ -1267,7 +1267,7 @@ void display_GUI(struct riichi_engine *engine) {
 	sfText_setRotation(text2, 270);
 	sfText_setRotation(text3, 180);
 	sfText_setRotation(text4, 90);
-//	sfText_setCharacterSize(textLeft, 24);
+
 	sfRenderWindow_drawText(gameGUI->window, text1, NULL);
 	sfRenderWindow_drawText(gameGUI->window, text2, NULL);
 	sfRenderWindow_drawText(gameGUI->window, text3, NULL);
@@ -1276,29 +1276,122 @@ void display_GUI(struct riichi_engine *engine) {
 	sfRenderWindow_display(gameGUI->window);
 }
 
-int display_replay(struct riichi_engine *engine) {
+int display_replay(struct riichi_engine *engine, int winner_position) {
 	struct gameGUI *gameGUI = &engine->gameGUI;
 	// sfRenderWindow_clear(gameGUI->window, gameGUI->background);
 
-	sfVector2f posRecText = {200, 100};
-	sfVector2f sizeRecText = {400, 100};
+	/*if (winner_position == 1) {	
+		struct hand handcopy;	
+		copy_hand(&engine->players[1].hand, &handcopy);
+		int n = 13;
+		for (int i = 0; i < handcopy.histo.nb_tiles; ++i) {
+			if (i < n) {
+				for (histo_cell_t j = 0; j < 34; ++j) {
+					if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
+						--handcopy.histo.cells[j];
+						sfSprite_setTexture(gameGUI->player2hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						break;
+					}
+					if (j == 33) {
+						sfSprite_setTexture(gameGUI->player2hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						if (n == 13)
+							n = i;
+					}
+				}
+			}
+			else if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
+			--handcopy.histo.cells[handcopy.last_tile];
+			sfSprite_setTexture(gameGUI->player2hand.tilesprite[i],
+			                    gameGUI->textureslist[handcopy.last_tile], 1);
+			}
+			sfRenderWindow_drawSprite(gameGUI->window, gameGUI->player3hand.tilesprite[i], NULL);
+		}
+	} else if (winner_position == 2) {
+		struct hand handcopy;	
+		copy_hand(&engine->players[2].hand, &handcopy);
+		int n = 13;
+		for (int i = 0; i < handcopy.histo.nb_tiles; ++i) {
+			if (i < n) {
+				for (histo_cell_t j = 0; j < 34; ++j) {
+					if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
+						--handcopy.histo.cells[j];
+						sfSprite_setTexture(gameGUI->player3hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						break;
+					}
+					if (j == 33) {
+						sfSprite_setTexture(gameGUI->player3hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						if (n == 13)
+							n = i;
+					}
+				}
+			}
+			else if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
+			--handcopy.histo.cells[handcopy.last_tile];
+			sfSprite_setTexture(gameGUI->player3hand.tilesprite[i],
+			                    gameGUI->textureslist[handcopy.last_tile], 1);
+			}
+			sfRenderWindow_drawSprite(gameGUI->window, gameGUI->player4hand.tilesprite[i], NULL);
+		}
+	} else if (winner_position == 3) {
+		struct hand handcopy;	
+		copy_hand(&engine->players[3].hand, &handcopy);
+		int n = 13;
+		for (int i = 0; i < handcopy.histo.nb_tiles; ++i) {
+			if (i < n) {
+				for (histo_cell_t j = 0; j < 34; ++j) {
+					if (handcopy.histo.cells[j] - (handcopy.last_tile == j) > 0) {
+						--handcopy.histo.cells[j];
+						sfSprite_setTexture(gameGUI->player4hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						break;
+					}
+					if (j == 33) {
+						sfSprite_setTexture(gameGUI->player4hand.tilesprite[i],
+											gameGUI->textureslist[j], 1);
+						if (n == 13)
+							n = i;
+					}
+				}
+			}
+			else if (i == 13 && handcopy.last_tile != NO_TILE_INDEX) {
+			--handcopy.histo.cells[handcopy.last_tile];
+			sfSprite_setTexture(gameGUI->player4hand.tilesprite[i],
+			                    gameGUI->textureslist[handcopy.last_tile], 1);
+			}
+			sfRenderWindow_drawSprite(gameGUI->window, gameGUI->player2hand.tilesprite[i], NULL);
+		}
+	}*/
+
+	sfVector2f posRecText = {300, 90};
+	sfVector2f sizeRecText = {200, 30};
 	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
 	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
 	sfRectangleShape_setPosition(gameGUI->center, posRecText);
 	sfRectangleShape_setSize(gameGUI->center, sizeRecText);
 	sfRectangleShape_setFillColor(gameGUI->center, sfColor_fromRGBA(0, 255, 128, 240));
-	//sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
 
 	sfFont *font = sfFont_createFromFile("arial.ttf");
 	sfText *text1 = sfText_create();
-	sfVector2f posText = {275, 135};
+	sfVector2f posText = {330, 90};
 	//sfVector2f sizeText = {400, 100};
 	sfText_setFont(text1, font);
-	sfText_setString(text1, "Do you want to play again?");
+	if (winner_position == 0)
+		sfText_setString(text1, "Thibaut won");
+	else if (winner_position == 1)
+		sfText_setString(text1, "Nicolas won");
+	else if (winner_position == 2)
+		sfText_setString(text1, "Manuel won");
+	else if (winner_position == 3)
+		sfText_setString(text1, "Gabriel won");
 	sfText_setPosition(text1, posText);
 	sfText_setCharacterSize(text1, 24);
 	sfText_setFillColor(text1, sfWhite);
-	//sfRenderWindow_drawText(gameGUI->window, text1, NULL);
+	sfRenderWindow_drawText(gameGUI->window, text1, NULL);
 
 	// Button left
 	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
