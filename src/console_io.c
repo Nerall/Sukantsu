@@ -1227,6 +1227,101 @@ void display_GUI(struct riichi_engine *engine) {
 	sfRenderWindow_display(gameGUI->window);
 }
 
+int display_replay(struct riichi_engine *engine) {
+	struct gameGUI *gameGUI = &engine->gameGUI;
+	sfRenderWindow_clear(gameGUI->window, gameGUI->background);
+
+	sfVector2f posRecText = {200, 100};
+	sfVector2f sizeRecText = {400, 100};
+	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+	sfRectangleShape_setPosition(gameGUI->center, posRecText);
+	sfRectangleShape_setSize(gameGUI->center, sizeRecText);
+	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+
+	sfFont *font = sfFont_createFromFile("arial.ttf");
+	sfText *text1 = sfText_create();
+	sfVector2f posText = {275, 135};
+	//sfVector2f sizeText = {400, 100};
+	sfText_setFont(text1, font);
+	sfText_setString(text1, "Do you want to replay?");
+	sfText_setPosition(text1, posText);
+	sfText_setCharacterSize(text1, 24);
+	sfRenderWindow_drawText(gameGUI->window, text1, NULL);
+
+	// Button left
+	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+	sfVector2f posRecLeft = {100, 300};
+	sfVector2f sizeRecLeft = {200, 100};
+	sfRectangleShape_setPosition(gameGUI->center, posRecLeft);
+	sfRectangleShape_setSize(gameGUI->center, sizeRecLeft);
+	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+
+	sfText *textLeft = sfText_create();
+	sfVector2f posTextLeft = {150, 335};
+	// sfVector2f sizeTextLeft = {200,100};
+	sfText_setFont(textLeft, font);
+	sfText_setString(textLeft, "Continue");
+	sfText_setPosition(textLeft, posTextLeft);
+	sfText_setCharacterSize(textLeft, 24);
+	sfRenderWindow_drawText(gameGUI->window, textLeft, NULL);
+
+	// Button right
+	sfRectangleShape_setOutlineColor(gameGUI->center, sfBlack);
+	sfRectangleShape_setOutlineThickness(gameGUI->center, 1.0);
+	sfVector2f posRecRight = {500, 300};
+	sfVector2f sizeRecRight = {200, 100};
+	sfRectangleShape_setPosition(gameGUI->center, posRecRight);
+	sfRectangleShape_setSize(gameGUI->center, sizeRecRight);
+	sfRectangleShape_setFillColor(gameGUI->center, gameGUI->centercolor);
+	sfRenderWindow_drawRectangleShape(gameGUI->window, gameGUI->center, NULL);
+
+	sfText *textRight = sfText_create();
+	sfVector2f posTextRight = {575, 335};
+	// sfVector2f sizeTextLeft = {200,100};
+	sfText_setFont(textRight, font);
+	sfText_setString(textRight, "Quit");
+	sfText_setPosition(textRight, posTextRight);
+	sfText_setCharacterSize(textRight, 24);
+	sfRenderWindow_drawText(gameGUI->window, textRight, NULL);
+
+	sfRenderWindow_display(gameGUI->window);
+
+	// Check button clicked
+	sfRenderWindow *window = engine->gameGUI.window;
+	sfEvent event;
+	while (sfRenderWindow_isOpen(window)) {
+		while (sfRenderWindow_pollEvent(window, &event)) {
+			switch (event.type) {
+				case sfEvtClosed:
+					exit(0);
+				case sfEvtMouseButtonPressed: {
+					int x = event.mouseButton.x;
+
+					fprintf(stderr, "BLA\n");
+
+					if (x > posRecLeft.x && x < posRecLeft.x + sizeRecLeft.x) {
+						return 1;
+					}
+
+					if (x > posRecRight.x &&
+					    x < posRecRight.x + sizeRecRight.x) {
+						return 0;
+					}
+					break;
+				}
+				default:
+					break;
+			}
+		}
+	}
+
+	return 1;
+}
+
 void get_player_click(struct riichi_engine *engine, struct action_input *input) {
 	sfRenderWindow* window = engine->gameGUI.window;
     sfEvent event;

@@ -146,6 +146,14 @@ void host_main() {
 		int round = engine.nb_rounds;
 		int win_pos = play_riichi_game(&engine);
 		char *pnames[] = {"Thibaut", "Nicolas", "Manuel", "Gabriel"};
+
+		if (!display_replay(&engine)) {
+			fprintf(stderr, "BLA2\n");
+			break;
+		}
+
+		fprintf(stderr, "BLAZE\n");
+
 		if (win_pos == -1) {
 			wprintf(L"Result: Draw\n\n");
 		} else {
@@ -192,6 +200,8 @@ void host_main() {
 	        (engine.nb_games > 1) ? "s" : "");
 	wprintf(L"%d game%s won.\n", nb_won_games,
 	        (nb_won_games > 1) ? "s were" : " was");
+
+	exit(0);
 
 	// Destroy GUI
 	destroy_gameGUI(&engine.gameGUI);

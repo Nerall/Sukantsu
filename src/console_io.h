@@ -68,10 +68,9 @@ void init_gameGUI(struct gameGUI *gameGUI);
 
 void destroy_gameGUI(struct gameGUI *gameGUI);
 
-// To remove
-void display(struct riichi_engine *engine, int current_player);
-
 void display_GUI(struct riichi_engine *engine);
+
+int display_replay(struct riichi_engine *engine);
 
 void get_player_click(struct riichi_engine *engine, struct action_input *input);
 
