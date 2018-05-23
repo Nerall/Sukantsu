@@ -2,7 +2,7 @@
 #define _DEFINITIONS_H_
 
 // For AI debug and tests
-#define AI_MODE 1
+#define AI_MODE 0
 
 #define GROUPLIST_CAPACITY 40
 #define GROUP_NB_TILES 4

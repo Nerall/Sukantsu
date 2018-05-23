@@ -5,6 +5,7 @@
 #include "core/riichi_engine_s.h"
 #include "debug.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <wchar.h>
 
 static wchar_t tileslist[] = L"🀙🀚🀛🀜🀝🀞🀟🀠🀡🀐🀑🀒🀓🀔🀕🀖🀗🀘🀇🀈🀉🀊🀋🀌🀍🀎🀏🀀🀁🀂🀃🀆🀅🀄";
@@ -1225,35 +1226,7 @@ void get_player_click(struct riichi_engine *engine, struct action_input *input) 
 	    {
 	        switch (event.type) {
 				case sfEvtClosed:
-					break;
-		       	case sfEvtResized:
-	       			/*if (event.size.width > 800) {
-	       				sfRectangleShape *suppx = engine->gameGUI.suppx;
-	       				sfVector2f size;
-	        			size.x = event.size.width - 800;
-	        			size.y = event.size.height;
-	        			sfVector2f position;
-	        			position.x = 800;
-	        			position.y = 0;
-	        			sfRectangleShape_setFillColor(suppx, sfBlack);
-	        			sfRectangleShape_setSize(suppx, size);
-	        			sfRectangleShape_setPosition(suppx, position);
-	        			sfRenderWindow_drawRectangleShape(window, suppx, NULL);
-	          			}
-	        		if (event.size.height > 600) {
-	        			sfRectangleShape *suppy = engine->gameGUI.suppy;
-	        			sfVector2f size;
-	        			size.x = event.size.width;
-	        			size.y = event.size.height - 600;
-	        			sfVector2f position;
-	        			position.x = 0;
-	        			position.y = 600;
-	        			sfRectangleShape_setFillColor(suppy, sfBlack);
-	        			sfRectangleShape_setSize(suppy, size);
-	        			sfRectangleShape_setPosition(suppy, position);
-	        			sfRenderWindow_drawRectangleShape(window, suppy, NULL);
-	        		}*/
-	       			break;
+					exit(0);
 	       		case sfEvtMouseButtonPressed:
 	       			if (event.mouseButton.x > 148 && event.mouseButton.x < 650
 	       			 && event.mouseButton.y > 523 && event.mouseButton.y < 573) {
