@@ -134,7 +134,7 @@ void host_main() {
 	wait_for_players(&engine);
 
 	engine.gameGUI.window = sfRenderWindow_create(
-	    engine.gameGUI.mode, "Sukantsu (host)", sfResize | sfClose, NULL);
+	    engine.gameGUI.mode, "Sukantsu (host)", sfClose, NULL);
 
 	engine.server.selector = sfSocketSelector_create();
 

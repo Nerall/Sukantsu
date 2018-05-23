@@ -1224,6 +1224,55 @@ void display_GUI(struct riichi_engine *engine) {
 		sum_exposed_tiles += nb_exposed_tiles;
 	}
 
+	sfFont *font = sfFont_createFromFile("arial.ttf");
+	sfText *text1 = sfText_create();
+	sfText *text2 = sfText_create();
+	sfText *text3 = sfText_create();
+	sfText *text4 = sfText_create();
+
+	sfText_setFillColor(text1, sfBlack);
+	sfText_setFillColor(text2, sfBlack);
+	sfText_setFillColor(text3, sfBlack);
+	sfText_setFillColor(text4, sfBlack);
+	sfText_setFont(text1, font);
+	sfText_setFont(text2, font);
+	sfText_setFont(text3, font);
+	sfText_setFont(text4, font);
+
+	char score1[20];
+	char score2[20];
+	char score3[20];
+	char score4[20];
+
+	sprintf(score1, "%ld", engine->players[0].player_score);
+	sprintf(score2, "%ld", engine->players[1].player_score);
+	sprintf(score3, "%ld", engine->players[2].player_score);
+	sprintf(score4, "%ld", engine->players[3].player_score);
+
+	sfText_setString(text1, score1);
+	sfText_setString(text2, score2);
+	sfText_setString(text3, score3);
+	sfText_setString(text4, score4);
+
+	sfVector2f pos1 = {360, 350};
+	sfVector2f pos2 = {500, 340};
+	sfVector2f pos3 = {440, 250};
+	sfVector2f pos4 = {300, 260};
+
+	sfText_setPosition(text1, pos1);
+	sfText_setPosition(text2, pos2);
+	sfText_setPosition(text3, pos3);
+	sfText_setPosition(text4, pos4);
+
+	sfText_setRotation(text2, 270);
+	sfText_setRotation(text3, 180);
+	sfText_setRotation(text4, 90);
+//	sfText_setCharacterSize(textLeft, 24);
+	sfRenderWindow_drawText(gameGUI->window, text1, NULL);
+	sfRenderWindow_drawText(gameGUI->window, text2, NULL);
+	sfRenderWindow_drawText(gameGUI->window, text3, NULL);
+	sfRenderWindow_drawText(gameGUI->window, text4, NULL);
+
 	sfRenderWindow_display(gameGUI->window);
 }
 
