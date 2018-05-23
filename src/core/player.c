@@ -408,6 +408,7 @@ static int get_index_from_pos(struct riichi_engine *engine,
 	}
 
 	ASSERT_BACKTRACE(0 && "Position not found in players");
+	return -1;
 }
 
 // Update player->tiles_remaining based on **public** infos

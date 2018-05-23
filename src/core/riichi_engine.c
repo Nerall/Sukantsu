@@ -363,8 +363,7 @@ void riichi_get_input_phase(struct riichi_engine *engine, int player_index,
 }
 
 // Tsumo phase of a riichi game
-void riichi_tsumo_phase(struct riichi_engine *engine, int player_index,
-                        struct action_input *input) {
+void riichi_tsumo_phase(struct riichi_engine *engine, int player_index) {
 	ASSERT_BACKTRACE(engine);
 	ASSERT_BACKTRACE(input);
 
@@ -551,7 +550,7 @@ int riichi_claim_phase(struct riichi_engine *engine, int player_index,
 		        pos[player_claim]);
 
 		if (is_valid_hand(&player->hand, &engine->grouplist)) {
-			riichi_tsumo_phase(engine, player_index, &claim_input);
+			riichi_tsumo_phase(engine, player_index);
 			return player_index;
 		}
 
@@ -628,7 +627,7 @@ int play_riichi_game(struct riichi_engine *engine) {
 		}
 
 		if (win) {
-			riichi_tsumo_phase(engine, player_index, &player_input);
+			riichi_tsumo_phase(engine, player_index);
 			struct histogram histofull;
 			groups_to_histo(&player->hand, &histofull);
 			int cpt = 1;
