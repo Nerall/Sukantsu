@@ -3,8 +3,8 @@
 #include "core/riichi_engine.h"
 #include "core/riichi_engine_s.h"
 #include "network/net_client.h"
-#include "network/net_server.h"
 #include "network/net_packets.h"
+#include "network/net_server.h"
 #include <SFML/Graphics.h>
 #include <locale.h>
 #include <stdio.h>
@@ -180,17 +180,6 @@ void host_main() {
 			else
 				continue;
 		}
-
-		wprintf(L"Do you want to continue (y/n)\n> ");
-		fflush(stdout);
-
-		do {
-			c = getchar();
-			if (c >= 'a')
-				c += 'A' - 'a';
-		} while (c != 'Y' && c != 'N');
-		while (getchar() != '\n')
-			;
 	} while (c != 'N');
 
 	send_end_game(&engine);
