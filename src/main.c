@@ -162,7 +162,10 @@ void host_main() {
 		if (win_pos != 0 ||
 		    (win_pos == -1 && engine.players[round % 4].hand.tenpai))
 			rotate_players(&engine);
-
+		if (win_pos > 0)
+			engine.nb_cons = 0;
+		else
+			++engine.nb_cons;
 		if (AI_MODE) {
 			if (engine.nb_rounds > 3)
 				break;

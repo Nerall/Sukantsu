@@ -143,9 +143,9 @@ void print_victory(const struct hand *hand, const struct grouplist *grouplist) {
 	else {
 		if (ischiitoi(hand))
 			wprintf(L"WOW, Seven pairs!\n");
-		for (int i = 0; i < grouplist->nb_groups; ++i) {
-			print_groups(grouplist->groups[i]);
-		}
+		//for (int i = 0; i < grouplist->nb_groups; ++i) {
+		if (grouplist->nb_groups)
+			print_groups(grouplist->groups[0]);
 	}
 }
 

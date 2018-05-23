@@ -16,6 +16,7 @@ struct riichi_engine {
 	struct gameGUI gameGUI;
 	signed nb_games;
 	signed nb_rounds;
+	signed nb_cons;
 	enum game_phase phase;
 };
 

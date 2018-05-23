@@ -58,6 +58,7 @@ void init_riichi_engine(struct riichi_engine *engine, enum player_type t1,
 	init_gameGUI(&engine->gameGUI);
 	engine->nb_games = 0;
 	engine->nb_rounds = 0;
+	engine->nb_cons = 0;
 	engine->server.listener = NULL;
 	for (int i = 0; i < NB_PLAYERS; ++i) {
 		engine->server.clients[i] = NULL;
@@ -661,25 +662,28 @@ int play_riichi_game(struct riichi_engine *engine) {
 			player->player_won = TSUMO;
 
 			if (player->player_pos == EAST) {
-				player->player_score += 3000 * cpt;
+				player->player_score += 3000 * cpt + 300 * engine->nb_cons;
 				if (player->player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						else
-							engine->players[i].player_score -= 1000 * cpt;
+							engine->players[i].player_score -= 1000 * cpt
+							 + 100 * engine->nb_cons;
 					}
 				}
 			} else {
-				player->player_score += 2000 * cpt;
+				player->player_score += 2000 * cpt + 300 * engine->nb_cons;
 				if (player->player_won == TSUMO) {
 					for (int i = 0; i < 4; i++) {
 						if (i == player_index)
 							continue;
 						if (engine->players[i].player_pos == EAST)
-							engine->players[i].player_score -= 1000 * cpt;
+							engine->players[i].player_score -= 1000 * cpt
+							 + 100 * engine->nb_cons;
 						else
-							engine->players[i].player_score -= 500 * cpt;
+							engine->players[i].player_score -= 500 * cpt
+							 + 100 * engine->nb_cons;
 					}
 				}
 			}
